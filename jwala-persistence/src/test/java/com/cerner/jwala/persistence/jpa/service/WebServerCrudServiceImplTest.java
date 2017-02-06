@@ -87,12 +87,6 @@ public class WebServerCrudServiceImplTest {
     @Before
     public void setup() {
         User user = new User("testUser");
-        user.addToThread();
-    }
-
-    @After
-    public void tearDown() {
-        User.getThreadLocalUser().invalidate();
     }
 
     @Test

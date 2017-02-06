@@ -13,7 +13,6 @@ import com.cerner.jwala.persistence.service.CommonGroupPersistenceServiceBehavio
 import com.cerner.jwala.persistence.service.CommonJvmPersistenceServiceBehavior;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +45,6 @@ public abstract class AbstractJvmPersistenceServiceTest {
     @Before
     public void setup() {
         User user = new User("testUser");
-        user.addToThread();
 
         final com.cerner.jwala.persistence.jpa.domain.JpaMedia media = new com.cerner.jwala.persistence.jpa.domain.JpaMedia();
         media.setName("test-media");
@@ -58,11 +56,6 @@ public abstract class AbstractJvmPersistenceServiceTest {
         jvmHelper = new CommonJvmPersistenceServiceBehavior(jvmPersistenceService);
         groupHelper = new CommonGroupPersistenceServiceBehavior(groupPersistenceService);
         userId = "TestUserId";
-    }
-
-    @After
-    public void tearDown() {
-        User.getThreadLocalUser().invalidate();
     }
 
     @Test

@@ -179,7 +179,6 @@ public class AemWebServiceConfiguration {
         return new WebServerServiceRestImpl(webServerService,
                 webServerControlService,
                 webServerCommandService,
-                wsWriteLockMap,
                 resourceService,
                 groupService,
                 binaryDistributionService,
@@ -214,7 +213,6 @@ public class AemWebServiceConfiguration {
         providers.add(getV1FormUploadProvider());
         providers.add(getV1JsonProvider());
 
-        // TODO do we use these exception mappers anymore? Especially now that we use the RestServiceErrorHandler
         providers.add(getV1NotFoundExceptionMapper());
         providers.add(getV1BadRequestExceptionMapper());
         providers.add(getV1InternalErrorExceptionMapper());

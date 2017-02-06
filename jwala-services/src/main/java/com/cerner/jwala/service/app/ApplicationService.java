@@ -16,26 +16,81 @@ import com.cerner.jwala.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import java.util.List;
 
 public interface ApplicationService {
+    /**
+     *  Get  application by Id
+     * @param aApplicationId
+     * @return
+     */
+    public Application getApplication(Identifier<Application> aApplicationId);
 
-    Application getApplication(Identifier<Application> aApplicationId);
+    /**
+     * Get  Application by Name
+     * @param name
+     * @return
+     */
+    public Application getApplication(String name);
 
-    Application getApplication(String name);
+    /**
+     *  Update Application
+     * @param anAppToUpdate
+     * @param user
+     * @return
+     */
+    public Application updateApplication(UpdateApplicationRequest anAppToUpdate, User user);
 
-    Application updateApplication(UpdateApplicationRequest anAppToUpdate, User user);
+    /**
+     * Create Application
+     * @param anAppToCreate
+     * @param user
+     * @return
+     */
+    public Application createApplication(CreateApplicationRequest anAppToCreate, User user);
 
-    Application createApplication(CreateApplicationRequest anAppToCreate, User user);
-
+    /**
+     *  Remove Application
+     * @param anAppIdToRemove
+     * @param user
+     */
     void removeApplication(Identifier<Application> anAppIdToRemove, User user);
 
-    List<Application> getApplications();
+    /**
+     * Get list of Applications
+     * @return
+     */
+    public List<Application> getApplications();
 
-    List<Application> findApplications(Identifier<Group> groupId);
+    /**
+     * Get List of applications by group Id
+     * @param groupId
+     * @return
+     */
+    public List<Application> findApplications(Identifier<Group> groupId);
 
-    List<Application> findApplicationsByJvmId(Identifier<Jvm> jvmId);
+    /**
+     *  Find Application by Id
+     * @param jvmId
+     * @return
+     */
+    public List<Application> findApplicationsByJvmId(Identifier<Jvm> jvmId);
 
-    List<String> getResourceTemplateNames(final String appName, String jvmName);
+    /**
+     *  Get resource template names for a Jvm and Application by name
+     * @param appName
+     * @param jvmName
+     * @return
+     */
+    public List<String> getResourceTemplateNames(final String appName, String jvmName);
 
-    String updateResourceTemplate(final String appName, final String resourceTemplateName, final String template, final String jvmName, final String groupName);
+    /**
+     * Update resouce template
+     * @param appName
+     * @param resourceTemplateName
+     * @param template
+     * @param jvmName
+     * @param groupName
+     * @return
+     */
+    public String updateResourceTemplate(final String appName, final String resourceTemplateName, final String template, final String jvmName, final String groupName);
 
     /**
      * Deploy a configuration file.
@@ -46,9 +101,14 @@ public interface ApplicationService {
      * @param resourceGroup
      * @param user                 - the user.    @return {@link CommandOutput}
      */
-    CommandOutput deployConf(String appName, String groupName, String jvmName, String resourceTemplateName, ResourceGroup resourceGroup, User user);
+    public CommandOutput deployConf(String appName, String groupName, String jvmName, String resourceTemplateName, ResourceGroup resourceGroup, User user);
 
-    JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest command);
+    /**
+     * upload Application template
+     * @param command
+     * @return
+     */
+    public JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest command);
 
     /**
      * Gets a preview of a resource file.
@@ -60,15 +120,38 @@ public interface ApplicationService {
      * @param resourceGroup
      * @return The resource file preview.
      */
-    String previewResourceTemplate(String fileName, String appName, String groupName, String jvmName, String template, ResourceGroup resourceGroup);
+    public String previewResourceTemplate(String fileName, String appName, String groupName, String jvmName, String template, ResourceGroup resourceGroup);
 
-    void copyApplicationWarToGroupHosts(Application application);
+    /**
+     * method to copy application war to group hosts
+     * @param application
+     */
+    public void copyApplicationWarToGroupHosts(Application application);
 
-    void copyApplicationWarToHost(Application application, String hostName);
+    /**
+     * method to copy application war to host
+     * @param application
+     * @param hostName
+     */
+    public void copyApplicationWarToHost(Application application, String hostName);
 
-    void deployApplicationResourcesToGroupHosts(String groupName, Application app, ResourceGroup resourceGroup);
+    /**
+     *
+     * @param groupName
+     * @param app
+     * @param resourceGroup
+     */
+    public void deployApplicationResourcesToGroupHosts(String groupName, Application app, ResourceGroup resourceGroup);
 
-    CommandOutput executeBackUpCommand(String entity, String host, String source) throws CommandFailureException;
+    /**
+     * method to execute backup
+     * @param entity
+     * @param host
+     * @param source
+     * @return
+     * @throws CommandFailureException
+     */
+    public CommandOutput executeBackUpCommand(String entity, String host, String source) throws CommandFailureException;
 
     CommandOutput executeCreateDirectoryCommand(String entity, String host, String directoryName) throws CommandFailureException;
 
@@ -80,5 +163,11 @@ public interface ApplicationService {
 
     CommandOutput executeUnzipBinaryCommand(String entity, String host, String fileName, String destination, String options) throws CommandFailureException;
 
-    void deployConf(String appName, String hostName, User user);
+    /**
+     * Method to deploy application configuration
+     * @param appName
+     * @param hostName
+     * @param user
+     */
+    public void deployConf(String appName, String hostName, User user);
 }

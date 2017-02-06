@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * @author Arvindo Kinny
@@ -62,6 +63,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticated();
         http.csrf().disable();
 
+        SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_THREADLOCAL);
     }
 
     /*

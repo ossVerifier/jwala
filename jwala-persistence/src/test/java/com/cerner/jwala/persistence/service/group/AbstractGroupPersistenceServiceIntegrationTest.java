@@ -15,7 +15,6 @@ import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.service.*;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +51,6 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
     @Before
     public void setUp() throws Exception {
         User user = new User("testUser");
-        user.addToThread();
 
         groupHelper = new CommonGroupPersistenceServiceBehavior(groupPersistenceService);
         jvmHelper = new CommonJvmPersistenceServiceBehavior(jvmPersistenceService);
@@ -72,11 +70,6 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
         application = applicationPersistenceService.createApplication(new CreateApplicationRequest(preCreatedGroup.getId(),
                         "testApp", "", false, false, false));
 
-    }
-
-    @After
-    public void tearDown() {
-        User.getThreadLocalUser().invalidate();
     }
 
     @Test
@@ -359,7 +352,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
     @Test
     public void testPopuplateJvmConfig() {
         List<UploadJvmTemplateRequest> uploadCommands = new ArrayList<>();
-        groupPersistenceService.populateJvmConfig(preCreatedGroup.getId(), uploadCommands, User.getThreadLocalUser(), true);
+        groupPersistenceService.populateJvmConfig(preCreatedGroup.getId(), uploadCommands, new User("user"), true);
     }
 
     @Test

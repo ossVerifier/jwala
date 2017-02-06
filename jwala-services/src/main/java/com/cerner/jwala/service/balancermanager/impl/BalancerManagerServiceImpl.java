@@ -66,7 +66,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
 
     @Override
     public BalancerManagerState drainUserGroup(final String groupName, final String webServers, final String user) {
-        LOGGER.info("Entering drainUserGroup, groupName: " + groupName + " webServers: " + webServers);
+        LOGGER.info("Entering drainUserGroup, groupName: {} webServers: {}", groupName, webServers);
         String[] webServerArray = getRequireWebServers(webServers);
         List<BalancerManagerState.GroupDrainStatus.WebServerDrainStatus> webServerDrainStatusList = new ArrayList<>();
         Group group = groupService.getGroup(groupName);
@@ -82,9 +82,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
             webServerDrainStatusList.add(webServerDrainStatus);
         }
         BalancerManagerState.GroupDrainStatus groupDrainStatus = new BalancerManagerState.GroupDrainStatus(groupName, webServerDrainStatusList);
-        List<BalancerManagerState.GroupDrainStatus> groupDrainStatusList = new ArrayList<>();
-        groupDrainStatusList.add(groupDrainStatus);
-        return new BalancerManagerState(groupDrainStatusList);
+        return new BalancerManagerState(Collections.singletonList(groupDrainStatus));
     }
 
     @Override
@@ -99,6 +97,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
             webServerDrainStatusList.add(webServerDrainStatus);
         } else {
             for (String jvmName : jvmArray) {
+                // check if JVM exists, if not throw exception
                 findJvmIfExists(jvmName);
                 BalancerManagerState.GroupDrainStatus.WebServerDrainStatus webServerDrainStatus = doDrainAndgetDrainStatus(webServer, jvmName, true, user);
                 webServerDrainStatusList.add(webServerDrainStatus);
@@ -110,10 +109,10 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         return new BalancerManagerState(groupDrainStatusList);
     }
 
-    public Jvm findJvmIfExists(String jvmName) {
+    private Jvm findJvmIfExists(String jvmName) {
         Jvm jvm;
         try {
-            jvm = jvmService.getJvm(jvmName.trim());
+            jvm = jvmService.getJvm(jvmName);
         } catch (javax.persistence.NoResultException e) {
             LOGGER.error(e.getMessage(), e);
             String message = "Cannot find " + jvmName + ", please verify if it is valid jvmName";
@@ -161,11 +160,12 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         return new BalancerManagerState(groupDrainStatusList);
     }
 
-    public void verifyJvmExistInGroup(Group group, String jvmName) {
+    private void verifyJvmExistInGroup(Group group, String jvmName) {
         boolean found = false;
         for (Jvm jvm : group.getJvms()) {
             if (jvm.getJvmName().equalsIgnoreCase(jvmName)) {
                 found = true;
+                break;
             }
         }
         if (!found) {
@@ -218,7 +218,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         }
     }
 
-    public String[] getRequireJvms(final String jvms) {
+    private String[] getRequireJvms(final String jvms) {
         if (jvms.length() != 0) {
             return jvms.split(",");
         } else {
@@ -235,10 +235,10 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
             webServerNamesIndex.put(webServers.indexOf(webServer), webServer.getName());
         }
         for (String webServerArrayContentName : webServerArray) {
-            if (webServerNamesIndex.containsValue(webServerArrayContentName.trim())) {
+            if (webServerNamesIndex.containsValue(webServerArrayContentName)) {
                 int index = 0;
                 for (Map.Entry<Integer, String> entry : webServerNamesIndex.entrySet()) {
-                    if (entry.getValue().equalsIgnoreCase(webServerArrayContentName.trim())) {
+                    if (entry.getValue().equalsIgnoreCase(webServerArrayContentName)) {
                         index = entry.getKey();
                     }
                 }
@@ -248,9 +248,9 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         }
         String wrongWebServers = "";
         for (String webServerArrayContentName : webServerArray) {
-            if (!webServerNameMatch.contains(webServerArrayContentName.trim())) {
-                LOGGER.error("WebServer Name does not exist: " + webServerArrayContentName.trim());
-                wrongWebServers += webServerArrayContentName.trim() + ", ";
+            if (!webServerNameMatch.contains(webServerArrayContentName)) {
+                LOGGER.error("WebServer Name does not exist: " + webServerArrayContentName);
+                wrongWebServers += webServerArrayContentName + ", ";
             }
         }
         if (wrongWebServers.length() != 0) {
@@ -259,14 +259,14 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         return webServersMatch;
     }
 
-    public BalancerManagerState.GroupDrainStatus.WebServerDrainStatus doDrainAndgetDrainStatus(final WebServer webServer, final String jvmName, final boolean post,
-                                                                                               final String user) {
+    private BalancerManagerState.GroupDrainStatus.WebServerDrainStatus doDrainAndgetDrainStatus(final WebServer webServer, final String jvmName, final boolean post,
+                                                                                                final String user) {
         List<BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus> jvmDrainStatusList = prepareDrainWork(webServer, jvmName, post, user);
         return new BalancerManagerState.GroupDrainStatus.WebServerDrainStatus(webServer.getName(), jvmDrainStatusList);
     }
 
-    public List<BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus> prepareDrainWork(final WebServer webServer, final String jvmName, final boolean post,
-                                                                                                            final String user) {
+    private List<BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus> prepareDrainWork(final WebServer webServer, final String jvmName, final boolean post,
+                                                                                                             final String user) {
         LOGGER.info("Entering prepareDrainWork");
         List<BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus> jvmDrainStatusList = new ArrayList<>();
         final String balancerManagerHtmlUrl = balancerManagerHtmlParser.getUrlPath(webServer.getHost());
@@ -349,7 +349,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
     }
 
 
-    public String getBalancerManagerResponse(final String statusUri) {
+    private String getBalancerManagerResponse(final String statusUri) {
         LOGGER.info("Entering getBalancerManagerResponse: " + statusUri);
         try {
             return IOUtils.toString(clientFactoryHelper.getHttpsURLConnection(statusUri).getInputStream(),
@@ -360,12 +360,12 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         }
     }
 
-    public void doDrain(final Map<String, String> workers,
-                        final String balancerManagerurl,
-                        final WebServer webServer,
-                        final String balancerName,
-                        final String nonce,
-                        final String user) {
+    private void doDrain(final Map<String, String> workers,
+                         final String balancerManagerurl,
+                         final WebServer webServer,
+                         final String balancerName,
+                         final String nonce,
+                         final String user) {
         LOGGER.info("Entering doDrain");
         for (String workerUrl : workers.keySet()) {
             final String message = "Drain request for " + workerUrl;
@@ -376,12 +376,12 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
                 response.close();
             } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);
-                throw new ApplicationException(e);
+                throw new ApplicationException(e); // TODO if one worker fails then the rest of the works won't run - is that the intended purpose? should we guarantee that all workers send the drain message? Jeff M 1/31/2017 from Brett's open source code review
             }
         }
     }
 
-    public void sendMessage(final WebServer webServer, final String message, final String user) {
+    private void sendMessage(final WebServer webServer, final String message, final String user) {
         LOGGER.info(message);
         historyFacadeService.write(webServer.getName(), new ArrayList<>(webServer.getGroups()), message, EventType.USER_ACTION_INFO, user);
 

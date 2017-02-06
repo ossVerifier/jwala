@@ -215,7 +215,7 @@ public class GroupServiceRestImplTest {
                 mockApplicationService, applicationServiceRest, mockWebServerServiceRest);
 
 
-        final WebServerServiceRest webServerServiceRest = new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mockWebServerCommandService, new HashMap<String, ReentrantReadWriteLock>(), mockResourceService, mockGroupService, mockBinaryDistributionService, mockHistoryFacadeService);
+        final WebServerServiceRest webServerServiceRest = new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mockWebServerCommandService,  mockResourceService, mockGroupService, mockBinaryDistributionService, mockHistoryFacadeService);
 
         groupServiceRest = new GroupServiceRestImpl(mockGroupService, mockResourceService, mockGroupControlService,
                 mockGroupJvmControlService, mockGroupWSControlService, mockJvmService, mockWebServerService,
