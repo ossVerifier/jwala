@@ -43,6 +43,7 @@ public class ApplicationContextListenerTest {
     @Autowired
     private ApplicationContextListener applicationContextListener;
     private ContextRefreshedEvent mockStartupEvent;
+    private Jvm mockJvm;
 
     @Before
     public void setup() {
@@ -55,6 +56,22 @@ public class ApplicationContextListenerTest {
         ApplicationContext mockParent = mock(ApplicationContext.class);
         when(mockApplicationContext.getParent()).thenReturn(mockParent);
         when(mockStartupEvent.getApplicationContext()).thenReturn(mockApplicationContext);
+
+        mockJvm = mock(Jvm.class);
+        Group mockGroup = mock(Group.class);
+        when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(111L));
+        when(mockJvm.getJvmName()).thenReturn("test-jvm-name");
+        when(mockJvm.getHostName()).thenReturn("test-host-name");
+        when(mockJvm.getGroups()).thenReturn(Collections.singleton(mockGroup));
+        when(mockJvm.getHttpPort()).thenReturn(100);
+        when(mockJvm.getHttpsPort()).thenReturn(101);
+        when(mockJvm.getRedirectPort()).thenReturn(102);
+        when(mockJvm.getShutdownPort()).thenReturn(-1);
+        when(mockJvm.getAjpPort()).thenReturn(103);
+        when(mockJvm.getStatusPath()).thenReturn(new Path("http://test-host-name:101/tomcat-power.gif"));
+        when(mockJvm.getSystemProperties()).thenReturn("");
+        when(mockJvm.getUserName()).thenReturn("");
+        when(mockJvm.getEncryptedPassword()).thenReturn("");
     }
 
     @Test
@@ -112,23 +129,6 @@ public class ApplicationContextListenerTest {
         List<JpaMedia> mediaList = Collections.singletonList(mockJdkMedia);
 
         when(Config.mediaServiceMock.findAll()).thenReturn(mediaList);
-
-        Jvm mockJvm = mock(Jvm.class);
-        Group mockGroup = mock(Group.class);
-        when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(111L));
-        when(mockJvm.getJvmName()).thenReturn("test-jvm-name");
-        when(mockJvm.getHostName()).thenReturn("test-host-name");
-        when(mockJvm.getGroups()).thenReturn(Collections.singleton(mockGroup));
-        when(mockJvm.getHttpPort()).thenReturn(100);
-        when(mockJvm.getHttpsPort()).thenReturn(101);
-        when(mockJvm.getRedirectPort()).thenReturn(102);
-        when(mockJvm.getShutdownPort()).thenReturn(-1);
-        when(mockJvm.getAjpPort()).thenReturn(103);
-        when(mockJvm.getStatusPath()).thenReturn(new Path("http://test-host-name:101/tomcat-power.gif"));
-        when(mockJvm.getSystemProperties()).thenReturn("");
-        when(mockJvm.getUserName()).thenReturn("");
-        when(mockJvm.getEncryptedPassword()).thenReturn("");
-
         when(Config.jvmServiceMock.getJvms()).thenReturn(Collections.singletonList(mockJvm));
 
         applicationContextListener.handleEvent(mockStartupEvent);
@@ -200,19 +200,29 @@ public class ApplicationContextListenerTest {
         List<JpaMedia> mediaList = Collections.singletonList(mockJdkMedia);
 
         when(Config.mediaServiceMock.findAll()).thenReturn(mediaList);
-        ContextRefreshedEvent mockStartupEvent = mock(ContextRefreshedEvent.class);
-
         when(Config.jvmServiceMock.getJvms()).thenReturn(new ArrayList<Jvm>());
-
-        ApplicationContext mockApplicationContext = mock(ApplicationContext.class);
-        ApplicationContext mockParent = mock(ApplicationContext.class);
-        when(mockApplicationContext.getParent()).thenReturn(mockParent);
-        when(mockStartupEvent.getApplicationContext()).thenReturn(mockApplicationContext);
 
         applicationContextListener.handleEvent(mockStartupEvent);
 
         verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
         verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap());
+    }
+
+    @Test
+    public void testNonEmptyMediaNoJDKWithJVMs() {
+        JpaMedia mockJdkMedia = mock(JpaMedia.class);
+        when(mockJdkMedia.getType()).thenReturn(MediaType.TOMCAT);
+        when(mockJdkMedia.getName()).thenReturn("test-jdk");
+        List<JpaMedia> mediaList = Collections.singletonList(mockJdkMedia);
+
+        when(Config.mediaServiceMock.findAll()).thenReturn(mediaList);
+        when(Config.jvmServiceMock.getJvms()).thenReturn(Collections.singletonList(mockJvm));
+        when(Config.mediaServiceMock.create(anyMap(), anyMap())).thenReturn(mockJdkMedia);
+
+        applicationContextListener.handleEvent(mockStartupEvent);
+
+        verify(Config.jvmServiceMock, times(1)).updateJvm(any(UpdateJvmRequest.class));
+        verify(Config.mediaServiceMock, times(1)).create(anyMap(), anyMap());
     }
 
     @Configuration
