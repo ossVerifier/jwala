@@ -53,7 +53,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
         media.setRemoteDir(new File("d:/fake/remote/path").toPath());
         media.setMediaDir(new File("test-media").toPath());
         mediaDao.create(media);
-        jvmHelper = new CommonJvmPersistenceServiceBehavior(jvmPersistenceService, true);
+        jvmHelper = new CommonJvmPersistenceServiceBehavior(jvmPersistenceService);
         groupHelper = new CommonGroupPersistenceServiceBehavior(groupPersistenceService);
         userId = "TestUserId";
     }
@@ -121,6 +121,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
         final Identifier<Media> newJdkMediaId = new Identifier<>(1L);
         final Identifier<Media> newTomcatMediaId = new Identifier<>(11L);
 
+
         final Jvm updatedJvm = jvmHelper.updateJvm(jvm.getId(),
                 newJvmName,
                 newHostName,
@@ -160,6 +161,65 @@ public abstract class AbstractJvmPersistenceServiceTest {
         assertEquals(newEncryptedPassword,
                 updatedJvm.getEncryptedPassword());
 
+    }
+
+    @Test
+    public void testUpdateJvmDoNotUpdatePassword() {
+
+        jvmHelper.setUpdateJvmPassword(false);
+
+        final Jvm jvm = jvmHelper.createJvm("jvm2", "host2", 10, 9, 8, 7, 6, userId, new Path("/abc"),
+                "EXAMPLE_OPTS=%someEnv%/someVal", null, "password", null);
+
+        final String newJvmName = "jvmTwo";
+        final String newHostName = "hostTwo";
+        final Integer newHttpPort = 5;
+        final Integer newHttpsPort = 4;
+        final Integer newRedirectPort = 3;
+        final Integer newShutdownPort = 2;
+        final Integer newAjpPort = 1;
+        final Path newStatusPath = new Path("/def");
+        final String newSystemProperties = "EXAMPLE_OPTS=%someEnv%/someVal";
+        final String newUserName = "new username";
+        final String newEncryptedPassword = "the quick brown fox";
+
+        final Jvm updatedJvm = jvmHelper.updateJvm(jvm.getId(),
+                newJvmName,
+                newHostName,
+                newHttpPort,
+                newHttpsPort,
+                newRedirectPort,
+                newShutdownPort,
+                newAjpPort,
+                userId,
+                newStatusPath,
+                newSystemProperties,
+                newUserName,
+                newEncryptedPassword,
+                null);
+
+        assertEquals(jvm.getId(),
+                updatedJvm.getId());
+        assertEquals(newJvmName,
+                updatedJvm.getJvmName());
+        assertEquals(newHostName,
+                updatedJvm.getHostName());
+        assertEquals(newHttpPort,
+                updatedJvm.getHttpPort());
+        assertEquals(newHttpsPort,
+                updatedJvm.getHttpsPort());
+        assertEquals(newRedirectPort,
+                updatedJvm.getRedirectPort());
+        assertEquals(newShutdownPort,
+                updatedJvm.getShutdownPort());
+        assertEquals(newAjpPort,
+                updatedJvm.getAjpPort());
+        assertEquals(newStatusPath,
+                updatedJvm.getStatusPath());
+        assertEquals(newUserName,
+                updatedJvm.getUserName());
+        assertEquals("password",
+                updatedJvm.getEncryptedPassword());
     }
 
     @Test(expected = EntityExistsException.class)
