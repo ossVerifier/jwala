@@ -109,6 +109,8 @@ public class ApplicationContextListener {
         final FileInputStream jdkBinaryZipStream;
         final String jdkFileName = findJdkBinaryName(binaryDirPath);
         final String jdkBinaryPath = binaryDirPath + "/" + jdkFileName;
+        LOGGER.debug("Creating JDK media file data map[content->{}, filename->{}]", jdkBinaryPath, jdkFileName);
+
         try {
             jdkBinaryZipStream = new FileInputStream(jdkBinaryPath);
         } catch (FileNotFoundException e) {
@@ -118,6 +120,7 @@ public class ApplicationContextListener {
         BufferedInputStream jdkStream = new BufferedInputStream(jdkBinaryZipStream);
         mediaFileDataMap.put("content", jdkStream);
         mediaFileDataMap.put("filename", jdkFileName);
+
         return mediaFileDataMap;
     }
 
@@ -134,9 +137,14 @@ public class ApplicationContextListener {
 
     private Map<String, String> createJDKAttributesMap() {
         Map<String, String> mediaDataMap = new HashMap<>();
-        mediaDataMap.put("remoteDir", ApplicationProperties.getRequired("remote.paths.deploy.dir"));
-        mediaDataMap.put("name", ApplicationProperties.get("jwala.default.jdk.media.name", "jwala-default-JDK"));
+        final String remoteDir = ApplicationProperties.getRequired("remote.paths.deploy.dir");
+        final String jdkName = ApplicationProperties.get("jwala.default.jdk.media.name", "jwala-default-JDK");
+        LOGGER.debug("Creating JDK media data map[remoteDir->{}, name->{}]", remoteDir, jdkName);
+
+        mediaDataMap.put("remoteDir", remoteDir);
+        mediaDataMap.put("name", jdkName);
         mediaDataMap.put("type", "JDK");
+
         return mediaDataMap;
     }
 }
