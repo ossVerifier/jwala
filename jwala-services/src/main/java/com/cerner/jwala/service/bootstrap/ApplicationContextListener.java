@@ -50,6 +50,11 @@ public class ApplicationContextListener {
     public void handleEvent(ApplicationEvent event) {
         LOGGER.info("Received application event {}", event);
 
+        // checking for start up event
+        // order of events is BrokerAvailabilityEvent -> ContextRefreshedEvent[parent=null] -> ContextRefreshedEvent[with non-null parent]
+        // so wait until the latest event is received: ContextRefreshedEvent[with non-null parent]
+
+        // skip the BrokerAvailabilityEvent
         if (!(event instanceof ContextRefreshedEvent)) {
             LOGGER.debug("Expecting ContextRefreshedEvent. Skipping.");
             return;
@@ -57,6 +62,7 @@ public class ApplicationContextListener {
 
         ContextRefreshedEvent crEvent = (ContextRefreshedEvent) event;
         final ApplicationContext applicationContext = crEvent.getApplicationContext();
+        // skip the ContextRefreshedEvent[parent=null] but check for non-null context first
         if (null == applicationContext) {
             LOGGER.debug("Expecting non-null ApplicationContext. Skipping.");
             return;
