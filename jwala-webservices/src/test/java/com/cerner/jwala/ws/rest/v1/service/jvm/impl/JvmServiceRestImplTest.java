@@ -194,7 +194,7 @@ public class JvmServiceRestImplTest {
         groupIds.add("111");
         final JsonUpdateJvm jsonUpdateJvm = new JsonUpdateJvm("1", name, hostName, groupIds, "5", "4", "3", "2", "1",
                 statusPath.getUriPath(), systemProperties, userName, clearTextPassword, JDK_1_7_TEST_VERSION/*, APACHE_TOMCAT_7_0_55_TEST_VERSION*/);
-        when(jvmService.updateJvm(any(UpdateJvmRequest.class))).thenReturn(jvm);
+        when(jvmService.updateJvm(any(UpdateJvmRequest.class), eq(true))).thenReturn(jvm);
 
         // Check rules for the JVM
         UpdateJvmRequest updateJvmCommand = jsonUpdateJvm.toUpdateJvmRequest();
@@ -203,7 +203,7 @@ public class JvmServiceRestImplTest {
         updateJvmCommand.equals(jsonUpdateJvm.toUpdateJvmRequest());
         String check = updateJvmCommand.toString();
 
-        final Response response = jvmServiceRest.updateJvm(jsonUpdateJvm, authenticatedUser);
+        final Response response = jvmServiceRest.updateJvm(jsonUpdateJvm, true, authenticatedUser);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();

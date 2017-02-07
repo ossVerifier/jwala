@@ -64,13 +64,13 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     }
 
     @Override
-    public Jvm updateJvm(UpdateJvmRequest updateJvmRequest) {
+    public Jvm updateJvm(UpdateJvmRequest updateJvmRequest, boolean updateJvmPassword) {
         JpaMedia jdkMedia = null;
         if (updateJvmRequest.getNewJdkMediaId() != null ) {
             jdkMedia = mediaDao.findById(updateJvmRequest.getNewJdkMediaId().getId());
         }
 //        Media tomcatMedia = mediaDaoImpl.find(createJvmRequest.getTomcatMediaId());
-        final JpaJvm jpaJvm = jvmCrudService.updateJvm(updateJvmRequest, jdkMedia);
+        final JpaJvm jpaJvm = jvmCrudService.updateJvm(updateJvmRequest, updateJvmPassword, jdkMedia);
         return jvmFrom(jpaJvm);
     }
 

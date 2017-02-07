@@ -18,7 +18,7 @@ public interface JvmCrudService extends CrudService<JpaJvm> {
 
     JpaJvm createJvm(CreateJvmRequest createJvmRequest, JpaMedia jdkMedia);
 
-    JpaJvm updateJvm(UpdateJvmRequest updateJvmRequest, JpaMedia jdkMedia);
+    JpaJvm updateJvm(UpdateJvmRequest updateJvmRequest, boolean updateJvmPassword, JpaMedia jdkMedia);
 
     JpaJvm getJvm(final Identifier<Jvm> aJvmId) throws NotFoundException;
 

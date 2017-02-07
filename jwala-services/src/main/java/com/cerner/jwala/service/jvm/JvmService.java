@@ -23,7 +23,7 @@ public interface JvmService {
 
     List<Jvm> getJvms();
 
-    Jvm updateJvm(final UpdateJvmRequest updateJvmRequest);
+    Jvm updateJvm(final UpdateJvmRequest updateJvmRequest, boolean updateJvmPassword);
 
     void removeJvm(final Identifier<Jvm> aJvmId, User user);
 

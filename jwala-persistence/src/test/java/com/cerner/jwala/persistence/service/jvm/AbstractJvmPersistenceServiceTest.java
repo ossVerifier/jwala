@@ -53,7 +53,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
         media.setRemoteDir(new File("d:/fake/remote/path").toPath());
         media.setMediaDir(new File("test-media").toPath());
         mediaDao.create(media);
-        jvmHelper = new CommonJvmPersistenceServiceBehavior(jvmPersistenceService);
+        jvmHelper = new CommonJvmPersistenceServiceBehavior(jvmPersistenceService, true);
         groupHelper = new CommonGroupPersistenceServiceBehavior(groupPersistenceService);
         userId = "TestUserId";
     }

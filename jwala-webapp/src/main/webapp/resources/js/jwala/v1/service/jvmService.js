@@ -61,12 +61,9 @@
                                                       successCallback,
                                                       errorCallback);
     },
-    updateJvm: function(jvm, successCallback, errorCallback) {
+    updateJvm: function(jvm, updateJvmPassword, successCallback, errorCallback) {
         jvm = this.serializedJvmFormToJson(jvm, true);
-        return serviceFoundation.put("v1.0/jvms/",
-                                     "json",
-                                     jvm,
-                                     successCallback,
+        return serviceFoundation.put("v1.0/jvms?updateJvmPassword=" + updateJvmPassword, "json", jvm, successCallback,
                                      errorCallback );
     },
     deleteJvm: function(id, caughtCallback) {

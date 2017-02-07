@@ -53,7 +53,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
         User user = new User("testUser");
 
         groupHelper = new CommonGroupPersistenceServiceBehavior(groupPersistenceService);
-        jvmHelper = new CommonJvmPersistenceServiceBehavior(jvmPersistenceService);
+        jvmHelper = new CommonJvmPersistenceServiceBehavior(jvmPersistenceService, true);
 
         userId = "Test User Id";
 
