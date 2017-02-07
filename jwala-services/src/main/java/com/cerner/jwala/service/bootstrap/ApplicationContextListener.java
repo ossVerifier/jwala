@@ -33,7 +33,7 @@ import java.util.*;
 public class ApplicationContextListener {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ApplicationContextListener.class);
-    private static final String JWALA_BYPASS_JDK_MEDIA_BOOTSTRAP_CONFIGURATION = "jwala.bypass.jdk.media.bootstrap.configuration";
+    private static final String JWALA_BYPASS_JDK_MEDIA_BOOTSTRAP_CONFIGURATION = "jwala.jdk.media.bootstrap.configuration.bypass";
 
     @Autowired
     private MediaService mediaService;
@@ -42,7 +42,7 @@ public class ApplicationContextListener {
     private JvmService jvmService;
 
     /**
-     * The spring event listener interface
+     * Implementation of the spring event listener interface.
      *
      * @param event the spring event from the application
      */
@@ -72,15 +72,16 @@ public class ApplicationContextListener {
             return;
         }
 
-        processUpgradeEvent();
+        processBootstrapConfiguration();
     }
 
     /**
      * Run the upgrade steps
      */
-    private void processUpgradeEvent() {
-        LOGGER.info("Begin upgrade process.");
+    private void processBootstrapConfiguration() {
+        LOGGER.info("Begin bootstrap configuration");
         configureJDKMedia();
+        LOGGER.info("End bootstrap configuration");
     }
 
     private void configureJDKMedia() {
@@ -144,19 +145,19 @@ public class ApplicationContextListener {
         JpaMedia retVal = null;
         List<JpaMedia> allMedia = mediaService.findAll();
         if (allMedia.isEmpty()) {
-            LOGGER.info("No media, upload JDK media");
+            LOGGER.info("No media configured, upload JDK media from jwala");
             retVal = uploadJDKFromJwala();
         } else {
             LOGGER.info("Found existing media. Current count {}", allMedia.size());
             for (JpaMedia media : allMedia) {
                 if (com.cerner.jwala.persistence.jpa.type.MediaType.JDK.equals(media.getType())) {
-                    LOGGER.info("Found existing JDK media");
+                    LOGGER.info("Found existing JDK media {}", media.getName());
                     retVal = media;
                     break;
                 }
             }
             if (null == retVal) {
-                LOGGER.info("No JDK media found, upload JDK media");
+                LOGGER.info("No JDK media found in configured media, upload JDK media from jwala");
                 retVal = uploadJDKFromJwala();
             }
         }
@@ -176,7 +177,7 @@ public class ApplicationContextListener {
         final FileInputStream jdkBinaryZipStream;
         final String jdkFileName = findJdkBinaryName(binaryDirPath);
         final String jdkBinaryPath = binaryDirPath + "/" + jdkFileName;
-        LOGGER.debug("Creating JDK media file data map[content->{}, filename->{}]", jdkBinaryPath, jdkFileName);
+        LOGGER.debug("Creating JDK media file data map[contentPath->{}, filename->{}]", jdkBinaryPath, jdkFileName);
 
         try {
             jdkBinaryZipStream = new FileInputStream(jdkBinaryPath);
@@ -193,7 +194,8 @@ public class ApplicationContextListener {
 
     private String findJdkBinaryName(String binaryDirPath) {
         File binaryDir = new File(binaryDirPath);
-        FileFilter jdkFilter = new WildcardFileFilter("jdk*");
+        final String wildcard = ApplicationProperties.get("jwala.jdk.media.bootstrap.configuration.filter", "jdk*");
+        FileFilter jdkFilter = new WildcardFileFilter(wildcard);
         File[] jdkFiles = binaryDir.listFiles(jdkFilter);
         if (null == jdkFiles || jdkFiles.length == 0){
             LOGGER.error("Expecting a compressed jdk file to exist in the jwala binaries directory. None found in {}", binaryDirPath);
