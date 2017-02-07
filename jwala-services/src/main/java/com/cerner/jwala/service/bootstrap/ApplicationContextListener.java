@@ -33,6 +33,7 @@ import java.util.*;
 public class ApplicationContextListener {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ApplicationContextListener.class);
+    private static final String JWALA_BYPASS_JDK_MEDIA_BOOTSTRAP_CONFIGURATION = "jwala.bypass.jdk.media.bootstrap.configuration";
 
     @Autowired
     private MediaService mediaService;
@@ -73,6 +74,24 @@ public class ApplicationContextListener {
      */
     private void processUpgradeEvent() {
         LOGGER.info("Begin upgrade process.");
+        configureJDKMedia();
+    }
+
+    private void configureJDKMedia() {
+
+        // check a property to bypass the upgrade
+        final Boolean bypassJDKMediaConfig = ApplicationProperties.getAsBoolean(JWALA_BYPASS_JDK_MEDIA_BOOTSTRAP_CONFIGURATION);
+        LOGGER.info("Property {} {}", JWALA_BYPASS_JDK_MEDIA_BOOTSTRAP_CONFIGURATION, bypassJDKMediaConfig);
+        if (bypassJDKMediaConfig){
+            LOGGER.info("Skip JDK media bootstrap configuration.");
+            return;
+        }
+
+        // check if any JVM's are configured
+        if (jvmService.getJvms().isEmpty()){
+            LOGGER.info("No JVMs configured. Exit JDK media upgrade.");
+            return;
+        }
 
         // set the JDK in the media tab
         JpaMedia jdkMedia = populateJDKMedia();

@@ -15,7 +15,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -43,11 +42,19 @@ public class ApplicationContextListenerTest {
 
     @Autowired
     private ApplicationContextListener applicationContextListener;
+    private ContextRefreshedEvent mockStartupEvent;
 
     @Before
     public void setup() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
         reset(Config.jvmServiceMock);
+        reset(Config.mediaServiceMock);
+
+        mockStartupEvent = mock(ContextRefreshedEvent.class);
+        ApplicationContext mockApplicationContext = mock(ApplicationContext.class);
+        ApplicationContext mockParent = mock(ApplicationContext.class);
+        when(mockApplicationContext.getParent()).thenReturn(mockParent);
+        when(mockStartupEvent.getApplicationContext()).thenReturn(mockApplicationContext);
     }
 
     @Test
@@ -61,7 +68,8 @@ public class ApplicationContextListenerTest {
 
         applicationContextListener.handleEvent(mockStartupEvent);
 
-        Mockito.verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
+        verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
+        verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap());
     }
 
     @Test
@@ -78,7 +86,8 @@ public class ApplicationContextListenerTest {
 
         applicationContextListener.handleEvent(mockStartupEvent);
 
-        Mockito.verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
+        verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
+        verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap());
     }
 
     @Test
@@ -88,18 +97,12 @@ public class ApplicationContextListenerTest {
         List<JpaMedia> mediaList = Collections.singletonList(mockJdkMedia);
 
         when(Config.mediaServiceMock.findAll()).thenReturn(mediaList);
-        ContextRefreshedEvent mockStartupEvent = mock(ContextRefreshedEvent.class);
-
         when(Config.jvmServiceMock.getJvms()).thenReturn(new ArrayList<Jvm>());
-
-        ApplicationContext mockApplicationContext = mock(ApplicationContext.class);
-        ApplicationContext mockParent = mock(ApplicationContext.class);
-        when(mockApplicationContext.getParent()).thenReturn(mockParent);
-        when(mockStartupEvent.getApplicationContext()).thenReturn(mockApplicationContext);
 
         applicationContextListener.handleEvent(mockStartupEvent);
 
-        Mockito.verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
+        verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
+        verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap());
     }
 
     @Test
@@ -109,7 +112,6 @@ public class ApplicationContextListenerTest {
         List<JpaMedia> mediaList = Collections.singletonList(mockJdkMedia);
 
         when(Config.mediaServiceMock.findAll()).thenReturn(mediaList);
-        ContextRefreshedEvent mockStartupEvent = mock(ContextRefreshedEvent.class);
 
         Jvm mockJvm = mock(Jvm.class);
         Group mockGroup = mock(Group.class);
@@ -129,14 +131,10 @@ public class ApplicationContextListenerTest {
 
         when(Config.jvmServiceMock.getJvms()).thenReturn(Collections.singletonList(mockJvm));
 
-        ApplicationContext mockApplicationContext = mock(ApplicationContext.class);
-        ApplicationContext mockParent = mock(ApplicationContext.class);
-        when(mockApplicationContext.getParent()).thenReturn(mockParent);
-        when(mockStartupEvent.getApplicationContext()).thenReturn(mockApplicationContext);
-
         applicationContextListener.handleEvent(mockStartupEvent);
 
-        Mockito.verify(Config.jvmServiceMock, times(1)).updateJvm(any(UpdateJvmRequest.class));
+        verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap()); // the JDK already exists so no need to create
+        verify(Config.jvmServiceMock, times(1)).updateJvm(any(UpdateJvmRequest.class));
     }
 
     @Test
@@ -144,18 +142,12 @@ public class ApplicationContextListenerTest {
         List<JpaMedia> mediaList = new ArrayList<>();
 
         when(Config.mediaServiceMock.findAll()).thenReturn(mediaList);
-        ContextRefreshedEvent mockStartupEvent = mock(ContextRefreshedEvent.class);
-
         when(Config.jvmServiceMock.getJvms()).thenReturn(new ArrayList<Jvm>());
-
-        ApplicationContext mockApplicationContext = mock(ApplicationContext.class);
-        ApplicationContext mockParent = mock(ApplicationContext.class);
-        when(mockApplicationContext.getParent()).thenReturn(mockParent);
-        when(mockStartupEvent.getApplicationContext()).thenReturn(mockApplicationContext);
 
         applicationContextListener.handleEvent(mockStartupEvent);
 
-        Mockito.verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
+        verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap());
+        verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
     }
 
     @Test(expected = ApplicationStartupException.class)
@@ -171,14 +163,30 @@ public class ApplicationContextListenerTest {
             List<JpaMedia> mediaList = new ArrayList<>();
 
             when(Config.mediaServiceMock.findAll()).thenReturn(mediaList);
-            ContextRefreshedEvent mockStartupEvent = mock(ContextRefreshedEvent.class);
-
-            ApplicationContext mockApplicationContext = mock(ApplicationContext.class);
-            ApplicationContext mockParent = mock(ApplicationContext.class);
-            when(mockApplicationContext.getParent()).thenReturn(mockParent);
-            when(mockStartupEvent.getApplicationContext()).thenReturn(mockApplicationContext);
+            when(Config.jvmServiceMock.getJvms()).thenReturn(Collections.singletonList(mock(Jvm.class)));
 
             applicationContextListener.handleEvent(mockStartupEvent);
+            verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap());
+            verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
+        } finally {
+            System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, propertiesRootPath);
+            ApplicationProperties.reload();
+        }
+    }
+
+    @Test
+    public void testBypassProperty() throws IOException {
+        String propertiesRootPath = System.getProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+        try {
+            // copy vars property that overrides data.binary location and reload the properties
+            final String tempPropertiesRootPath = new File(".").getAbsolutePath() + "/build";
+            FileUtils.copyFile(new File(propertiesRootPath + "/vars-applicationContextListenerBypass.properties"), new File(tempPropertiesRootPath + "/vars.properties"));
+            System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, tempPropertiesRootPath);
+            ApplicationProperties.reload();
+
+            applicationContextListener.handleEvent(mockStartupEvent);
+
+            verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap());
         } finally {
             System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, propertiesRootPath);
             ApplicationProperties.reload();
@@ -203,7 +211,8 @@ public class ApplicationContextListenerTest {
 
         applicationContextListener.handleEvent(mockStartupEvent);
 
-        Mockito.verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
+        verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
+        verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap());
     }
 
     @Configuration
