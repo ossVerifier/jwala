@@ -326,8 +326,7 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
 
         when(updateJvmRequest.getAssignmentCommands()).thenReturn(addCommands);
 
-        jvmService.updateJvm(updateJvmRequest,
-                mockUser);
+        jvmService.updateJvm(updateJvmRequest);
 
         verify(updateJvmRequest, times(1)).validate();
         verify(mockJvmPersistenceService, times(1)).updateJvm(updateJvmRequest);

@@ -127,7 +127,7 @@ public class JvmServiceImpl implements JvmService {
 
         if (!aCreateAndAssignRequest.getGroups().isEmpty()) {
             final Set<AddJvmToGroupRequest> addJvmToGroupRequests = aCreateAndAssignRequest.toAddRequestsFor(newJvm.getId());
-            addJvmToGroups(addJvmToGroupRequests, aCreatingUser);
+            addJvmToGroups(addJvmToGroupRequests);
         }
 
         return getJvm(newJvm.getId());
@@ -233,14 +233,13 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional
-    public Jvm updateJvm(final UpdateJvmRequest updateJvmRequest,
-                         final User anUpdatingUser) {
+    public Jvm updateJvm(final UpdateJvmRequest updateJvmRequest) {
 
         updateJvmRequest.validate();
 
         jvmPersistenceService.removeJvmFromGroups(updateJvmRequest.getId());
 
-        addJvmToGroups(updateJvmRequest.getAssignmentCommands(), anUpdatingUser);
+        addJvmToGroups(updateJvmRequest.getAssignmentCommands());
 
         return jvmPersistenceService.updateJvm(updateJvmRequest);
     }
@@ -283,8 +282,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
 
-    protected void addJvmToGroups(final Set<AddJvmToGroupRequest> someAddCommands,
-                                  final User anAddingUser) {
+    private void addJvmToGroups(final Set<AddJvmToGroupRequest> someAddCommands) {
         for (final AddJvmToGroupRequest command : someAddCommands) {
             LOGGER.info("Adding jvm {} to group {}", command.getJvmId(), command.getGroupId());
             groupPersistenceService.addJvmToGroup(command);

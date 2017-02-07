@@ -1,8 +1,14 @@
 package com.cerner.jwala.service.bootstrap;
 
+import com.cerner.jwala.common.domain.model.group.Group;
+import com.cerner.jwala.common.domain.model.id.Identifier;
+import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.service.exception.ApplicationStartupException;
+import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.media.MediaService;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.slf4j.Logger;
@@ -14,9 +20,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * The application startup listener that checks for upgrades.
@@ -32,6 +36,9 @@ public class ApplicationContextListener {
 
     @Autowired
     private MediaService mediaService;
+
+    @Autowired
+    private JvmService jvmService;
 
     /**
      * The spring event listener interface
@@ -71,6 +78,41 @@ public class ApplicationContextListener {
         JpaMedia jdkMedia = populateJDKMedia();
 
         // associate the JVMs if no JDK media is associated
+        associateJDKtoJVMs(jdkMedia);
+    }
+
+    private void associateJDKtoJVMs(JpaMedia jdkMedia) {
+        List<Jvm> allJvms = jvmService.getJvms();
+        for(Jvm jvm : allJvms){
+            if (null == jvm.getJdkMedia()) {
+                LOGGER.info("Updating JVM {} with JDK media {}", jvm.getJvmName(), jdkMedia.getName());
+                UpdateJvmRequest addMediaRequest = new UpdateJvmRequest(
+                        jvm.getId(),
+                        jvm.getJvmName(),
+                        jvm.getHostName(),
+                        convertGroupIds(jvm.getGroups()),
+                        jvm.getHttpPort(),
+                        jvm.getHttpsPort(),
+                        jvm.getRedirectPort(),
+                        jvm.getShutdownPort(),
+                        jvm.getAjpPort(),
+                        jvm.getStatusPath(),
+                        jvm.getSystemProperties(),
+                        jvm.getUserName(),
+                        jvm.getEncryptedPassword(),
+                        new Identifier<Media>(jdkMedia.getId())
+                );
+                jvmService.updateJvm(addMediaRequest);
+            }
+        }
+    }
+
+    private Set convertGroupIds(Set<Group> groups) {
+            final Set groupIdSet = new HashSet<>();
+            for (final Group group : groups) {
+                groupIdSet.add(group.getId());
+            }
+            return groupIdSet;
     }
 
     private JpaMedia populateJDKMedia() {
