@@ -1801,32 +1801,7 @@
 						"description": ""
 					},
 					"response": []
-				},
-				{
-					"name": "deploy conf with resource template name",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"tests[\"Status code is 200\"] = responseCode.code === 200;"
-								]
-							}
-						}
-					],
-					"request": {
-						"url": "{{url}}/v1.0/applications/{{HealthCheckApp}}/conf/hct.xml;groupName={{HealthCheckGroup}};jvmName={{HealthCheckJvm}}",
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"description": ""
-					},
-					"response": []
-				}
+				}				
 			]
 		},
 		{
@@ -2023,6 +1998,31 @@
 					],
 					"request": {
 						"url": "{{url}}/v1.0/webservers/{{HealthCheckWebServer}}/conf/deploy",
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "deploy conf with resource template name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{url}}/v1.0/applications/{{HealthCheckApp}}/conf/hct.xml;groupName={{HealthCheckGroup}};jvmName={{HealthCheckJvm}}",
 						"method": "PUT",
 						"header": [],
 						"body": {
