@@ -8,26 +8,26 @@ import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.InternalErrorException;
-import com.cerner.jwala.common.exec.*;
+import com.cerner.jwala.common.exec.CommandOutput;
+import com.cerner.jwala.common.exec.CommandOutputReturnCode;
+import com.cerner.jwala.common.exec.ExecReturnCode;
+import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
-import com.cerner.jwala.control.command.common.*;
-import com.cerner.jwala.control.command.common.ShellCommand;
+import com.cerner.jwala.control.command.common.Command;
+import com.cerner.jwala.control.command.common.ShellCommandFactory;
 import com.cerner.jwala.control.jvm.command.JvmCommandFactory;
-import com.cerner.jwala.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.domain.JpaHistory;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
-import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.jvm.exception.JvmControlServiceException;
-import com.cerner.jwala.service.jvm.operation.JvmOperationService;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -40,9 +40,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class JvmControlServiceImpl implements JvmControlService {
-
-    @Autowired
-    private JvmOperationService jvmOperationService;
 
     @Autowired
     private JvmCommandFactory jvmCommandFactory;
@@ -301,7 +298,8 @@ public class JvmControlServiceImpl implements JvmControlService {
 
      //   return remoteCommandExecutor.executeRemoteCommand(name, hostName, secureCopyRequest.getControlOperation(),
 //                new WindowsJvmPlatformCommandProvider(), sourcePath, destPath);
-        RemoteCommandReturnInfo remoteCommandReturnInfo = shellCommandFactory.executeRemoteCommand(jvm.getHostName(), Command.SCP, new String[]{sourcePath, destPath});
+        RemoteCommandReturnInfo remoteCommandReturnInfo = shellCommandFactory.executeRemoteCommand(jvm.getHostName(),
+                Command.SCP, sourcePath, destPath);
         return new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                 remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
     }
@@ -309,7 +307,8 @@ public class JvmControlServiceImpl implements JvmControlService {
     @Override
     public CommandOutput executeChangeFileModeCommand(final Jvm jvm, final String modifiedPermissions, final String targetAbsoluteDir, final String targetFile)
             throws CommandFailureException {
-        RemoteCommandReturnInfo remoteCommandReturnInfo = shellCommandFactory.executeRemoteCommand(jvm.getHostName(), Command.CHANGE_FILE_MODE, new String[]{modifiedPermissions, targetAbsoluteDir+"/"+targetFile});
+        RemoteCommandReturnInfo remoteCommandReturnInfo = shellCommandFactory.executeRemoteCommand(jvm.getHostName(),
+                Command.CHANGE_FILE_MODE, modifiedPermissions, targetAbsoluteDir+"/"+targetFile);
         return new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                 remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
     }
