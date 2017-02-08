@@ -1,5 +1,7 @@
 package com.cerner.jwala.service.repository;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -33,6 +35,8 @@ public abstract class AbstractRepositoryService implements RepositoryService {
             return absoluteFilename;
         } catch (final IOException e) {
             throw new RepositoryServiceException("Resource upload failed!", e);
+        } finally {
+            IOUtils.closeQuietly(resource);
         }
     }
 

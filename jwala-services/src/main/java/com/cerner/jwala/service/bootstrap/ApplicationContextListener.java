@@ -89,13 +89,13 @@ public class ApplicationContextListener {
         // check a property to bypass the upgrade
         final Boolean bypassJDKMediaConfig = ApplicationProperties.getAsBoolean(JWALA_BYPASS_JDK_MEDIA_BOOTSTRAP_CONFIGURATION);
         LOGGER.info("Property {} {}", JWALA_BYPASS_JDK_MEDIA_BOOTSTRAP_CONFIGURATION, bypassJDKMediaConfig);
-        if (bypassJDKMediaConfig){
+        if (bypassJDKMediaConfig) {
             LOGGER.info("Skip JDK media bootstrap configuration.");
             return;
         }
 
         // check if any JVM's are configured
-        if (jvmService.getJvms().isEmpty()){
+        if (jvmService.getJvms().isEmpty()) {
             LOGGER.info("No JVMs configured. Exit JDK media upgrade.");
             return;
         }
@@ -109,7 +109,7 @@ public class ApplicationContextListener {
 
     private void associateJDKtoJVMs(JpaMedia jdkMedia) {
         List<Jvm> allJvms = jvmService.getJvms();
-        for(Jvm jvm : allJvms){
+        for (Jvm jvm : allJvms) {
             if (null == jvm.getJdkMedia()) {
                 LOGGER.info("Updating JVM {} with JDK media {}", jvm.getJvmName(), jdkMedia.getName());
                 UpdateJvmRequest addMediaRequest = new UpdateJvmRequest(
@@ -134,11 +134,11 @@ public class ApplicationContextListener {
     }
 
     private Set convertGroupIds(Set<Group> groups) {
-            final Set groupIdSet = new HashSet<>();
-            for (final Group group : groups) {
-                groupIdSet.add(group.getId());
-            }
-            return groupIdSet;
+        final Set groupIdSet = new HashSet<>();
+        for (final Group group : groups) {
+            groupIdSet.add(group.getId());
+        }
+        return groupIdSet;
     }
 
     private JpaMedia populateJDKMedia() {
@@ -174,7 +174,7 @@ public class ApplicationContextListener {
     private Map<String, Object> createJDKBinaryMap() {
         Map<String, Object> mediaFileDataMap = new HashMap<>();
         final String binaryDirPath = ApplicationProperties.getRequired("jwala.binary.dir");
-        final FileInputStream jdkBinaryZipStream;
+        FileInputStream jdkBinaryZipStream = null;
         final String jdkFileName = findJdkBinaryName(binaryDirPath);
         final String jdkBinaryPath = binaryDirPath + "/" + jdkFileName;
         LOGGER.debug("Creating JDK media file data map[contentPath->{}, filename->{}]", jdkBinaryPath, jdkFileName);
@@ -197,7 +197,7 @@ public class ApplicationContextListener {
         final String wildcard = ApplicationProperties.get("jwala.jdk.media.bootstrap.configuration.filter", "jdk*");
         FileFilter jdkFilter = new WildcardFileFilter(wildcard);
         File[] jdkFiles = binaryDir.listFiles(jdkFilter);
-        if (null == jdkFiles || jdkFiles.length == 0){
+        if (null == jdkFiles || jdkFiles.length == 0) {
             LOGGER.error("Expecting a compressed jdk file to exist in the jwala binaries directory. None found in {}", binaryDirPath);
             throw new ApplicationStartupException("Expecting a compressed jdk file to exist in the jwala binaries directory. None found in " + binaryDirPath);
         }
