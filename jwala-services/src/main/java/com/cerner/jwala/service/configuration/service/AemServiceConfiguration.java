@@ -18,7 +18,6 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.configuration.AemCommandExecutorConfig;
 import com.cerner.jwala.control.configuration.AemSshConfig;
-import com.cerner.jwala.control.webserver.command.WebServerCommandFactory;
 import com.cerner.jwala.persistence.configuration.AemPersistenceServiceConfiguration;
 import com.cerner.jwala.persistence.jpa.service.*;
 import com.cerner.jwala.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
@@ -424,8 +423,8 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name = "binaryDistributionControlService")
-    public BinaryDistributionControlServiceImpl getBinaryDistributionControlService(RemoteCommandExecutor<BinaryDistributionControlOperation> remoteCommandExecutor) {
-        return new BinaryDistributionControlServiceImpl(remoteCommandExecutor);
+    public BinaryDistributionControlServiceImpl getBinaryDistributionControlService() {
+        return new BinaryDistributionControlServiceImpl();
     }
 
     @Bean(name = "binaryDistributionService")

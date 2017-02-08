@@ -17,23 +17,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.Date;
 
 /**
  * Created by Arvindo Kinny on 10/11/2016.
  */
 public class BinaryDistributionControlServiceImpl implements BinaryDistributionControlService {
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDistributionControlServiceImpl.class);
-    private final RemoteCommandExecutor<BinaryDistributionControlOperation> remoteCommandExecutor;
+
     @Autowired
-    protected SshConfiguration sshConfig;
+    private  SshConfiguration sshConfig;
 
     @Autowired
     private AemSshConfig aemSshConfig;
+
     @Autowired
-    protected RemoteCommandExecutorService remoteCommandExecutorService;
+    private RemoteCommandExecutorService remoteCommandExecutorService;
+
+    @Autowired
+    private RemoteCommandExecutor<BinaryDistributionControlOperation> remoteCommandExecutor;
 
     static String CREATE_DIR="if [ ! -e \"%s\" ]; then mkdir -p \"%s\"; fi;";
     static String REMOVE="rm";
@@ -41,9 +43,6 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
     static String TEST = "test -e";
     static String CHMOD = "chmod";
     static String MOVE = "mv";
-    public BinaryDistributionControlServiceImpl(RemoteCommandExecutor<BinaryDistributionControlOperation> remoteCommandExecutor) {
-        this.remoteCommandExecutor = remoteCommandExecutor;
-    }
 
     @Override
     public CommandOutput secureCopyFile(final String hostname, final String source, final String destination) throws CommandFailureException  {
