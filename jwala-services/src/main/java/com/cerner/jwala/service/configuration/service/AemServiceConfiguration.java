@@ -5,7 +5,6 @@ import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.commandprocessor.jsch.impl.KeyedPooledJschChannelFactory;
 import com.cerner.jwala.common.FileUtility;
-import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
@@ -429,6 +428,6 @@ public class AemServiceConfiguration {
 
     @Bean(name = "binaryDistributionService")
     public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlService binaryDistributionControlService, HistoryFacadeService historyFacadeService) {
-        return new BinaryDistributionServiceImpl(binaryDistributionControlService, getBinaryDistributionLockManager(), historyFacadeService);
+        return new BinaryDistributionServiceImpl();
     }
 }

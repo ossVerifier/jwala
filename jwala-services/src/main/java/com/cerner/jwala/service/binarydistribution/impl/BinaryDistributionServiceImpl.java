@@ -3,12 +3,8 @@ package com.cerner.jwala.service.binarydistribution.impl;
 import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.media.Media;
-import com.cerner.jwala.common.domain.model.resource.EntityType;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
-import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.InternalErrorException;
-import com.cerner.jwala.common.exec.ExecCommand;
-import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.exception.CommandFailureException;
@@ -17,7 +13,6 @@ import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
-import com.cerner.jwala.service.binarydistribution.DistributionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,29 +20,29 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.io.File;
 import java.text.MessageFormat;
 
 /**
  * Created by Arvindo Kinny on 10/11/2016
  */
-public class BinaryDistributionServiceImpl implements BinaryDistributionService, DistributionService {
+public class BinaryDistributionServiceImpl implements BinaryDistributionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDistributionServiceImpl.class);
+
     @Autowired
     protected SshConfiguration sshConfig;
 
     private static final String UNZIPEXE = "unzip.exe";
     private static final String APACHE_EXCLUDE = "ReadMe.txt *--";
 
-    private final BinaryDistributionControlService binaryDistributionControlService;
-    private final BinaryDistributionLockManager binaryDistributionLockManager;
+    @Autowired
+    private BinaryDistributionControlService binaryDistributionControlService;
+
+    @Autowired
+    private BinaryDistributionLockManager binaryDistributionLockManager;
+
+    @Autowired
     private HistoryFacadeService historyFacadeService;
 
-    public BinaryDistributionServiceImpl(BinaryDistributionControlService binaryDistributionControlService, BinaryDistributionLockManager binaryDistributionLockManager, HistoryFacadeService historyFacadeService) {
-        this.binaryDistributionControlService = binaryDistributionControlService;
-        this.binaryDistributionLockManager = binaryDistributionLockManager;
-        this.historyFacadeService = historyFacadeService;
-    }
 
     @Override
     public void distributeWebServer(final String hostname) {
