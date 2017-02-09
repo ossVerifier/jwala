@@ -10,11 +10,15 @@ import org.jgroups.stack.IpAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 /**
  * A life cycle listener that sends state via JGroups
- *
+ * <p>
  * Created by JC043760 on 8/15/2016
  */
 public class JGroupsReportingLifeCycleListener implements LifecycleListener {
@@ -23,6 +27,8 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
     private static final long SCHEDULER_DELAY_INITIAL_DEFAULT = 60;
     private static final long SCHEDULER_DELAY_SUBSEQUENT_DEFAULT = 60;
     private static final int SCHEDULER_THREAD_COUNT_DEFAULT = 1;
+    private static final String JGROUPS_COORDINATOR_HOSTNAME = "jgroupsCoordinatorHostname";
+    private static final String JGROUPS_COORDINATOR_IP_ADDRESS = "jgroupsCoordinatorIp";
     private MessagingService<Message> messagingService;
     private JGroupsStateReporter jgroupsStateReporter;
 
@@ -31,6 +37,7 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
     private String jgroupsPreferIpv4Stack;
     private String jgroupsConfigXml;
     private String jgroupsCoordinatorIp;
+    private String jgroupsCoordinatorHostname;
     private String jgroupsCoordinatorPort;
     private String jgroupsClusterName;
     private long schedulerDelayInitial = SCHEDULER_DELAY_INITIAL_DEFAULT;
@@ -39,6 +46,7 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
     private int schedulerThreadCount = SCHEDULER_THREAD_COUNT_DEFAULT;
 
     private JChannel channel;
+    private IpAddress jgroupsDestIpAddr;
 
     @Override
     public void lifecycleEvent(final LifecycleEvent event) {
@@ -50,25 +58,68 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
 
             try {
                 channel = new JChannel(jgroupsConfigXml);
+
+                channel.setDiscardOwnMessages(true);
+                messagingService = new JGroupsMessagingServiceImpl(channel, jgroupsClusterName);
+                jgroupsStateReporter = new JGroupsStateReporter(messagingService);
+                jgroupsDestIpAddr = getDestAddr();
             } catch (final Exception e) {
                 LOGGER.error("Failed to create JGroups channel!", e);
                 return;
             }
-
-            channel.setDiscardOwnMessages(true);
-            messagingService = new JGroupsMessagingServiceImpl(channel, jgroupsClusterName);
-            jgroupsStateReporter = new JGroupsStateReporter(messagingService);
         }
 
         final LifecycleState state = event.getLifecycle().getState();
         try {
             jgroupsStateReporter.init(state)
-                                .sendMsg(serverId, serverName, new IpAddress(jgroupsCoordinatorIp + ":" + jgroupsCoordinatorPort))
-                                .schedulePeriodicMsgDelivery(schedulerThreadCount, schedulerDelayInitial,
-                                        schedulerDelaySubsequent, schedulerDelayUnit);
+                    .sendMsg(serverId, serverName, jgroupsDestIpAddr)
+                    .schedulePeriodicMsgDelivery(schedulerThreadCount, schedulerDelayInitial,
+                            schedulerDelaySubsequent, schedulerDelayUnit);
         } catch (final Exception e) {
             LOGGER.error("Failed to report state!", e);
         }
+    }
+
+    private IpAddress getDestAddr() throws Exception {
+        if (null != jgroupsCoordinatorIp) {
+            return new IpAddress(jgroupsCoordinatorIp + ":" + jgroupsCoordinatorPort);
+        } else {
+            if (null == this.jgroupsCoordinatorHostname) {
+                final String errorMessage = MessageFormat.format("Expecting hostname specified as JGroupsReportingLifecycleListener attribute {0} when no IP address specified for the JGroups coordinator", JGROUPS_COORDINATOR_HOSTNAME);
+                LOGGER.error(errorMessage);
+                throw new RuntimeException(errorMessage);
+            }
+            return getIPAddressFromHostname(jgroupsCoordinatorHostname);
+        }
+    }
+
+    private IpAddress getIPAddressFromHostname(String jgroupsCoordinatorHostname) throws UnknownHostException {
+        LOGGER.info("Get IP address for JGroups from hostname {}", jgroupsCoordinatorHostname);
+        final InetAddress[] allByName = InetAddress.getAllByName(jgroupsCoordinatorHostname);
+        if (null == allByName || 0 == allByName.length) {
+            final String errorMessage = MessageFormat.format("Expecting at least 1 IP address from hostname {0}, but were returned none", jgroupsCoordinatorHostname);
+            LOGGER.error(errorMessage);
+            throw new RuntimeException(errorMessage);
+        }
+
+        LOGGER.info("Getting JGroups IP address by hostname {} returned a total of {} addresses", jgroupsCoordinatorHostname, allByName.length);
+        ArrayList<InetAddress> filteredAddresses = new ArrayList<>();
+        for (InetAddress address : allByName) {
+            LOGGER.debug("Filtering JGroups IP address {}", address);
+            if (!address.isLoopbackAddress()) {
+                LOGGER.debug("-- adding JGroups IP address to list: {}", address);
+                filteredAddresses.add(address);
+            }
+        }
+
+        if (filteredAddresses.size() != 1) {
+            final String errorMessage = MessageFormat.format("Expecting only 1 filtered JGroups IP address, but instead found {0}. Please use the IP address attribute {1} to specify the JGroups coordinator node location.", filteredAddresses.size(), JGROUPS_COORDINATOR_IP_ADDRESS);
+            LOGGER.error(errorMessage);
+            throw new RuntimeException(errorMessage);
+        }
+
+        return new IpAddress(filteredAddresses.get(0), Integer.parseInt(jgroupsCoordinatorPort));
+
     }
 
     public void setServerId(final String serverId) {
@@ -89,6 +140,10 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
 
     public void setJgroupsCoordinatorIp(final String jgroupsCoordinatorIp) {
         this.jgroupsCoordinatorIp = jgroupsCoordinatorIp;
+    }
+
+    public void setJgroupsCoordinatorHostname(final String jgroupsCoordinatorHostname) {
+        this.jgroupsCoordinatorHostname = jgroupsCoordinatorHostname;
     }
 
     public void setJgroupsCoordinatorPort(final String jgroupsCoordinatorPort) {

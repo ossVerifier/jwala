@@ -1,7 +1,8 @@
 package com.cerner.jwala.tomcat.listener.messaging.jgroups;
 
-import com.cerner.jwala.tomcat.listener.messaging.jgroups.JGroupsReportingLifeCycleListener;
-import org.apache.catalina.*;
+import org.apache.catalina.Lifecycle;
+import org.apache.catalina.LifecycleEvent;
+import org.apache.catalina.LifecycleState;
 import org.apache.log4j.Appender;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.spi.LoggingEvent;
@@ -17,9 +18,7 @@ import java.util.Properties;
 
 import static java.lang.Thread.sleep;
 import static org.jgroups.util.Util.assertEquals;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
@@ -54,6 +53,7 @@ public class JGroupsReportingLifeCycleListenerImplTest {
         lifeCycleListener.setJgroupsPreferIpv4Stack("true");
         lifeCycleListener.setJgroupsConfigXml("tcp.xml");
         lifeCycleListener.setJgroupsCoordinatorIp(prop.getProperty("coordinator.ip"));
+        lifeCycleListener.setJgroupsCoordinatorHostname("testHostname");
         lifeCycleListener.setJgroupsCoordinatorPort("30000");
         lifeCycleListener.setJgroupsClusterName("testCluster");
         lifeCycleListener.setSchedulerDelayInitial("1");
