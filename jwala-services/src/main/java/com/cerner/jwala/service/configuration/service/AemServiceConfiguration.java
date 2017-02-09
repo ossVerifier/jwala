@@ -272,12 +272,8 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name = "webServerControlService")
-    public WebServerControlService getWebServerControlService(final WebServerService webServerService,
-                                                              final RemoteCommandExecutor<WebServerControlOperation> commandExecutor,
-                                                              final RemoteCommandExecutorService remoteCommandExecutorService,
-                                                              final SshConfiguration sshConfig, final HistoryFacadeService historyFacadeService) {
-        return new WebServerControlServiceImpl(webServerService, commandExecutor, remoteCommandExecutorService, sshConfig,
-                historyFacadeService);
+    public WebServerControlService getWebServerControlService() {
+        return new WebServerControlServiceImpl();
     }
 
     @Bean(name = "webServerCommandService")
