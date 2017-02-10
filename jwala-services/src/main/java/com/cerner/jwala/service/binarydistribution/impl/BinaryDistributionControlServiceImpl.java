@@ -37,7 +37,7 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
     @Autowired
     private RemoteCommandExecutor<BinaryDistributionControlOperation> remoteCommandExecutor;
 
-    static String CREATE_DIR="if [ ! -e \"%s\" ]; then mkdir -p \"%s\"; fi;";
+    static String CREATE_DIR="if [ ! -e \"%s\" ]; then mkdir -p %s; fi;";
     static String REMOVE="rm";
     static String SECURE_COPY = "scp";
     static String TEST = "test -e";
@@ -61,8 +61,8 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
 
     @Override
     public CommandOutput createDirectory(final String hostname, final String destination) throws CommandFailureException {
-        ExecCommand command = new ExecCommand(String.format(CREATE_DIR, destination,destination));
-        RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(hostname),command  ));
+        ExecCommand command = new ExecCommand(String.format(CREATE_DIR, destination, destination));
+        RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(hostname), command  ));
         CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                 remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
         return commandOutput;

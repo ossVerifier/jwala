@@ -35,7 +35,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -270,7 +274,8 @@ public class JvmControlServiceImpl implements JvmControlService {
         if (destPath.startsWith("~")) {
             parentDir = destPath.substring(0, destPath.lastIndexOf("/"));
         } else {
-            parentDir =destPath;
+            //derive parentDir
+            parentDir = Paths.get(destPath).getParent().toString().replaceAll("\\\\", "/");
         }
         CommandOutput commandOutput = executeCreateDirectoryCommand(jvm, parentDir);
 
@@ -296,8 +301,6 @@ public class JvmControlServiceImpl implements JvmControlService {
 
         }
 
-     //   return remoteCommandExecutor.executeRemoteCommand(name, hostName, secureCopyRequest.getControlOperation(),
-//                new WindowsJvmPlatformCommandProvider(), sourcePath, destPath);
         RemoteCommandReturnInfo remoteCommandReturnInfo = shellCommandFactory.executeRemoteCommand(jvm.getHostName(),
                 Command.SCP, sourcePath, destPath);
         return new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
@@ -331,7 +334,7 @@ public class JvmControlServiceImpl implements JvmControlService {
 
     @Override
     public CommandOutput executeBackUpCommand(final Jvm jvm, final String filename) throws CommandFailureException {
-        final String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+        final String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(Date.from(Instant.now()));
         final String destPathBackup = filename + currentDateSuffix;
         RemoteCommandReturnInfo remoteCommandReturnInfo = shellCommandFactory.executeRemoteCommand(jvm.getHostName(), Command.MOVE, filename, destPathBackup);
         return new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),

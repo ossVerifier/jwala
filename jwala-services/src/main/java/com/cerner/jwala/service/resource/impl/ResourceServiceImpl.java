@@ -739,7 +739,6 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     public CommandOutput secureCopyFile(final String hostName, final String sourcePath, final String destPath) throws CommandFailureException {
-        final String fileName = new File(destPath).getName();
         if(distributionService.remoteFileCheck(hostName,destPath)){
             LOGGER.info("Found the file {}", destPath);
             distributionControlService.backupFile(hostName,destPath);
@@ -863,7 +862,9 @@ public class ResourceServiceImpl implements ResourceService {
             } else {
                 resourceSourceCopy = generateTemplateForNotText(resourceHandler.getSelectedValue(resourceIdentifier), fileName);
             }
-            secureCopyFile(hostName, resourceSourceCopy, resourceDestPath);
+            //Create resource dir
+            commandOutput = distributionControlService.createDirectory(hostName,resourceTemplateMetaData.getDeployPath());
+            commandOutput = secureCopyFile(hostName, resourceSourceCopy, resourceDestPath);
             if (resourceTemplateMetaData.isUnpack()) {
                 commandOutput = doUnpack(entity, hostName, resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
             }

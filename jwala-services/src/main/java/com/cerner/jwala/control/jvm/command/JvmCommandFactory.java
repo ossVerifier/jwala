@@ -12,6 +12,7 @@ import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
+import com.cerner.jwala.common.exec.ShellCommand;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.properties.PropertyKeys;
@@ -77,7 +78,7 @@ public class JvmCommandFactory {
     public void initJvmCommands() {
         commands = new HashMap<>();
         commands.put(JvmControlOperation.START.getExternalValue(), (Jvm jvm)
-                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommand(START_SCRIPT_NAME.getValue(), jvm))));
+                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getShellCommand(START_SCRIPT_NAME.getValue(), jvm))));
         commands.put(JvmControlOperation.STOP.getExternalValue(), (Jvm jvm)
                 -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForStopService(jvm))));
         commands.put(JvmControlOperation.THREAD_DUMP.getExternalValue(), (Jvm jvm)
@@ -159,6 +160,15 @@ public class JvmCommandFactory {
     private ExecCommand getExecCommand(String scriptName, Jvm jvm){
         return new ExecCommand(getFullPathScript(jvm, scriptName), jvm.getJvmName());
     }
+    /**
+     *
+     * @param scriptName
+     * @param jvm
+     * @return
+     */
+    private ExecCommand getShellCommand(String scriptName, Jvm jvm){
+        return new ShellCommand(getFullPathScript(jvm, scriptName), jvm.getJvmName());
+    }
 
     /**
      * Method to generate remote command for extracting jar for jvm
@@ -220,7 +230,6 @@ public class JvmCommandFactory {
     }
 
     private ExecCommand getExecCommandForStopService(Jvm jvm){
-        //copy delete script
-        return new ExecCommand(getFullPathScript(jvm, STOP_SCRIPT_NAME.getValue()), jvm.getJvmName(), SLEEP_TIME.getValue());
+        return new ShellCommand(getFullPathScript(jvm, STOP_SCRIPT_NAME.getValue()), jvm.getJvmName(), SLEEP_TIME.getValue());
     }
 }

@@ -6,7 +6,7 @@ package com.cerner.jwala.control.command.common;
 public enum Command {
     CHANGE_FILE_MODE("chmod"),
     CHECK_FILE_EXISTS("test -e %s"),
-    CREATE_DIR("if [ ! -e \"%s\" ]; then mkdir -p \"%s\"; fi;"),
+    CREATE_DIR("if [ ! -e \"%s\" ]; then mkdir -p %s; fi;"),
     MOVE("mv %s %s"),
     SCP("scp");
 

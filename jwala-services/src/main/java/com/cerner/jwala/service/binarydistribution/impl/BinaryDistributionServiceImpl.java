@@ -211,7 +211,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService,
         if (!remoteFileCheck(hostname, jwalaScriptsPath + "/" + UNZIPEXE)) {
             final String unzipFile = ApplicationProperties.get(PropertyKeys.LOCAL_JWALA_BINARY_DIR) + "/" + UNZIPEXE;
             LOGGER.info("SCP {} " + unzipFile);
-            remoteSecureCopyFile(hostname, unzipFile, jwalaScriptsPath);
+            remoteSecureCopyFile(hostname, unzipFile,  jwalaScriptsPath + "/" + UNZIPEXE);
             changeFileMode(hostname, "a+x", jwalaScriptsPath, UNZIPEXE);
         }
 

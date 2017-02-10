@@ -10,6 +10,6 @@ import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
  * The ApplicationCommand functional interface.<br/>
  */
 @FunctionalInterface
-public interface ShellCommand<T> {
+public interface RemoteShellCommand<T> {
     public RemoteCommandReturnInfo apply(String host, String... params);
 }

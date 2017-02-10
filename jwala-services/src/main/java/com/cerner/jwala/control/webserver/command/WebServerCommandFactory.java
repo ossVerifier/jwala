@@ -72,12 +72,12 @@ public class WebServerCommandFactory {
         // commands are added here using lambdas. It is also possible to dynamically add commands without editing the code.
         commands.put(WebServerControlOperation.START.getExternalValue(), (WebServer webServer)
                 -> remoteCommandExecutorService.executeCommand(
-                new RemoteExecCommand(getConnection(webServer),getExecCommand(START_SCRIPT_NAME.getValue(),
+                new RemoteExecCommand(getConnection(webServer),getShellCommand(START_SCRIPT_NAME.getValue(),
                                                                               webServer,
                                                                               webServer.getName()))));
         commands.put(WebServerControlOperation.STOP.getExternalValue(), (WebServer webServer)
                 -> remoteCommandExecutorService.executeCommand(
-                new RemoteExecCommand(getConnection(webServer),getExecCommand(STOP_SCRIPT_NAME.getValue(),
+                new RemoteExecCommand(getConnection(webServer),getShellCommand(STOP_SCRIPT_NAME.getValue(),
                                                                               webServer,
                                                                               webServer.getName()))));
         commands.put(WebServerControlOperation.DELETE_SERVICE.getExternalValue(), (WebServer webServer)
@@ -119,6 +119,20 @@ public class WebServerCommandFactory {
      * @return
      */
     private ExecCommand getExecCommand(String scriptName, WebServer webserver, String... params ){
+        String paramConcat = "";
+        for (String param:params) {
+            paramConcat+=param + " ";
+        }
+
+        return new ExecCommand(getFullPathScript(scriptName), webserver.getName(), paramConcat);
+    }
+    /**
+     *
+     * @param scriptName
+     * @param webserver
+     * @return
+     */
+    private ExecCommand getShellCommand(String scriptName, WebServer webserver, String... params ){
         String paramConcat = "";
         for (String param:params) {
             paramConcat+=param + " ";

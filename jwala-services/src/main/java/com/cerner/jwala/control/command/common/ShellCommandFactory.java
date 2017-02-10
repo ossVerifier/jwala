@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 @Component
 public class ShellCommandFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(ShellCommandFactory.class);
-    private HashMap<String, ShellCommand> commands;
+    private HashMap<String, RemoteShellCommand> commands;
 
     @Autowired
     private AemSshConfig aemSshConfig;
@@ -48,7 +48,7 @@ public class ShellCommandFactory {
         if (commands.containsKey(operation.name())) {
             return commands.get(operation.name()).apply(host, paramaters);
         }
-        throw new ApplicationServiceException("ShellCommand not found");
+        throw new ApplicationServiceException("RemoteShellCommand not found");
     }
 
     @PostConstruct
@@ -60,7 +60,7 @@ public class ShellCommandFactory {
         commands.put(Command.CHANGE_FILE_MODE.name(), (String host, String... params)
                 -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(host),new ExecCommand(concatArray(Command.CHANGE_FILE_MODE.get(), params)))));
         commands.put(Command.CREATE_DIR.name(), (String host, String... params)
-                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(host),new ExecCommand(String.format(Command.CREATE_DIR.get(), params[0], params[0])))));
+                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(host),new com.cerner.jwala.common.exec.ShellCommand(String.format(Command.CREATE_DIR.get(), params[0], params[0])))));
         commands.put(Command.MOVE.name(), (String host, String... params)
                 -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(host),new ExecCommand(String.format(Command.MOVE.get(), params[0], params[1])))));
         commands.put(Command.SCP.name(), (String host, String... params)
