@@ -5,6 +5,7 @@ import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
+import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.exception.RemoteCommandFailureException;
 import com.jcraft.jsch.*;
 import org.slf4j.Logger;
@@ -16,6 +17,8 @@ import java.util.List;
 
 public class JschScpCommandProcessorImpl implements CommandProcessor {
     private static final int TIMEOUT = 300000;
+    public static final String JSCH_READ_ACK_SLEEP_DURATION = "jsch.read.ack.sleep.duration";
+    public static final String READ_ACK_SLEEP_DEFAULT_VALUE = "250";
     private boolean checkAckOk;
     private static final Logger LOGGER = LoggerFactory.getLogger(JschScpCommandProcessorImpl.class);
 
@@ -235,15 +238,26 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
      */
     private static int readAck(final InputStream in, final int timeout) throws IOException {
         int ack;
-        final long startTime = System.currentTimeMillis();
+
         LOGGER.debug(">>>>>> Reading ack...");
-        do {
+
+        final int readInputSleepDuration = Integer.parseInt(ApplicationProperties.get(JSCH_READ_ACK_SLEEP_DURATION, READ_ACK_SLEEP_DEFAULT_VALUE));
+        final long startTime = System.currentTimeMillis();
+        while ((System.currentTimeMillis() - startTime) < timeout) {
             if (in.available() > 0) {
                 ack = in.read();
                 LOGGER.debug(">>>>>> Ack = {}", ack);
                 return ack;
             }
-        } while ((System.currentTimeMillis() - startTime) < timeout);
+
+            try {
+                Thread.sleep(readInputSleepDuration);
+            } catch (final InterruptedException e) {
+                final String errMsg = "readAck was interrupted while waiting for input from JSch channel!";
+                LOGGER.error(errMsg, e);
+                throw new RuntimeException(errMsg, e);
+            }
+        }
         final String errMsg = "Reading ack timeout!!!";
         LOGGER.error(errMsg);
         throw new RuntimeException("Timeout!");

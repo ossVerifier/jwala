@@ -37,6 +37,8 @@ public class JschServiceImpl implements JschService {
     private static final String EXIT_CODE_END_MARKER = "***";
     private static final int BYTE_CHUNK_SIZE = 1024;
     private static final int CHANNEL_EXEC_CLOSE_TIMEOUT = 300000;
+    private static final String JSCH_CHANNEL_SHELL_READ_INPUT_SLEEP_DURATION = "jsch.channel.shell.read.input.sleep.duration";
+    private static final String SHELL_READ_SLEEP_DEFAULT_VALUE = "250";
 
     @Autowired
     private JSch jsch;
@@ -243,6 +245,8 @@ public class JschServiceImpl implements JschService {
             throw new JschServiceException("Expecting non-null end marker when reading remote output");
         }
 
+        final int readInputSleepDuration = Integer.parseInt(ApplicationProperties.get(JSCH_CHANNEL_SHELL_READ_INPUT_SLEEP_DURATION,
+                SHELL_READ_SLEEP_DEFAULT_VALUE));
         final BufferedInputStream buffIn = new BufferedInputStream(remoteOutput);
         final byte[] bytes = new byte[BYTE_CHUNK_SIZE];
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -272,6 +276,14 @@ public class JschServiceImpl implements JschService {
                 if ((System.currentTimeMillis() - startTime) > timeout) {
                     LOGGER.warn("Remote output reading timeout!");
                     break;
+                }
+
+                try {
+                    Thread.sleep(readInputSleepDuration);
+                } catch (final InterruptedException e) {
+                    final String errMsg =  "readRemoteOutput was interrupted while waiting for input from JSch channel!";
+                    LOGGER.error(errMsg, e);
+                    throw new JschServiceException(errMsg, e);
                 }
             }
         } finally {
