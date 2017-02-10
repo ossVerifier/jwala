@@ -5,7 +5,6 @@ import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.commandprocessor.jsch.impl.KeyedPooledJschChannelFactory;
 import com.cerner.jwala.common.FileUtility;
-import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
@@ -273,12 +272,8 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name = "webServerControlService")
-    public WebServerControlService getWebServerControlService(final WebServerService webServerService,
-                                                              final RemoteCommandExecutor<WebServerControlOperation> commandExecutor,
-                                                              final RemoteCommandExecutorService remoteCommandExecutorService,
-                                                              final SshConfiguration sshConfig, final HistoryFacadeService historyFacadeService) {
-        return new WebServerControlServiceImpl(webServerService, commandExecutor, remoteCommandExecutorService, sshConfig,
-                historyFacadeService);
+    public WebServerControlService getWebServerControlService() {
+        return new WebServerControlServiceImpl();
     }
 
     @Bean(name = "webServerCommandService")
@@ -429,6 +424,6 @@ public class AemServiceConfiguration {
 
     @Bean(name = "binaryDistributionService")
     public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlService binaryDistributionControlService, HistoryFacadeService historyFacadeService) {
-        return new BinaryDistributionServiceImpl(binaryDistributionControlService, getBinaryDistributionLockManager(), historyFacadeService);
+        return new BinaryDistributionServiceImpl();
     }
 }

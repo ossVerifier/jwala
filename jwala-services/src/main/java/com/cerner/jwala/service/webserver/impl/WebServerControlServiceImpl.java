@@ -11,8 +11,6 @@ import com.cerner.jwala.common.exec.*;
 import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.webserver.command.WebServerCommandFactory;
-import com.cerner.jwala.control.webserver.command.impl.WindowsWebServerPlatformCommandProvider;
-import com.cerner.jwala.control.webserver.command.windows.WindowsWebServerNetOperation;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.HistoryFacadeService;
@@ -37,36 +35,37 @@ import static com.cerner.jwala.common.domain.model.webserver.WebServerControlOpe
 
 public class WebServerControlServiceImpl implements WebServerControlService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebServerControlServiceImpl.class);
+    private static final int SLEEP_DURATION = 1000;
+    private static final String MSG_SERVICE_ALREADY_STARTED = "Service already started";
+    private static final String MSG_SERVICE_ALREADY_STOPPED = "Service already stopped";
+    private static final String FORCED_STOPPED = "FORCED STOPPED";
+    private static final String WEB_SERVER = "Web Server";
+
     @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
     protected String topicServerStates;
 
     @Autowired
     private WebServerCommandFactory webServerCommandFactory;
+
     @Autowired
-    DistributionService distributionService;
-    private static final String FORCED_STOPPED = "FORCED STOPPED";
-    private static final String WEB_SERVER = "Web Server";
-    private final WebServerService webServerService;
-    private final RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebServerControlServiceImpl.class);
-    private final RemoteCommandExecutorService remoteCommandExecutorService;
-    private final HistoryFacadeService historyFacadeService;
-    private final SshConfiguration sshConfig;
-    private static final int SLEEP_DURATION = 1000;
+    private DistributionService distributionService;
 
-    private static final String MSG_SERVICE_ALREADY_STARTED = "Service already started";
-    private static final String MSG_SERVICE_ALREADY_STOPPED = "Service already stopped";
+    @Autowired
+    private WebServerService webServerService;
 
-    public WebServerControlServiceImpl(final WebServerService webServerService,
-                                       final RemoteCommandExecutor<WebServerControlOperation> commandExecutor,
-                                       final RemoteCommandExecutorService remoteCommandExecutorService,
-                                       final SshConfiguration sshConfig, HistoryFacadeService historyFacadeService) {
-        this.webServerService = webServerService;
-        this.commandExecutor = commandExecutor;
-        this.remoteCommandExecutorService = remoteCommandExecutorService;
-        this.sshConfig = sshConfig;
-        this.historyFacadeService = historyFacadeService;
-    }
+    @Autowired
+    private RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
+
+    @Autowired
+    private RemoteCommandExecutorService remoteCommandExecutorService;
+
+    @Autowired
+    private HistoryFacadeService historyFacadeService;
+
+    @Autowired
+    private SshConfiguration sshConfig;
+
 
     @Override
     public CommandOutput controlWebServer(final ControlWebServerRequest controlWebServerRequest, final User aUser) {
@@ -228,4 +227,5 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         }
         return false;
     }
+
 }
