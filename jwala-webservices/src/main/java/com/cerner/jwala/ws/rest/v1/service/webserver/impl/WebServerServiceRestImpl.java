@@ -355,7 +355,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         // copy the install_serviceWS.bat file
         final String installServiceScriptPath = installServiceScript.getAbsolutePath().replaceAll("\\\\", "/");
         String remoteInstallServiceScriptPath = remoteScriptDir + "/" + WebServerServiceImpl.INSTALL_SERVICE_SCRIPT_NAME;
-        webServerControlService.createDirectory(webServer, remoteInstallServiceScriptPath);
+        webServerControlService.createDirectory(webServer, remoteScriptDir);
         webServerControlService.secureCopyFile(name, installServiceScriptPath, remoteInstallServiceScriptPath, user.getUser().getId());
         webServerControlService.changeFileMode(webServer, "a+x", remoteScriptDir, "*.sh");
         webServerControlService.changeFileMode(webServer, "a+x", remoteScriptDir, "*.bat");
