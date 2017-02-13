@@ -2,7 +2,7 @@
 	"variables": [],
 	"info": {
 		"name": "jwala-collection",
-		"_postman_id": "c9e8258e-7dcf-58ff-7030-06786e04f8bd",
+		"_postman_id": "36cf2af1-d1ce-d488-576a-b210eaf623a4",
 		"description": "",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
 	},
@@ -2075,7 +2075,8 @@
 									"key": "mediaArchiveFile",
 									"type": "file",
 									"enabled": true,
-									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/Error.zip"
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/Error.zip",
+									"value": ""
 								},
 								{
 									"key": "remoteDir",
@@ -2178,7 +2179,10 @@
 						"url": "{{url}}/v1.0/media;id={{MediaId}}",
 						"method": "GET",
 						"header": [],
-						"body": {},
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
 						"description": ""
 					},
 					"response": []
@@ -2200,7 +2204,10 @@
 						"url": "{{url}}/v1.0/media;name=jdk1.8.0_92",
 						"method": "GET",
 						"header": [],
-						"body": {},
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
 						"description": ""
 					},
 					"response": []
@@ -2750,7 +2757,10 @@
 						"url": "{{url}}/v1.0/webservers/1?forceDelete=false",
 						"method": "DELETE",
 						"header": [],
-						"body": {},
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
 						"description": ""
 					},
 					"response": []
@@ -5629,6 +5639,17 @@
 			"name": "t) miscellaneous",
 			"description": "",
 			"item": [
+				{
+					"name": "jwala page constants",
+					"request": {
+						"url": "https://usmlvv1cds0049:8001/toc/page-constants",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": ""
+					},
+					"response": []
+				},
 				{
 					"name": "check file exists",
 					"event": [
