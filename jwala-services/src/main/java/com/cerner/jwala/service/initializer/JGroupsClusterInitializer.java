@@ -11,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
@@ -72,7 +74,7 @@ public class JGroupsClusterInitializer implements InitializingBean {
 
     private IpAddress getIPAddressFromHostname(final String jgroupsCoordinatorHostname) throws UnknownHostException {
         final InetAddress[] allByName = InetAddress.getAllByName(jgroupsCoordinatorHostname);
-        if (null == allByName || 0 == allByName.length){
+        if (null == allByName || 0 == allByName.length) {
             final String errorMessage = MessageFormat.format("Expecting at least 1 IP address from hostname {0}, but were returned none", jgroupsCoordinatorHostname);
             LOGGER.error(errorMessage);
             throw new JGroupsClusterInitializerException(errorMessage, null);
@@ -82,9 +84,14 @@ public class JGroupsClusterInitializer implements InitializingBean {
         ArrayList<InetAddress> filteredAddresses = new ArrayList<>();
         for (InetAddress address : allByName) {
             LOGGER.debug("Filtering JGroups IP address {}", address);
-            if (!address.isLoopbackAddress()){
-                LOGGER.debug("-- adding JGroups IP address to list: {}", address);
-                filteredAddresses.add(address);
+            if (!address.isLoopbackAddress()) {
+                if (Boolean.valueOf(jgroupsJavaNetPreferIPv4Stack) && address instanceof Inet4Address) {
+                    LOGGER.debug("-- adding JGroups IPv4 address to list: {}", address);
+                    filteredAddresses.add(address);
+                } else if (!Boolean.valueOf(jgroupsJavaNetPreferIPv4Stack) && address instanceof Inet6Address) {
+                    LOGGER.debug("-- adding JGroups IPv6 address to list: {}", address);
+                    filteredAddresses.add(address);
+                }
             }
         }
 
