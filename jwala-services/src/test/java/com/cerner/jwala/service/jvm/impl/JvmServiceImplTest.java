@@ -372,34 +372,6 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
     }
 
     @Test
-    public void testDeleteJvmWindowsServiceForNonExistentService() {
-        Jvm mockJvm = mock(Jvm.class);
-        ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>(123L), JvmControlOperation.DELETE_SERVICE);
-        CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(36), "", "Fail for non-existent service");
-
-        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        when(mockJvm.getJvmName()).thenReturn("jvm-name-delete-service");
-        when(mockJvmControlService.controlJvm(eq(controlJvmRequest), any(User.class))).thenReturn(commandOutput);
-
-//        jvmService.deleteJvmWindowsService(controlJvmRequest, mockJvm, mockUser);
-        verify(mockJvmControlService).controlJvm(eq(controlJvmRequest), eq(mockUser));
-    }
-
-    @Test(expected = InternalErrorException.class)
-    public void testDeleteJvmWindowsServiceFailsForOtherErrorCode() {
-        Jvm mockJvm = mock(Jvm.class);
-        ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>(123L), JvmControlOperation.DELETE_SERVICE);
-        CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(1111), "", "Fail some other reason than service does not exist");
-
-        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        when(mockJvm.getJvmName()).thenReturn("jvm-name-delete-service");
-        when(mockJvmControlService.controlJvm(eq(controlJvmRequest), any(User.class))).thenReturn(commandOutput);
-
-//        jvmService.deleteJvmWindowsService(controlJvmRequest, mockJvm, mockUser);
-        verify(mockJvmControlService).controlJvm(eq(controlJvmRequest), eq(mockUser));
-    }
-
-    @Test
     public void testGetAll() {
 
         jvmService.getJvms();
@@ -658,6 +630,10 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
 
         when(mockResourceService.generateResourceGroup()).thenReturn(mockResourceGroup);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), anyObject(), any(ResourceGeneratorType.class))).thenReturn("<server>some xml</server>");
+
+        final List<String> templateNames = new ArrayList<>();
+        templateNames.add("setenv.bat");
+        when(mockJvmPersistenceService.getResourceTemplateNames(anyString())).thenReturn(templateNames);
 
         Jvm response = jvmService.generateAndDeployJvm(mockJvm.getJvmName(), mockUser);
         assertEquals(response.getJvmName(), mockJvm.getJvmName());
