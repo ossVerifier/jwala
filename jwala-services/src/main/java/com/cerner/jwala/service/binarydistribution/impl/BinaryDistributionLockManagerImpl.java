@@ -31,7 +31,7 @@ public class BinaryDistributionLockManagerImpl implements BinaryDistributionLock
     }
 
     @Override
-    public synchronized void writeUnlock(String resourceName) {
+    public void writeUnlock(String resourceName) {
         if (binariesWriteLocks.containsKey(resourceName)) {
             binariesWriteLocks.get(resourceName).writeLock().unlock();
             LOGGER.info("Removed write lock for resource {}", resourceName);
