@@ -1,11 +1,13 @@
 package com.cerner.jwala.service.balancermanager;
 
+import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.balancermanager.BalancerManagerState;
-import com.cerner.jwala.common.domain.model.balancermanager.WorkerStatusType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
+import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
-import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
+import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHtmlParser;
@@ -17,45 +19,25 @@ import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
-import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.message.BasicNameValuePair;
-import org.junit.After;
+import org.apache.openjpa.persistence.NoResultException;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.client.ClientHttpResponse;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.net.ConnectException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
-import static com.cerner.jwala.common.domain.model.id.Identifier.id;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.MockitoAnnotations.initMocks;
 
-@Ignore
-// TODO 1/23/2017: Fix me!!!
-public class BalancemanagerServiceImplTest {
+public class BalanceManagerServiceImplTest {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(BalancemanagerServiceImplTest.class);
-
-    private BalancerManagerServiceImpl balancerManagerServiceImpl;
+    private BalancerManagerService balanceManagerService;
 
     @Mock
     private GroupService mockGroupService;
@@ -73,735 +55,445 @@ public class BalancemanagerServiceImplTest {
     private ClientFactoryHelper mockClientFactoryHelper;
 
     @Mock
-    private HistoryFacadeService mockHistoryFacadeService;
+    private BalancerManagerHtmlParser mockBalancerManagerHtmlParser;
+
+    @Mock
+    private BalancerManagerXmlParser mockBalancerManagerXmlParser;
 
     @Mock
     private BalancerManagerHttpClient mockBalancerManagerHttpClient;
 
     @Mock
-    private HttpsURLConnection mockHttpsURLConnection1;
-
-    @Mock
-    private HttpsURLConnection mockHttpsURLConnection2;
-
-    private BalancerManagerHtmlParser balancerManagerHtmlParser = new BalancerManagerHtmlParser();
-    private BalancerManagerXmlParser balancerManagerXmlParser = new BalancerManagerXmlParser(mockJvmService);
+    private HistoryFacadeService mockHistoryFacadeService;
 
     @Before
     public void setup() {
-        MockitoAnnotations.initMocks(this);
-        this.balancerManagerServiceImpl = new BalancerManagerServiceImpl(mockGroupService, mockApplicationService, mockWebServerService, mockJvmService,
-                mockClientFactoryHelper, balancerManagerHtmlParser, new BalancerManagerXmlParser(mockJvmService), mockBalancerManagerHttpClient, mockHistoryFacadeService) {
-            public void sendMessage(final WebServer webServer, final String message) {
-
-            }
-        };
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
-        this.balancerManagerXmlParser = new BalancerManagerXmlParser(mockJvmService);
-    }
-
-    @After
-    public void tearDown() {
-        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+        initMocks(this);
+        reset(mockBalancerManagerHtmlParser);
+        balanceManagerService = new BalancerManagerServiceImpl(mockGroupService, mockApplicationService, mockWebServerService,
+                mockJvmService, mockClientFactoryHelper, mockBalancerManagerHtmlParser, mockBalancerManagerXmlParser,
+                mockBalancerManagerHttpClient, mockHistoryFacadeService);
     }
 
     @Test
-    public void testGetNVP() {
-        assertEquals(4, balancerManagerServiceImpl.getNvp("myWorkerUrl", "", "").size());
+    public void testDrainUserGroup() throws Exception {
+        final Group mockGroup = mock(Group.class);
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
+
+        final List<WebServer> webServerList = new ArrayList<>();
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockWebServer.getName()).thenReturn("webServer1");
+        when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_REACHABLE);
+        webServerList.add(mockWebServer);
+
+        when(mockWebServerService.isStarted(mockWebServer)).thenReturn(true);
+
+        when(mockWebServerService.findWebServers(any(Identifier.class))).thenReturn(webServerList);
+
+        final HttpsURLConnection mockHttpsUrlConnection = mock(HttpsURLConnection.class);
+        when(mockHttpsUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
+        when(mockClientFactoryHelper.getHttpsURLConnection(anyString())).thenReturn(mockHttpsUrlConnection);
+
+        final Map<String, String> balancerMap = new HashMap<>();
+        balancerMap.put("balKey", "balVal");
+        when(mockBalancerManagerHtmlParser.findBalancers(anyString())).thenReturn(balancerMap);
+
+        final Map<String, String> workerMap = new HashMap<>();
+        workerMap.put("https://usmlvv1cds0049:9101/hct", "any");
+        final List<Application> appList = new ArrayList<>();
+        final Application mockApp = mock(Application.class);
+        final Set<Jvm> jvmSet = new HashSet<>();
+        final Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getJvmName()).thenReturn("jvm1");
+        when(mockJvm.getHostName()).thenReturn("host");
+        jvmSet.add(mockJvm);
+        when(mockGroup.getJvms()).thenReturn(jvmSet);
+        when(mockApp.getGroup()).thenReturn(mockGroup);
+        when(mockApp.getWebAppContext()).thenReturn("/hct");
+        when(mockApp.isSecure()).thenReturn(true); // https
+        appList.add(mockApp);
+        when(mockApplicationService.getApplications()).thenReturn(appList);
+
+        when(mockBalancerManagerXmlParser.getWorkers(any(Manager.class), anyString())).thenReturn(workerMap);
+
+        final CloseableHttpResponse mockCloseableHttpResponse = mock(CloseableHttpResponse.class);
+        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mock(StatusLine.class));
+
+        when(mockBalancerManagerHttpClient.doHttpClientPost(anyString(), anyList())).thenReturn(mockCloseableHttpResponse);
+
+        final BalancerManagerState balancerManagerState = balanceManagerService.drainUserGroup("group1", "webServer1", "user1");
+        assertEquals("group1", balancerManagerState.getGroups().get(0).getGroupName());
+        verify(mockBalancerManagerHtmlParser).getWorkerUrlPath(anyString(), anyString(), anyString(),
+                eq("https://usmlvv1cds0049:9101/hct"));
     }
 
     @Test
-    public void testDrainUserGroup() throws IOException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
-        final MockGroup mockGroup = new MockGroup();
-        when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroup());
-        when(mockApplicationService.findApplications(new Identifier<Group>(1L))).thenReturn(mockGroup.findApplications());
-        when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
-        WebServer webServer = mockGroup.getWebServer("myWebServerName");
-        when(mockWebServerService.isStarted(webServer)).thenReturn(true);
+    public void testDrainUserGroupNoWebServersSpecified() throws Exception {
+        final Group mockGroup = mock(Group.class);
 
-        ClientHttpResponse mockResponseHtml = mock(ClientHttpResponse.class);
-        when(mockResponseHtml.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager"))).thenReturn(mockResponseHtml);
-        when(mockResponseHtml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
 
-        ClientHttpResponse mockResponseHtml2 = mock(ClientHttpResponse.class);
-        when(mockResponseHtml2.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager"))).thenReturn(mockResponseHtml2);
-        when(mockResponseHtml2.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
+        final List<WebServer> webServerList = new ArrayList<>();
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockWebServer.getName()).thenReturn("webServer1");
+        when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_REACHABLE);
+        webServerList.add(mockWebServer);
 
-        ClientHttpResponse mockResponseXml = mock(ClientHttpResponse.class);
-        when(mockResponseXml.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml);
-        when(mockResponseXml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
+        when(mockWebServerService.isStarted(mockWebServer)).thenReturn(true);
 
-        ClientHttpResponse mockResponseXml2 = mock(ClientHttpResponse.class);
-        when(mockResponseXml2.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml2);
-        when(mockResponseXml2.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
+        when(mockWebServerService.findWebServers(any(Identifier.class))).thenReturn(webServerList);
 
-        CloseableHttpResponse mockResponse = mock(CloseableHttpResponse.class);
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(HttpStatus.OK.value());
-        when(mockResponse.getStatusLine()).thenReturn(mockStatusLine);
-        when(mockBalancerManagerHttpClient.doHttpClientPost(any(String.class), anyListOf(NameValuePair.class))).thenReturn(mockResponse);
+        final HttpsURLConnection mockHttpsUrlConnection = mock(HttpsURLConnection.class);
+        when(mockHttpsUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
+        when(mockClientFactoryHelper.getHttpsURLConnection(anyString())).thenReturn(mockHttpsUrlConnection);
 
-        ClientHttpResponse mockWorkerResponse = mock(ClientHttpResponse.class);
-        when(mockWorkerResponse.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
+        final Map<String, String> balancerMap = new HashMap<>();
+        balancerMap.put("balKey", "balVal");
+        when(mockBalancerManagerHtmlParser.findBalancers(anyString())).thenReturn(balancerMap);
 
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockWorkerResponse.getBody()).thenReturn(new ByteArrayInputStream(getWorkerHtml().getBytes()));
+        final Map<String, String> workerMap = new HashMap<>();
+        workerMap.put("https://usmlvv1cds0049:9101/hct", "any");
+        final List<Application> appList = new ArrayList<>();
+        final Application mockApp = mock(Application.class);
+        final Set<Jvm> jvmSet = new HashSet<>();
+        final Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getJvmName()).thenReturn("jvm1");
+        when(mockJvm.getHostName()).thenReturn("host");
+        jvmSet.add(mockJvm);
+        when(mockGroup.getJvms()).thenReturn(jvmSet);
+        when(mockApp.getGroup()).thenReturn(mockGroup);
+        when(mockApp.getWebAppContext()).thenReturn("/hct");
+        when(mockApp.isSecure()).thenReturn(true); // https
+        appList.add(mockApp);
+        when(mockApplicationService.getApplications()).thenReturn(appList);
 
-        BalancerManagerState balancerManagerState = balancerManagerServiceImpl.drainUserGroup("mygroupName", "", getUser());
-        List<BalancerManagerState.GroupDrainStatus> groupDrainStatusList = balancerManagerState.getGroups();
-        for (BalancerManagerState.GroupDrainStatus groupDrainStatus : groupDrainStatusList) {
-            System.out.println(groupDrainStatus.getwebServers().size());
-            assertEquals(2, groupDrainStatus.getwebServers().size());
-        }
+        when(mockBalancerManagerXmlParser.getWorkers(any(Manager.class), anyString())).thenReturn(workerMap);
+
+        final CloseableHttpResponse mockCloseableHttpResponse = mock(CloseableHttpResponse.class);
+        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mock(StatusLine.class));
+
+        when(mockBalancerManagerHttpClient.doHttpClientPost(anyString(), anyList())).thenReturn(mockCloseableHttpResponse);
+
+        final BalancerManagerState balancerManagerState = balanceManagerService.drainUserGroup("group1", "", "user1");
+        assertEquals("group1", balancerManagerState.getGroups().get(0).getGroupName());
+        verify(mockBalancerManagerHtmlParser).getWorkerUrlPath(anyString(), anyString(), anyString(),
+                eq("https://usmlvv1cds0049:9101/hct"));
     }
 
     @Test
-    public void testDrainUserWebServer() throws IOException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
-        final MockGroup mockGroup = new MockGroup();
+    public void testDrainUserWebServerHttps() throws Exception {
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockWebServerService.getWebServer(eq("webServer1"))).thenReturn(mockWebServer);
+        when(mockWebServerService.isStarted(mockWebServer)).thenReturn(true);
+        when(mockJvmService.getJvm(eq("jvm1"))).thenReturn(mock(Jvm.class));
 
-        when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroup());
-        when(mockApplicationService.findApplications(new Identifier<Group>(1L))).thenReturn(mockGroup.findApplications());
-        when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
-        when(mockWebServerService.getWebServer("myWebServerName")).thenReturn(mockGroup.getWebServer("myWebServerName"));
-        WebServer webServer = mockGroup.getWebServer("myWebServerName");
-        when(mockWebServerService.isStarted(webServer)).thenReturn(true);
+        final HttpsURLConnection mockHttpsUrlConnection = mock(HttpsURLConnection.class);
+        when(mockHttpsUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
+        when(mockClientFactoryHelper.getHttpsURLConnection(anyString())).thenReturn(mockHttpsUrlConnection);
 
-        ClientHttpResponse mockResponseHtml = mock(ClientHttpResponse.class);
-        when(mockResponseHtml.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(any(URI.class))).thenReturn(mockResponseHtml);
+        final Map<String, String> balancerMap = new HashMap<>();
+        balancerMap.put("balKey", "balVal");
+        when(mockBalancerManagerHtmlParser.findBalancers(anyString())).thenReturn(balancerMap);
 
-        when(mockResponseHtml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
-        ClientHttpResponse mockResponseXml = mock(ClientHttpResponse.class);
-        when(mockResponseXml.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml);
-        when(mockResponseXml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
+        final Map<String, String> workerMap = new HashMap<>();
+        workerMap.put("https://usmlvv1cds0049:9101/hct", "any");
+        final List<Application> appList = new ArrayList<>();
+        final Application mockApp = mock(Application.class);
+        final Group mockGroup = mock(Group.class);
+        final Set<Jvm> jvmSet = new HashSet<>();
+        final Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getJvmName()).thenReturn("jvm1");
+        when(mockJvm.getHostName()).thenReturn("host");
+        jvmSet.add(mockJvm);
+        when(mockGroup.getJvms()).thenReturn(jvmSet);
+        when(mockApp.getGroup()).thenReturn(mockGroup);
+        when(mockApp.getWebAppContext()).thenReturn("/hct");
+        when(mockApp.isSecure()).thenReturn(true); // https
+        appList.add(mockApp);
+        when(mockApplicationService.getApplications()).thenReturn(appList);
 
-        CloseableHttpResponse mockResponse = mock(CloseableHttpResponse.class);
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(HttpStatus.OK.value());
-        when(mockResponse.getStatusLine()).thenReturn(mockStatusLine);
+        when(mockBalancerManagerXmlParser.getJvmWorker(any(Manager.class), anyString(), anyString())).thenReturn(workerMap);
 
-        ClientHttpResponse mockWorkerResponse = mock(ClientHttpResponse.class);
-        when(mockWorkerResponse.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockWorkerResponse.getBody()).thenReturn(new ByteArrayInputStream(getWorkerHtml().getBytes()));
+        final CloseableHttpResponse mockCloseableHttpResponse = mock(CloseableHttpResponse.class);
+        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mock(StatusLine.class));
 
-        when(mockBalancerManagerHttpClient.doHttpClientPost(any(String.class), anyListOf(NameValuePair.class))).thenReturn(mockResponse);
-        when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
-        BalancerManagerState balancerManagerState = balancerManagerServiceImpl.drainUserWebServer("mygroupName", "myWebServerName", "", getUser());
-        List<BalancerManagerState.GroupDrainStatus> groupDrainStatusList = balancerManagerState.getGroups();
+        when(mockBalancerManagerHttpClient.doHttpClientPost(anyString(), anyList())).thenReturn(mockCloseableHttpResponse);
 
-        assertEquals(1, groupDrainStatusList.size());
-        for (BalancerManagerState.GroupDrainStatus groupDrainStatus : groupDrainStatusList) {
-            System.out.println(groupDrainStatus.getwebServers().size());
-            assertEquals(1, groupDrainStatus.getwebServers().size());
-            for (BalancerManagerState.GroupDrainStatus.WebServerDrainStatus webServerDrainStatus : groupDrainStatus.getwebServers()) {
-                System.out.println(webServerDrainStatus.getjvms().size());
-                assertEquals(6, webServerDrainStatus.getjvms().size());
-                for (BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus jvmDrainStatus : webServerDrainStatus.getjvms()) {
-                    System.out.println(jvmDrainStatus.getJvmName() + " " + jvmDrainStatus);
-                }
-            }
-        }
+        final BalancerManagerState balancerManagerState = balanceManagerService.drainUserWebServer("group1", "webServer1", "jvm1", "user1");
+        assertEquals("group1", balancerManagerState.getGroups().get(0).getGroupName());
+        verify(mockBalancerManagerHtmlParser).getWorkerUrlPath(anyString(), anyString(), anyString(),
+                eq("https://usmlvv1cds0049:9101/hct"));
     }
 
     @Test
-    public void testDrainUserWebServerWithJvmName() throws IOException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
-        final MockGroup mockGroup = new MockGroup();
+    public void testDrainUserWebServerHttp() throws Exception {
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockWebServerService.getWebServer(eq("webServer1"))).thenReturn(mockWebServer);
+        when(mockWebServerService.isStarted(mockWebServer)).thenReturn(true);
+        when(mockJvmService.getJvm(eq("jvm1"))).thenReturn(mock(Jvm.class));
 
-        when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroup());
-        when(mockApplicationService.findApplications(new Identifier<Group>(1L))).thenReturn(mockGroup.findApplications());
-        when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
-        when(mockWebServerService.getWebServer("myWebServerName")).thenReturn(mockGroup.getWebServer("myWebServerName"));
-        WebServer webServer = mockGroup.getWebServer("myWebServerName");
-        when(mockWebServerService.isStarted(webServer)).thenReturn(true);
+        final HttpsURLConnection mockHttpsUrlConnection = mock(HttpsURLConnection.class);
+        when(mockHttpsUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
+        when(mockClientFactoryHelper.getHttpsURLConnection(anyString())).thenReturn(mockHttpsUrlConnection);
 
-        ClientHttpResponse mockResponseHtml = mock(ClientHttpResponse.class);
-        when(mockResponseHtml.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(any(URI.class))).thenReturn(mockResponseHtml);
+        final Map<String, String> balancerMap = new HashMap<>();
+        balancerMap.put("balKey", "balVal");
+        when(mockBalancerManagerHtmlParser.findBalancers(anyString())).thenReturn(balancerMap);
 
-        when(mockResponseHtml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
-        ClientHttpResponse mockResponseXml = mock(ClientHttpResponse.class);
-        when(mockResponseXml.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml);
-        when(mockResponseXml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
+        final Map<String, String> workerMap = new HashMap<>();
+        workerMap.put("http://usmlvv1cds0049:9101/hct", "any");
+        final List<Application> appList = new ArrayList<>();
+        final Application mockApp = mock(Application.class);
+        final Group mockGroup = mock(Group.class);
+        final Set<Jvm> jvmSet = new HashSet<>();
+        final Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getJvmName()).thenReturn("jvm1");
+        when(mockJvm.getHostName()).thenReturn("host");
+        jvmSet.add(mockJvm);
+        when(mockGroup.getJvms()).thenReturn(jvmSet);
+        when(mockApp.getGroup()).thenReturn(mockGroup);
+        when(mockApp.getWebAppContext()).thenReturn("/hct");
+        when(mockApp.isSecure()).thenReturn(false); // http
+        appList.add(mockApp);
+        when(mockApplicationService.getApplications()).thenReturn(appList);
 
-        CloseableHttpResponse mockResponse = mock(CloseableHttpResponse.class);
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(HttpStatus.OK.value());
-        when(mockResponse.getStatusLine()).thenReturn(mockStatusLine);
+        when(mockBalancerManagerXmlParser.getJvmWorker(any(Manager.class), anyString(), anyString())).thenReturn(workerMap);
 
-        ClientHttpResponse mockWorkerResponse = mock(ClientHttpResponse.class);
-        when(mockWorkerResponse.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockWorkerResponse.getBody()).thenReturn(new ByteArrayInputStream(getWorkerHtml().getBytes()));
+        final CloseableHttpResponse mockCloseableHttpResponse = mock(CloseableHttpResponse.class);
+        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mock(StatusLine.class));
 
-        when(mockBalancerManagerHttpClient.doHttpClientPost(any(String.class), anyListOf(NameValuePair.class))).thenReturn(mockResponse);
-        when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
-        when(mockApplicationService.getApplications()).thenReturn(mockGroup.getApplications());
+        when(mockBalancerManagerHttpClient.doHttpClientPost(anyString(), anyList())).thenReturn(mockCloseableHttpResponse);
 
-        BalancerManagerState balancerManagerState = balancerManagerServiceImpl.drainUserWebServer("mygroupName", "myWebServerName", "jvmname", getUser());
-        List<BalancerManagerState.GroupDrainStatus> groupDrainStatusList = balancerManagerState.getGroups();
-        assertEquals(1, groupDrainStatusList.size());
-        for (BalancerManagerState.GroupDrainStatus groupDrainStatus : groupDrainStatusList) {
-            System.out.println(groupDrainStatus.getwebServers().size());
-            assertEquals(1, groupDrainStatus.getwebServers().size());
-            for (BalancerManagerState.GroupDrainStatus.WebServerDrainStatus webServerDrainStatus : groupDrainStatus.getwebServers()) {
-                System.out.println(webServerDrainStatus.getjvms().size());
-                assertEquals(1, webServerDrainStatus.getjvms().size());
-                for (BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus jvmDrainStatus : webServerDrainStatus.getjvms()) {
-                    System.out.println(jvmDrainStatus.getJvmName() + " " + jvmDrainStatus);
-                }
-            }
-        }
+        final BalancerManagerState balancerManagerState = balanceManagerService.drainUserWebServer("group1", "webServer1", "jvm1", "user1");
+        System.out.println(balancerManagerState);
+        assertEquals("group1", balancerManagerState.getGroups().get(0).getGroupName());
+        verify(mockBalancerManagerHtmlParser).getWorkerUrlPath(anyString(), anyString(), anyString(),
+                eq("http://usmlvv1cds0049:9101/hct"));
     }
 
-
-    @Test
-    public void testGetWorkerXml() {
-        Manager manager = balancerManagerXmlParser.getWorkerXml(getBalancerManagerResponseXml());
-        assertEquals(2, manager.getBalancers().size());
+    @Test(expected = InternalErrorException.class)
+    public void testDrainUserWebServerJvmNotFound() throws Exception {
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockWebServerService.getWebServer(eq("webServer1"))).thenReturn(mockWebServer);
+        when(mockWebServerService.isStarted(mockWebServer)).thenReturn(true);
+        when(mockJvmService.getJvm("jvm1")).thenThrow(NoResultException.class);
+        balanceManagerService.drainUserWebServer("group1", "webServer1", "jvm1", "user1");
     }
 
     @Test
-    public void testGetWorkers() {
-        Manager manager = balancerManagerXmlParser.getWorkerXml(getBalancerManagerResponseXml());
-        Map<String, String> workers = balancerManagerXmlParser.getWorkers(manager, "lb-health-check-4.0");
-        assertEquals(6, workers.size());
+    public void testDrainUserWebServerNoJvmsSpecified() throws Exception {
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockWebServerService.getWebServer(eq("webServer1"))).thenReturn(mockWebServer);
+        when(mockWebServerService.isStarted(mockWebServer)).thenReturn(true);
+        when(mockJvmService.getJvm(eq("jvm1"))).thenReturn(mock(Jvm.class));
+
+        final HttpsURLConnection mockHttpsUrlConnection = mock(HttpsURLConnection.class);
+        when(mockHttpsUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
+        when(mockClientFactoryHelper.getHttpsURLConnection(anyString())).thenReturn(mockHttpsUrlConnection);
+
+        final Map<String, String> balancerMap = new HashMap<>();
+        balancerMap.put("balKey", "balVal");
+        when(mockBalancerManagerHtmlParser.findBalancers(anyString())).thenReturn(balancerMap);
+
+        final Map<String, String> workerMap = new HashMap<>();
+        workerMap.put("https://usmlvv1cds0049:9101/hct", "any");
+        final List<Application> appList = new ArrayList<>();
+        final Application mockApp = mock(Application.class);
+        when(mockApp.getWebAppContext()).thenReturn("/hct");
+        appList.add(mockApp);
+        when(mockApplicationService.getApplications()).thenReturn(appList);
+
+        when(mockBalancerManagerXmlParser.getWorkers(any(Manager.class), anyString())).thenReturn(workerMap);
+
+        final CloseableHttpResponse mockCloseableHttpResponse = mock(CloseableHttpResponse.class);
+        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mock(StatusLine.class));
+
+        when(mockBalancerManagerHttpClient.doHttpClientPost(anyString(), anyList())).thenReturn(mockCloseableHttpResponse);
+
+        final BalancerManagerState balancerManagerState = balanceManagerService.drainUserWebServer("group1", "webServer1", "", "user1");
+        assertEquals("group1", balancerManagerState.getGroups().get(0).getGroupName());
+        verify(mockBalancerManagerHtmlParser).getWorkerUrlPath(anyString(), anyString(), anyString(),
+                eq("https://usmlvv1cds0049:9101/hct"));
     }
 
     @Test
-    public void testGetWorkersMulti() {
-        Manager manager = balancerManagerXmlParser.getWorkerXml(getBalancerManagerResponseXmlMulti());
-        Map<String, String> workers = balancerManagerXmlParser.getWorkers(manager, "lb-slpa-4.0.0800.02");
-        assertEquals(2, workers.size());
+    public void testDrainUserJvm() throws Exception {
+        final Jvm mockJvm = mock(Jvm.class);
+        final Set<Group> groupSet = new HashSet<>();
+        final Group mockGroup = mock(Group.class);
+        groupSet.add(mockGroup);
+        when(mockJvm.getGroups()).thenReturn(groupSet);
+        when(mockJvmService.getJvm(eq("jvm1"))).thenReturn(mockJvm);
+
+        final List<WebServer> webServerList = new ArrayList<>();
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockWebServer.getName()).thenReturn("webServer1");
+        when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_REACHABLE);
+        webServerList.add(mockWebServer);
+
+        when(mockWebServerService.isStarted(mockWebServer)).thenReturn(true);
+
+        when(mockBalancerManagerHtmlParser.getUrlPath(anyString())).thenReturn("any");
+
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
+
+        final HttpsURLConnection mockHttpsUrlConnection = mock(HttpsURLConnection.class);
+        when(mockHttpsUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
+        when(mockClientFactoryHelper.getHttpsURLConnection(anyString())).thenReturn(mockHttpsUrlConnection);
+
+        when(mockWebServerService.findWebServers(any(Identifier.class))).thenReturn(webServerList);
+
+        final Map<String, String> balancerMap = new HashMap<>();
+        balancerMap.put("balKey", "balVal");
+        when(mockBalancerManagerHtmlParser.findBalancers(anyString())).thenReturn(balancerMap);
+
+        final Map<String, String> workerMap = new HashMap<>();
+        workerMap.put("https://usmlvv1cds0049:9101/hct", "any");
+        final List<Application> appList = new ArrayList<>();
+        final Application mockApp = mock(Application.class);
+        final Set<Jvm> jvmSet = new HashSet<>();
+        when(mockJvm.getJvmName()).thenReturn("jvm1");
+        when(mockJvm.getHostName()).thenReturn("host");
+        jvmSet.add(mockJvm);
+        when(mockGroup.getJvms()).thenReturn(jvmSet);
+        when(mockApp.getGroup()).thenReturn(mockGroup);
+        when(mockApp.getWebAppContext()).thenReturn("/hct");
+        when(mockApp.isSecure()).thenReturn(true); // https
+        appList.add(mockApp);
+        when(mockApplicationService.getApplications()).thenReturn(appList);
+
+        when(mockBalancerManagerXmlParser.getJvmWorker(any(Manager.class), anyString(), anyString())).thenReturn(workerMap);
+
+        final CloseableHttpResponse mockCloseableHttpResponse = mock(CloseableHttpResponse.class);
+        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mock(StatusLine.class));
+
+        when(mockBalancerManagerHttpClient.doHttpClientPost(anyString(), anyList())).thenReturn(mockCloseableHttpResponse);
+
+        final BalancerManagerState balancerManagerState = balanceManagerService.drainUserJvm("jvm1", "user1");
+        System.out.println(balancerManagerState);
+        assertEquals("webServer1", balancerManagerState.getGroups().get(0).getwebServers().get(0).getWebServerName());
+        verify(mockBalancerManagerHtmlParser).getWorkerUrlPath(anyString(), anyString(), anyString(),
+                eq("https://usmlvv1cds0049:9101/hct"));
     }
 
     @Test
-    public void testGetGroupDrainStatus() throws IOException, URISyntaxException {
-        final MockGroup mockGroup = new MockGroup();
-        when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroup());
-        when(mockApplicationService.findApplications(new Identifier<Group>(1L))).thenReturn(mockGroup.findApplications());
-        when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
-        WebServer webServer = mockGroup.getWebServer("myWebServerName");
-        when(mockWebServerService.isStarted(webServer)).thenReturn(true);
+    public void testDrainUserGroupJvm() throws Exception {
+        final Group mockGroup = mock(Group.class);
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
+        when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
 
-        // ClientHttpResponse mockResponseHtml = mock(ClientHttpResponse.class);
-        // when(mockResponseHtml.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.getHttpsURLConnection("https://localhost/balancer-manager")).thenReturn(mockHttpsURLConnection1);
-        when(mockHttpsURLConnection1.getInputStream()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
+        final Set<WebServer> webServerSet = new HashSet<>();
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockWebServer.getName()).thenReturn("webServer1");
+        when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_REACHABLE);
+        webServerSet.add(mockWebServer);
 
-        // ClientHttpResponse mockResponseHtml2 = mock(ClientHttpResponse.class);
-        // when(mockResponseHtml2.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.getHttpsURLConnection("https://localhost2/balancer-manager")).thenReturn(mockHttpsURLConnection2);
-        when(mockHttpsURLConnection2.getInputStream()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
+        when(mockWebServerService.isStarted(mockWebServer)).thenReturn(true);
 
-        // ClientHttpResponse mockResponseXml = mock(ClientHttpResponse.class);
-        // when(mockResponseXml.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.getHttpsURLConnection("https://localhost/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357")).thenReturn(mockHttpsURLConnection1);
-        when(mockHttpsURLConnection1.getInputStream()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
+        final Set<Jvm> jvmSet = new HashSet<>();
+        final Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getJvmName()).thenReturn("jvm1");
+        when(mockJvm.getHostName()).thenReturn("host");
+        jvmSet.add(mockJvm);
+        when(mockGroup.getJvms()).thenReturn(jvmSet);
 
-        // ClientHttpResponse mockResponseXml2 = mock(ClientHttpResponse.class);
-        // when(mockResponseXml2.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.getHttpsURLConnection("https://localhost2/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357")).thenReturn(mockHttpsURLConnection2);
-        when(mockHttpsURLConnection2.getInputStream()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
+        when(mockGroup.getWebServers()).thenReturn(webServerSet);
 
-        ClientHttpResponse mockWorkerResponse = mock(ClientHttpResponse.class);
-        when(mockWorkerResponse.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
+        final HttpsURLConnection mockHttpsUrlConnection = mock(HttpsURLConnection.class);
+        when(mockHttpsUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
+        when(mockClientFactoryHelper.getHttpsURLConnection(anyString())).thenReturn(mockHttpsUrlConnection);
 
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockWorkerResponse.getBody()).thenReturn(new ByteArrayInputStream(getWorkerHtml().getBytes()));
+        final Map<String, String> balancerMap = new HashMap<>();
+        balancerMap.put("balKey", "balVal");
+        when(mockBalancerManagerHtmlParser.findBalancers(anyString())).thenReturn(balancerMap);
 
-        BalancerManagerState balancerManagerState = balancerManagerServiceImpl.getGroupDrainStatus("mygroupName", getUser());
-        List<BalancerManagerState.GroupDrainStatus> groupDrainStatusList = balancerManagerState.getGroups();
-        assertEquals(1, groupDrainStatusList.size());
+        final Map<String, String> workerMap = new HashMap<>();
+        workerMap.put("https://usmlvv1cds0049:9101/hct", "any");
+        final List<Application> appList = new ArrayList<>();
+        final Application mockApp = mock(Application.class);
+        when(mockJvm.getJvmName()).thenReturn("jvm1");
+        when(mockJvm.getHostName()).thenReturn("host");
+        jvmSet.add(mockJvm);
+        when(mockGroup.getJvms()).thenReturn(jvmSet);
+        when(mockApp.getGroup()).thenReturn(mockGroup);
+        when(mockApp.getWebAppContext()).thenReturn("/hct");
+        when(mockApp.isSecure()).thenReturn(true); // https
+        appList.add(mockApp);
+        when(mockApplicationService.getApplications()).thenReturn(appList);
+        when(mockBalancerManagerXmlParser.getJvmWorker(any(Manager.class), anyString(), anyString())).thenReturn(workerMap);
 
-        for (BalancerManagerState.GroupDrainStatus groupDrainStatus : groupDrainStatusList) {
-            LOGGER.info(">>> Group drain status web server count = {}", groupDrainStatus.getwebServers().size());
-            assertEquals(2, groupDrainStatus.getwebServers().size());
-            for (BalancerManagerState.GroupDrainStatus.WebServerDrainStatus webServerDrainStatus : groupDrainStatus.getwebServers()) {
-                LOGGER.info(">>> Web server drain status jvm count = {}", webServerDrainStatus.getjvms().size());
-                // assertEquals(6, webServerDrainStatus.getjvms().size());
-            }
-        }
+        final CloseableHttpResponse mockCloseableHttpResponse = mock(CloseableHttpResponse.class);
+        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mock(StatusLine.class));
 
+        when(mockBalancerManagerHttpClient.doHttpClientPost(anyString(), anyList())).thenReturn(mockCloseableHttpResponse);
+
+        final BalancerManagerState balancerManagerState = balanceManagerService.drainUserGroupJvm("group1", "jvm1", "user1");
+        assertEquals("group1", balancerManagerState.getGroups().get(0).getGroupName());
+        verify(mockBalancerManagerHtmlParser).getWorkerUrlPath(anyString(), anyString(), anyString(),
+                eq("https://usmlvv1cds0049:9101/hct"));
     }
 
     @Test
-    public void testManager() {
-        Manager manager = balancerManagerXmlParser.getWorkerXml(getBalancerManagerResponseXml());
-        System.out.println(manager.getBalancers().size());
-        assertEquals(2, manager.getBalancers().size());
-        List<Manager.Balancer> balancerList = manager.getBalancers();
-        for (Manager.Balancer balancer : balancerList) {
-            System.out.println(balancer.toString());
-            for (Manager.Balancer.Worker worker : balancer.getWorkers()) {
-                System.out.println(worker.toString());
-            }
-        }
-    }
+    public void testGetGroupDrainStatus() throws Exception {
+        final Group mockGroup = mock(Group.class);
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
 
-    @Test
-    public void testGetRequireWebServers() {
-        final String emptyString = "";
-        assertEquals(0, balancerManagerServiceImpl.getRequireWebServers(emptyString).length);
-        final String goodString1 = "webSever1";
-        assertEquals(1, balancerManagerServiceImpl.getRequireWebServers(goodString1).length);
-        final String goodString2 = "webServer1, webServer2";
-        assertEquals(2, balancerManagerServiceImpl.getRequireWebServers(goodString2).length);
-        final String goodString3 = "asdfafafa afafadfafaf;adfafafdaf";
-        assertEquals(1, balancerManagerServiceImpl.getRequireWebServers(goodString3).length);
-    }
+        final Set<WebServer> webServerSet = new HashSet<>();
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockWebServer.getName()).thenReturn("webServer1");
+        when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_REACHABLE);
+        webServerSet.add(mockWebServer);
 
-    @Test
-    public void testFindMatchWebServers() {
-        final MockGroup mockGroup = new MockGroup();
-        Set<Group> groups = new HashSet<>();
-        groups.add(mockGroup.getGroup());
-        WebServer webServer1 = new WebServer(id(1L, WebServer.class), groups, "webServer1");
-        WebServer webServer2 = new WebServer(id(2L, WebServer.class), groups, "webServer2");
-        List<WebServer> webServers = new ArrayList<>();
-        webServers.add(webServer1);
-        webServers.add(webServer2);
-        String[] webServerArray = "webServer1, webServer2".split(",");
-        assertEquals(2, balancerManagerServiceImpl.findMatchWebServers(webServers, webServerArray).size());
-    }
+        when(mockWebServerService.isStarted(mockWebServer)).thenReturn(true);
 
-    @Test
-    public void testNotFindMatchWebServers() {
-        final MockGroup mockGroup = new MockGroup();
-        Set<Group> groups = new HashSet<>();
-        groups.add(mockGroup.getGroup());
-        WebServer webServer1 = new WebServer(id(1L, WebServer.class), groups, "webServer1");
-        WebServer webServer2 = new WebServer(id(2L, WebServer.class), groups, "webServer2");
-        List<WebServer> webServers = new ArrayList<>();
-        webServers.add(webServer1);
-        webServers.add(webServer2);
-        String[] webServerArray = "webServer3, webServer4".split(",");
-        try {
-            balancerManagerServiceImpl.findMatchWebServers(webServers, webServerArray);
-            fail();
-        } catch (Exception e) {
-            assertEquals("com.cerner.jwala.common.exception.InternalErrorException: webServer3, webServer4 cannot be found in the group", e.toString());
-        }
-    }
+        final List<WebServer> webServerList = new ArrayList<>();
 
-    @Test
-    public void testPartialFindMatchWebServers() {
-        final MockGroup mockGroup = new MockGroup();
-        Set<Group> groups = new HashSet<>();
-        groups.add(mockGroup.getGroup());
-        WebServer webServer1 = new WebServer(id(1L, WebServer.class), groups, "webServer1");
-        WebServer webServer2 = new WebServer(id(2L, WebServer.class), groups, "webServer2");
-        List<WebServer> webServers = new ArrayList<>();
-        webServers.add(webServer1);
-        webServers.add(webServer2);
-        String[] webServerArray = "webServer2".split(",");
-        assertEquals(1, balancerManagerServiceImpl.findMatchWebServers(webServers, webServerArray).size());
-    }
+        when(mockWebServer.getName()).thenReturn("webServer1");
+        when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_REACHABLE);
+        webServerList.add(mockWebServer);
 
-    @Test
-    public void testPartialFindMatchWebServers_PostMore() {
-        final MockGroup mockGroup = new MockGroup();
-        Set<Group> groups = new HashSet<>();
-        groups.add(mockGroup.getGroup());
-        WebServer webServer1 = new WebServer(id(1L, WebServer.class), groups, "webServer1");
-        List<WebServer> webServers = new ArrayList<>();
-        webServers.add(webServer1);
-        String[] webServerArray = "webServer1, webServer2".split(",");
-        try {
-            balancerManagerServiceImpl.findMatchWebServers(webServers, webServerArray);
-            fail();
-        } catch (Exception e) {
-            assertEquals("com.cerner.jwala.common.exception.InternalErrorException: webServer2 cannot be found in the group", e.toString());
-        }
-    }
+        when(mockWebServerService.isStarted(mockWebServer)).thenReturn(true);
 
-    @Test
-    public void testCheckStatus() {
-        final MockGroup mockGroup = new MockGroup();
-        Set<Group> groups = new HashSet<>();
-        groups.add(mockGroup.getGroup());
-        WebServer webServer = mockGroup.getWebServer("myWebServerName");
-        when(mockWebServerService.isStarted(webServer)).thenReturn(true);
-        balancerManagerServiceImpl.checkStatus(webServer);
-    }
+        when(mockBalancerManagerHtmlParser.getUrlPath(anyString())).thenReturn("any");
 
-    @Test
-    public void testCheckStatusFail() {
-        final MockGroup mockGroup = new MockGroup();
-        Set<Group> groups = new HashSet<>();
-        groups.add(mockGroup.getGroup());
-        WebServer webServer = mockGroup.getWebServer("myWebServerName");
-        when(mockWebServerService.isStarted(webServer)).thenReturn(false);
-        try {
-            balancerManagerServiceImpl.checkStatus(webServer);
-        } catch (Exception e) {
-            System.out.println(e.toString());
-            assertEquals("com.cerner.jwala.common.exception.InternalErrorException: The target Web Server myWebSererName must be STARTED before attempting to drain users", e.toString());
-        }
-    }
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
 
-    @Test
-    public void testCheckGroupStatus() {
-        final MockGroup mockGroup = new MockGroup();
-        when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroup());
-        when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
-        when(mockWebServerService.isStarted(any(WebServer.class))).thenReturn(true);
-        balancerManagerServiceImpl.checkGroupStatus(mockGroup.getGroup().getName());
-    }
+        final HttpsURLConnection mockHttpsUrlConnection = mock(HttpsURLConnection.class);
+        when(mockHttpsUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
+        when(mockClientFactoryHelper.getHttpsURLConnection(anyString())).thenReturn(mockHttpsUrlConnection);
 
-    @Test
-    public void testCheckGroupStatusFail() {
-        final MockGroup mockGroup = new MockGroup();
-        when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroup());
-        when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
-        when(mockWebServerService.isStarted(any(WebServer.class))).thenReturn(false);
-        try {
-            balancerManagerServiceImpl.checkGroupStatus(mockGroup.getGroup().getName());
-        } catch (Exception e) {
-            assertEquals("com.cerner.jwala.common.exception.InternalErrorException: The target Web Server myWebServerName in group mygroupName must be STARTED before attempting to drain users", e.toString());
-        }
-    }
+        when(mockWebServerService.findWebServers(any(Identifier.class))).thenReturn(webServerList);
 
-    @Test
-    public void testDoHttpClientPostFail() {
-        BalancerManagerHttpClient balancerManagerHttpClient = new BalancerManagerHttpClient();
-        try {
-            balancerManagerHttpClient.doHttpClientPost("https://localhost", getNvp());
-            fail();
-        }catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e instanceof ConnectException);
-        }
-    }
+        final Map<String, String> balancerMap = new HashMap<>();
+        balancerMap.put("balKey", "balVal");
+        when(mockBalancerManagerHtmlParser.findBalancers(anyString())).thenReturn(balancerMap);
 
-    @Test
-    public void testFindBalancers() {
-        final String content = getBalancerManagerResponseHtml();
-        Map<String, String> map = balancerManagerHtmlParser.findBalancers(content);
-        assertEquals(1, map.size());
-        assertEquals("7bbf520f-8454-7b47-8edc-d5ade6c31357", map.get("lb-health-check-4.0"));
-    }
+        final Map<String, String> workerMap = new HashMap<>();
+        workerMap.put("https://usmlvv1cds0049:9101/hct", "any");
+        final List<Application> appList = new ArrayList<>();
+        final Application mockApp = mock(Application.class);
+        final Set<Jvm> jvmSet = new HashSet<>();
+        final Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getJvmName()).thenReturn("jvm1");
+        when(mockJvm.getHostName()).thenReturn("host");
+        jvmSet.add(mockJvm);
+        when(mockGroup.getJvms()).thenReturn(jvmSet);
+        when(mockApp.getGroup()).thenReturn(mockGroup);
+        when(mockApp.getWebAppContext()).thenReturn("/hct");
+        when(mockApp.isSecure()).thenReturn(true); // https
+        appList.add(mockApp);
+        when(mockApplicationService.getApplications()).thenReturn(appList);
 
-    @Test
-    public void testFindBalancersMulti() {
-        final String content = getBalancerManagerResponseHtmlMulti();
-        Map<String, String> map = balancerManagerHtmlParser.findBalancers(content);
-        assertEquals(3, map.size());
-        assertEquals("6af7e4d6-531d-b343-95d4-99f2127609ad", map.get("lb-slpa-4.0.0800.02"));
-        assertEquals("c7a709c3-8bc5-af49-b894-a57c7ac55519", map.get("lb-slpa-ws-4.0.0800.02"));
-        assertEquals("a3f2dd40-8d20-e34e-9dec-6cfe264d87e2", map.get("ping"));
-    }
+        when(mockBalancerManagerXmlParser.getWorkers(any(Manager.class), anyString())).thenReturn(workerMap);
 
-    @Test
-    public void testFindWorkerStatus() {
-        assertEquals("Off", balancerManagerHtmlParser.getWorkerStatus(getWorkerHtml(), WorkerStatusType.IGNORE_ERRORS));
-        assertEquals("On", balancerManagerHtmlParser.getWorkerStatus(getWorkerHtml(), WorkerStatusType.DRAINING_MODE));
-        assertEquals("Off", balancerManagerHtmlParser.getWorkerStatus(getWorkerHtml(), WorkerStatusType.DISABLED));
-        assertEquals("Off", balancerManagerHtmlParser.getWorkerStatus(getWorkerHtml(), WorkerStatusType.HOT_STANDBY));
-    }
+        final CloseableHttpResponse mockCloseableHttpResponse = mock(CloseableHttpResponse.class);
+        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mock(StatusLine.class));
 
-    @Test
-    public void testFindApplicationNameByWorker() {
-        final MockGroup mockGroup = new MockGroup();
-        mockGroup.getGroup();
-        when(mockApplicationService.getApplications()).thenReturn(mockGroup.getApplications());
-        final String worker = "https://hostname:port/hct";
-        assertEquals("HEALTH-CHECK-4.0", balancerManagerServiceImpl.findApplicationNameByWorker(worker));
-    }
+        // when(mockBalancerManagerHttpClient.doHttpClientPost(anyString(), anyList())).thenReturn(mockCloseableHttpResponse);
 
-    @Test
-    public void testFindApplicationNameByWorkerMulti() {
-        final MockGroup mockGroup = new MockGroup();
-        mockGroup.getGroup();
-        when(mockApplicationService.getApplications()).thenReturn(mockGroup.getApplicationsMulti());
-        final String worker = "https://somehost0052:9111/slpa-test/slum/ws";
-        assertEquals("SLPA-WS-4.0.0800.02", balancerManagerServiceImpl.findApplicationNameByWorker(worker));
-    }
-
-    @Test
-    public void testFindJvmNameByWorker() {
-        final MockGroup mockGroup = new MockGroup();
-        mockGroup.getGroup();
-        when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
-        final String worker = "https://somehost0057:9101/mywebAppContext";
-        assertEquals("jvmname", balancerManagerXmlParser.findJvmNameByWorker(worker));
-    }
-
-    @Test
-    public void testFindJvmNameByWorkerAJP() {
-        final MockGroup mockGroup = new MockGroup();
-        mockGroup.getGroup();
-        when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
-        final String worker = "ajp://somehost0057:9103/mywebAppContext";
-        assertEquals("jvmname", balancerManagerXmlParser.findJvmNameByWorker(worker));
-    }
-
-    @Test
-    public void testFindJvmNameByWorkerNotFound() {
-        final MockGroup mockGroup = new MockGroup();
-        mockGroup.getGroup();
-        when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
-        final String worker = "xxxxx://localhost:9103/mywebAppContext";
-        assertEquals("", balancerManagerXmlParser.findJvmNameByWorker(worker));
-    }
-
-    @Test
-    public void testFindJvmUrl() {
-        final MockGroup mockGroup = new MockGroup();
-        mockGroup.getGroup();
-        when(mockApplicationService.getApplications()).thenReturn(mockGroup.getApplications());
-        assertEquals("https://somehost0057:9101/hct", balancerManagerServiceImpl.findJvmUrl("jvmname"));
-    }
-
-    @Test
-    public void testDrainUserJvm() throws IOException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
-        final MockGroup mockGroup = new MockGroup();
-        when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroup());
-        when(mockApplicationService.findApplications(new Identifier<Group>(1L))).thenReturn(mockGroup.findApplications());
-        when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
-        WebServer webServer = mockGroup.getWebServer("myWebServerName");
-        when(mockWebServerService.isStarted(webServer)).thenReturn(true);
-
-        ClientHttpResponse mockResponseHtml = mock(ClientHttpResponse.class);
-        when(mockResponseHtml.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager"))).thenReturn(mockResponseHtml);
-        when(mockResponseHtml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
-
-        ClientHttpResponse mockResponseHtml2 = mock(ClientHttpResponse.class);
-        when(mockResponseHtml2.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager"))).thenReturn(mockResponseHtml2);
-        when(mockResponseHtml2.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
-
-        ClientHttpResponse mockResponseXml = mock(ClientHttpResponse.class);
-        when(mockResponseXml.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml);
-        when(mockResponseXml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
-
-        ClientHttpResponse mockResponseXml2 = mock(ClientHttpResponse.class);
-        when(mockResponseXml2.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml2);
-        when(mockResponseXml2.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
-
-        CloseableHttpResponse mockResponse = mock(CloseableHttpResponse.class);
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(HttpStatus.OK.value());
-        when(mockResponse.getStatusLine()).thenReturn(mockStatusLine);
-        when(mockBalancerManagerHttpClient.doHttpClientPost(any(String.class), anyListOf(NameValuePair.class))).thenReturn(mockResponse);
-
-        ClientHttpResponse mockWorkerResponse = mock(ClientHttpResponse.class);
-        when(mockWorkerResponse.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
-
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockWorkerResponse.getBody()).thenReturn(new ByteArrayInputStream(getWorkerHtml().getBytes()));
-
-        when(mockJvmService.getJvm("jvmname")).thenReturn(mockGroup.getJvm("jvmname"));
-        when(mockApplicationService.getApplications()).thenReturn(mockGroup.getApplications());
-
-        BalancerManagerState balancerManagerState = balancerManagerServiceImpl.drainUserJvm("jvmname", getUser());
-
-        List<BalancerManagerState.GroupDrainStatus> groupDrainStatusList = balancerManagerState.getGroups();
-        assertEquals(1, groupDrainStatusList.size());
-        for (BalancerManagerState.GroupDrainStatus groupDrainStatus : groupDrainStatusList) {
-            System.out.println(groupDrainStatus.getwebServers().size());
-            assertEquals(2, groupDrainStatus.getwebServers().size());
-            for (BalancerManagerState.GroupDrainStatus.WebServerDrainStatus webServerDrainStatus : groupDrainStatus.getwebServers()) {
-                assertEquals(1, webServerDrainStatus.getjvms().size());
-            }
-        }
-    }
-
-    @Test
-    public void testDrainUserGroupJvm() throws IOException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
-        final MockGroup mockGroup = new MockGroup();
-        when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroup());
-        when(mockGroupService.getGroupWithWebServers(mockGroup.getGroup().getId())).thenReturn(mockGroup.getGroup());
-        when(mockApplicationService.findApplications(new Identifier<Group>(1L))).thenReturn(mockGroup.findApplications());
-        when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
-        WebServer webServer = mockGroup.getWebServer("myWebServerName");
-        when(mockWebServerService.isStarted(webServer)).thenReturn(true);
-
-        ClientHttpResponse mockResponseHtml = mock(ClientHttpResponse.class);
-        when(mockResponseHtml.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager"))).thenReturn(mockResponseHtml);
-        when(mockResponseHtml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
-
-        ClientHttpResponse mockResponseHtml2 = mock(ClientHttpResponse.class);
-        when(mockResponseHtml2.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager"))).thenReturn(mockResponseHtml2);
-        when(mockResponseHtml2.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
-
-        ClientHttpResponse mockResponseXml = mock(ClientHttpResponse.class);
-        when(mockResponseXml.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml);
-        when(mockResponseXml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
-
-        ClientHttpResponse mockResponseXml2 = mock(ClientHttpResponse.class);
-        when(mockResponseXml2.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml2);
-        when(mockResponseXml2.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
-
-        CloseableHttpResponse mockResponse = mock(CloseableHttpResponse.class);
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(HttpStatus.OK.value());
-        when(mockResponse.getStatusLine()).thenReturn(mockStatusLine);
-        when(mockBalancerManagerHttpClient.doHttpClientPost(any(String.class), anyListOf(NameValuePair.class))).thenReturn(mockResponse);
-
-        ClientHttpResponse mockWorkerResponse = mock(ClientHttpResponse.class);
-        when(mockWorkerResponse.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
-
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockWorkerResponse.getBody()).thenReturn(new ByteArrayInputStream(getWorkerHtml().getBytes()));
-
-        when(mockJvmService.getJvm("jvmname")).thenReturn(mockGroup.getJvm("jvmname"));
-        when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
-        when(mockApplicationService.getApplications()).thenReturn(mockGroup.getApplications());
-
-        BalancerManagerState balancerManagerState = balancerManagerServiceImpl.drainUserGroupJvm("mygroupName", "jvmname", getUser());
-
-        List<BalancerManagerState.GroupDrainStatus> groupDrainStatusList = balancerManagerState.getGroups();
-        assertEquals(1, groupDrainStatusList.size());
-        for (BalancerManagerState.GroupDrainStatus groupDrainStatus : groupDrainStatusList) {
-            System.out.println(groupDrainStatus.getwebServers().size());
-            assertEquals(1, groupDrainStatus.getwebServers().size());
-            for (BalancerManagerState.GroupDrainStatus.WebServerDrainStatus webServerDrainStatus : groupDrainStatus.getwebServers()) {
-                System.out.println(groupDrainStatus.getwebServers().toString());
-                assertEquals(1, webServerDrainStatus.getjvms().size());
-                for(BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus jvmDrainStatus : webServerDrainStatus.getjvms()){
-                    assertEquals("JvmDrainStatus{jvmName='jvmname', ignoreError='Off', drainingMode='On', disabled='Off', hotStandby='Off', appName='HEALTH-CHECK-4.0', workerUrl='https://somehost0057:9101/hct'}",
-                            jvmDrainStatus.toString());
-                }
-
-            }
-        }
-    }
-
-    private String getBalancerManagerResponseXml() {
-        final File httpdconfFile = new File("./src/test/resources/balancermanager/balancer-manager-response.xml");
-        String contents = "";
-        try {
-            byte[] bytes = Files.readAllBytes(httpdconfFile.toPath());
-            contents = new String(bytes, "UTF-8");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return contents;
-    }
-
-    private String getBalancerManagerResponseHtml() {
-        final File file = new File("./src/test/resources/balancermanager/balancer-manager-response.html");
-        String contents = "";
-        try {
-            byte[] bytes = Files.readAllBytes(file.toPath());
-            contents = new String(bytes, "UTF-8");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return contents;
-    }
-
-    private String getBalancerManagerResponseXmlMulti() {
-        final File file = new File("./src/test/resources/balancermanager/balancer-manager-response-multi.xml");
-        String contents = "";
-        try {
-            byte[] bytes = Files.readAllBytes(file.toPath());
-            contents = new String(bytes, "UTF-8");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return contents;
-    }
-
-    private String getBalancerManagerResponseHtmlMulti() {
-        final File file = new File("./src/test/resources/balancermanager/balancer-manager-response-multi.html");
-        String contents = "";
-        try {
-            byte[] bytes = Files.readAllBytes(file.toPath());
-            contents = new String(bytes, "UTF-8");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return contents;
-    }
-
-    private List<NameValuePair> getNvp() {
-        List<NameValuePair> nvp = new ArrayList<>();
-        nvp.add(new BasicNameValuePair("a", "1"));
-        return nvp;
-    }
-
-    private String getUser() {
-        return "1";
-    }
-
-    private String getWorkerHtml() {
-        final File file = new File("./src/test/resources/balancermanager/balancer-manager-response-worker.html");
-        String contents = "";
-        try {
-            byte[] bytes = Files.readAllBytes(file.toPath());
-            contents = new String(bytes, "UTF-8");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return contents;
+        final BalancerManagerState balancerManagerState = balanceManagerService.getGroupDrainStatus("group1", "user1");
+        assertEquals("group1", balancerManagerState.getGroups().get(0).getGroupName());
+        verify(mockBalancerManagerHtmlParser).getWorkerUrlPath(anyString(), anyString(), anyString(),
+                eq("https://usmlvv1cds0049:9101/hct"));
     }
 }
