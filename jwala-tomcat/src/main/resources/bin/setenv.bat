@@ -1,6 +1,12 @@
+echo off
+echo Starting..
+echo "                     _               _                              "
+echo "                    | |_      ____ _| | __ _                        "
+echo "                 _  | \ \ /\ / / _` | |/ _` |                       "
+echo "                | |_| |\ V  V / (_| | | (_| |                       "
+echo "                 \___/  \_/\_/ \__,_|_|\__,_|                       "
+
 REM SET JAVA_HOME=C:\jdk1.8.0_66
-REM SET JWALA_HOME=D:\jwala
-REM SET JWALA_HOME_UNIX=D:/jwala
 
 SET CATALINA_HOME=%~dp0..
 SET CATALINA_BASE=%~dp0..
