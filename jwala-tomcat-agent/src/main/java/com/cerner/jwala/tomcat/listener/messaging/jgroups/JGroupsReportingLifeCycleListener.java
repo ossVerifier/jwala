@@ -10,6 +10,8 @@ import org.jgroups.stack.IpAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
@@ -107,8 +109,13 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
         for (InetAddress address : allByName) {
             LOGGER.debug("Filtering JGroups IP address {}", address);
             if (!address.isLoopbackAddress()) {
-                LOGGER.debug("-- adding JGroups IP address to list: {}", address);
-                filteredAddresses.add(address);
+                if (Boolean.valueOf(jgroupsPreferIpv4Stack) && address instanceof Inet4Address) {
+                    LOGGER.debug("-- adding JGroups IPv4 address to list: {}", address);
+                    filteredAddresses.add(address);
+                } else if (!Boolean.valueOf(jgroupsPreferIpv4Stack) && address instanceof Inet6Address) {
+                    LOGGER.debug("-- adding JGroups IPv6 address to list: {}", address);
+                    filteredAddresses.add(address);
+                }
             }
         }
 
