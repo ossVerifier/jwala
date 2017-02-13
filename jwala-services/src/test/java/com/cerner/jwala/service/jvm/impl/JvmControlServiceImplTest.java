@@ -196,9 +196,9 @@ public class JvmControlServiceImplTest extends VerificationBehaviorSupport {
 
         final ControlJvmRequest mockControlJvmRequest = mock(ControlJvmRequest.class);
         when(mockControlJvmRequest.getControlOperation()).thenReturn(JvmControlOperation.SCP);
-        jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/path", "./dest/path", "user-id");
-        verify(Config.mockShellCommandFactory).executeRemoteCommand("host", Command.CREATE_DIR, "./dest/path");
-        verify(Config.mockShellCommandFactory).executeRemoteCommand("host", Command.SCP, "./source/path", "./dest/path");
+        jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/filename", "./dest/filename", "user-id");
+        verify(Config.mockShellCommandFactory).executeRemoteCommand("host", Command.CREATE_DIR, "./dest");
+        verify(Config.mockShellCommandFactory).executeRemoteCommand("host", Command.SCP, "./source/filename", "./dest/filename");
     }
 
     @Test (expected = InternalErrorException.class)
