@@ -3838,7 +3838,7 @@
 								"type": "text/javascript",
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
-									"tests[\"Assert response body\"] = jsonData.message === \"SUCCESS\";",
+									"tests[\"Assert response body\"] = jsonData.applicationResponseContent.exists === \"false\";",
 									"tests[\"Successful GET\"] = responseCode.code === 200;",
 									""
 								]
@@ -3847,6 +3847,90 @@
 					],
 					"request": {
 						"url": "{{url}}/v1.0/resources/exists/fileName",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "check file exists with jvmname",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"Assert response body\"] = jsonData.applicationResponseContent.exists === \"false\";",
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{url}}/v1.0/resources/exists/fileName?jvmName={{HealthCheckJvm}}",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "check file exists with app name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"Assert response body\"] = jsonData.applicationResponseContent.exists === \"false\";",
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{url}}/v1.0/resources/exists/fileName?webappName={{HealthCheckApp}}",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "check file exists with webserver name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"Assert response body\"] = jsonData.applicationResponseContent.exists === \"false\";",
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{url}}/v1.0/resources/exists/fileName?webserverName={{HealthCheckWebServer}}",
 						"method": "GET",
 						"header": [],
 						"body": {
@@ -5642,7 +5726,7 @@
 				{
 					"name": "jwala page constants",
 					"request": {
-						"url": "https://usmlvv1cds0049:8001/toc/page-constants",
+						"url": "{{url}}/page-constants",
 						"method": "GET",
 						"header": [],
 						"body": {},
