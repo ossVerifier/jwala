@@ -81,7 +81,7 @@ public class ResourceServiceImpl implements ResourceService {
     private final ResourceDao resourceDao;
 
     @Autowired
-    BinaryDistributionLockManager lockManager;
+    private BinaryDistributionLockManager lockManager;
 
     private final ResourceHandler resourceHandler;
 

@@ -37,7 +37,7 @@ public class GroupStateNotificationServiceImpl implements GroupStateNotification
     private final JvmCrudService jvmCrudService;
     private final WebServerCrudService webServerCrudService;
     private final MessagingService messagingService;
-    private static final Object lockObject = new Object();
+    private static final Object LOCKOBJECT = new Object();
 
     @Autowired
     public GroupStateNotificationServiceImpl(final JvmCrudService jvmCrudService, final WebServerCrudService webServerCrudService,
@@ -52,7 +52,7 @@ public class GroupStateNotificationServiceImpl implements GroupStateNotification
     @SuppressWarnings("unchecked")
     public void retrieveStateAndSend(final Identifier id, final Class aClass) {
         LOGGER.debug("Synchronizing on {} and {}...", id, aClass);
-        synchronized (lockObject) {
+        synchronized (LOCKOBJECT) {
             LOGGER.debug("Thread locked on {} and {}...!", id, aClass);
             final List<JpaGroup> groups;
             if (Jvm.class.getName().equals(aClass.getName())) {

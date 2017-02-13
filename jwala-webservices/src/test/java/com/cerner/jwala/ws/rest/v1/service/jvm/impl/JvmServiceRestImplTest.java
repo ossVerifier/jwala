@@ -107,7 +107,7 @@ public class JvmServiceRestImplTest {
     @Before
     public void setUp() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        jvmServiceRest = new JvmServiceRestImpl(jvmService, jvmControlService, resourceService);
+        jvmServiceRest = new JvmServiceRestImpl(jvmService, jvmControlService);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
     }
 

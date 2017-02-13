@@ -1,5 +1,16 @@
 package com.cerner.jwala.ws.rest.v1.service.jvm.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.EntityExistsException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+
+import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -12,19 +23,9 @@ import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.jvm.exception.JvmControlServiceException;
-import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.jvm.JvmServiceRest;
-import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.persistence.EntityExistsException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.List;
 
 public class JvmServiceRestImpl implements JvmServiceRest {
 
@@ -32,7 +33,6 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     private final JvmService jvmService;
     private final JvmControlService jvmControlService;
-    private final ResourceService resourceService;
     private static JvmServiceRestImpl instance;
     private static final long DEFAULT_WAIT_TIMEOUT = 300000L;
 
@@ -40,11 +40,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private MessageContext context;
 
     public JvmServiceRestImpl(final JvmService theJvmService,
-                              final JvmControlService theJvmControlService,
-                              final ResourceService theResourceService) {
+                              final JvmControlService theJvmControlService) {
         jvmService = theJvmService;
         jvmControlService = theJvmControlService;
-        resourceService = theResourceService;
     }
 
     @Override

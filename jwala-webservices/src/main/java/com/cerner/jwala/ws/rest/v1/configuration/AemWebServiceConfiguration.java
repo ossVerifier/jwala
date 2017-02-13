@@ -169,8 +169,7 @@ public class AemWebServiceConfiguration {
     public JvmServiceRest getV1JvmServiceRest() {
         return new JvmServiceRestImpl(
                 jvmService,
-                jvmControlService,
-                resourceService
+                jvmControlService
         );
     }
 
