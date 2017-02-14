@@ -301,12 +301,6 @@ public interface ResourceService {
 
     <T> CommandOutput generateAndDeployFile(ResourceIdentifier resourceIdentifier, String name, String fileName, String hostName);
 
-    CommandOutput executeCheckFileExistsCommand(String entity, String host, String fileName) throws CommandFailureException;
-
-    CommandOutput executeBackUpCommand(String entity, String host, String source) throws CommandFailureException;
-
-    CommandOutput executeUnzipBinaryCommand(String entity, String host, String source, String destination, String options) throws CommandFailureException;
-
     /**
      * Get mime type
      * @param fileContents a buffered inputstream that contains the contents of a file

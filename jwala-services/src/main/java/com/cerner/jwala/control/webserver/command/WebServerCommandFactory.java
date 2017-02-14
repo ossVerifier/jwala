@@ -92,6 +92,11 @@ public class WebServerCommandFactory {
                                                      webServer,
                                                      ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_APACHE_HTTPD_CONF),
                                                      ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_APACHE_HTTPD)))));
+        commands.put(WebServerControlOperation.VIEW_HTTP_CONFIG_FILE.getExternalValue(), (WebServer webServer)
+                -> remoteCommandExecutorService.executeCommand(
+                new RemoteExecCommand(getConnection(webServer),
+                        new ExecCommand("cat", ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_APACHE_HTTPD_CONF)+"/httpd.conf"))));
+
     }
 
     /**

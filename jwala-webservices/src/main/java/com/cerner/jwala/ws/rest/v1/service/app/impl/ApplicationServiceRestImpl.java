@@ -9,6 +9,7 @@ import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.service.app.ApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
@@ -16,6 +17,7 @@ import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.app.ApplicationServiceRest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityExistsException;
 import javax.ws.rs.core.Response;
@@ -25,7 +27,8 @@ import java.util.Set;
 public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceRestImpl.class);
-
+    @Autowired
+    private BinaryDistributionControlService binaryDistributionControlService;
     private ApplicationService service;
     private ResourceService resourceService;
     private final GroupService groupService;
@@ -192,7 +195,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response checkIfFileExists(final String filePath, final AuthenticatedUser aUser, final String hostName) {
-        return ResponseBuilder.ok(service.executeCheckIfFileExistsCommand(null, hostName, filePath));
+        return ResponseBuilder.ok(binaryDistributionControlService.checkFileExists(hostName, filePath));
     }
 
 

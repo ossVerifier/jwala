@@ -20,11 +20,9 @@ import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
-import com.cerner.jwala.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.control.command.common.Command;
 import com.cerner.jwala.control.command.common.ShellCommandFactory;
-import com.cerner.jwala.control.command.impl.WindowsBinaryDistributionPlatformCommandProvider;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
@@ -866,7 +864,7 @@ public class ResourceServiceImpl implements ResourceService {
             commandOutput = distributionControlService.createDirectory(hostName,resourceTemplateMetaData.getDeployPath());
             commandOutput = secureCopyFile(hostName, resourceSourceCopy, resourceDestPath);
             if (resourceTemplateMetaData.isUnpack()) {
-                commandOutput = doUnpack(entity, hostName, resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
+                doUnpack(entity, hostName, resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
             }
         } catch (IOException e) {
             String message = "Failed to write file " + fileName + ". " + e.toString();
@@ -880,39 +878,20 @@ public class ResourceServiceImpl implements ResourceService {
         return commandOutput;
     }
 
-    public CommandOutput doUnpack(final String entity, final String hostName, final String destPath) {
+    public void doUnpack(final String entity, final String hostName, final String destPath) {
         CommandOutput commandOutput;
         try {
             String standardError;
             binaryDistributionService.distributeUnzip(hostName);
             final String zipDestinationOption = FilenameUtils.removeExtension(destPath);
             LOGGER.debug("checking if unpacked destination exists: {}", zipDestinationOption);
-            commandOutput = executeCheckFileExistsCommand(entity, hostName, zipDestinationOption);
-
-            if (commandOutput.getReturnCode().wasSuccessful()) {
-                LOGGER.debug("destination {}, exists backing it up", zipDestinationOption);
-                commandOutput = executeBackUpCommand(entity, hostName, zipDestinationOption);
-
-                if (commandOutput.getReturnCode().wasSuccessful()) {
-                    LOGGER.debug("successfully backed up {}", zipDestinationOption);
-                } else {
-                    standardError = "Could not back up " + zipDestinationOption;
-                    LOGGER.error(standardError);
-                    throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
-                }
-            }
-            commandOutput = executeUnzipBinaryCommand(null, hostName, destPath, zipDestinationOption, "");
-            LOGGER.info("commandOutput.getReturnCode().toString(): " + commandOutput.getReturnCode().toString());
-            if (!commandOutput.getReturnCode().wasSuccessful()) {
-                standardError = "Cannot unzip " + destPath + " to " + zipDestinationOption + ", please check the log for more information.";
-                LOGGER.error(standardError);
-                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
-            }
+            binaryDistributionService.remoteFileCheck(hostName, zipDestinationOption);
+            binaryDistributionService.backupFile(hostName, zipDestinationOption);
+            binaryDistributionService.remoteUnzipBinary(hostName, destPath, zipDestinationOption, "");
         } catch (CommandFailureException e) {
             LOGGER.error("Failed to execute remote command when unpack to {} ", destPath, e);
             throw new ApplicationException("Failed to execute remote command when unpack to  " + destPath, e);
         }
-        return commandOutput;
     }
 
     public <T> String generateTemplateForNotText(final T entity, final String fileName) {
@@ -964,41 +943,6 @@ public class ResourceServiceImpl implements ResourceService {
         return resourceFileString;
     }
 
-    @Override
-    public CommandOutput executeCheckFileExistsCommand(final String entity, final String host, final String fileName) throws CommandFailureException {
-        return remoteCommandExecutor.executeRemoteCommand(
-                entity,
-                host,
-                ApplicationControlOperation.CHECK_FILE_EXISTS,
-                new WindowsApplicationPlatformCommandProvider(),
-                fileName);
-    }
-
-    @Override
-    public CommandOutput executeBackUpCommand(final String entity, final String host, final String source) throws CommandFailureException {
-        final String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
-        final String destination = source + currentDateSuffix;
-        return remoteCommandExecutor.executeRemoteCommand(
-                entity,
-                host,
-                ApplicationControlOperation.BACK_UP,
-                new WindowsApplicationPlatformCommandProvider(),
-                source,
-                destination);
-    }
-
-    @Override
-    public CommandOutput executeUnzipBinaryCommand(final String entity, final String host, final String source, final String destination, final String options) throws CommandFailureException {
-        return remoteCommandExecutor.executeRemoteCommand(
-                entity,
-                host,
-                BinaryDistributionControlOperation.UNZIP_BINARY,
-                new WindowsBinaryDistributionPlatformCommandProvider(),
-                ApplicationProperties.get("remote.commands.user-scripts") + "/" + UNZIP_EXE,
-                source,
-                destination,
-                options);
-    }
 
     @Override
     public String getResourceMimeType(final BufferedInputStream fileContents) {

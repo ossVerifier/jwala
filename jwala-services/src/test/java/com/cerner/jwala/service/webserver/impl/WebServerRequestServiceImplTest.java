@@ -123,11 +123,11 @@ public class WebServerRequestServiceImplTest {
                 mockRemoteCommandExecutorService);
     }
 
-    @Test
+/*    @Test
     public void testGetHttpdConf() throws CommandFailureException {
         final CommandOutput execData = impl.getHttpdConf(id);
         assertEquals("The content of httpd.conf", execData.getStandardOutput());
-    }
+    }*/
 
     @Test
     @Ignore
