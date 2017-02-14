@@ -16,8 +16,6 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipFile;
 
-;
-
 /**
  * A utility class for file related operations
  *
