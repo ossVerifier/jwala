@@ -2,7 +2,6 @@ package com.cerner.jwala.web.configuration.web;
 
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.web.controller.IndexController;
-import com.cerner.jwala.web.interceptor.UserIdHandlerInterceptor;
 import com.cerner.jwala.web.javascript.variable.CompositeJavaScriptVariableSource;
 import com.cerner.jwala.web.javascript.variable.JavaScriptVariableSource;
 import com.cerner.jwala.web.javascript.variable.dynamic.ContextPathSource;
@@ -18,7 +17,10 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ViewResolver;
-import org.springframework.web.servlet.config.annotation.*;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
@@ -97,11 +99,6 @@ public class ApacheEnterpriseManagerWebConfig extends WebMvcConfigurerAdapter {
     @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
     JavaScriptVariableSource loginStatusSource() {
         return new LoginStatusSource(request);
-    }
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new UserIdHandlerInterceptor()).addPathPatterns("/v1.0/*");
     }
 
     @Override
