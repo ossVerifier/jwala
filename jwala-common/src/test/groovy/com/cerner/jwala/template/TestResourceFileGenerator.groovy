@@ -54,7 +54,7 @@ class TestResourceFileGenerator extends GroovyTestCase {
                 new Path("/statusPath"), new Path("D:/jwala/app/data/httpd//httpd.conf"),
                 new Path("./"), new Path("htdocs"), WebServerReachableState.WS_UNREACHABLE, "");
         jvm = new Jvm(new Identifier<Jvm>(11L), "tc1", "someHostGenerateMe", groupHashSet, parentGroup, 11010, 11011, 11012, -1, 11013,
-                new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null, null, "")
+                new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null, null, "", null)
 
         webServers = new HashSet<>()
         webServers.add(webServer)
@@ -62,7 +62,7 @@ class TestResourceFileGenerator extends GroovyTestCase {
         jvms = new HashSet<>()
         jvms.add(jvm)
         jvms.add(new Jvm(new Identifier<Jvm>(22L), "tc2", "someHostGenerateMe", groupHashSet, parentGroup, 11020, 11021, 11022, -1, 11023,
-                new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null, null, ""))
+                new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null, null, "", null))
 
     }
 
@@ -71,7 +71,7 @@ class TestResourceFileGenerator extends GroovyTestCase {
                 new Path("/statusPath"), new Path("D:/jwala/app/data/httpd//httpd.conf"),
                 new Path("./"), new Path("htdocs"), WebServerReachableState.WS_UNREACHABLE, "", group);
         jvm = new Jvm(new Identifier<Jvm>(11L), "tc1", "someHostGenerateMe", groupHashSet, group, 11010, 11011, 11012, -1, 11013,
-                new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null, null, "")
+                new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null, null, "", null)
 
         webServers = new HashSet<>()
         webServers.add(webServer)
@@ -79,7 +79,7 @@ class TestResourceFileGenerator extends GroovyTestCase {
         jvms = new HashSet<>()
         jvms.add(jvm)
         jvms.add(new Jvm(new Identifier<Jvm>(22L), "tc2", "someHostGenerateMe", groupHashSet, parentGroup, 11020, 11021, 11022, -1, 11023,
-                new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null, null, null))
+                new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null, null, null, null))
 
     }
 

@@ -73,15 +73,6 @@ public class HistoryTablePopupTest extends SeleniumTestCase {
         }
     }
 
-    private boolean isElementPresent(By by) {
-        try {
-            driver.findElement(by);
-            return true;
-        } catch (NoSuchElementException e) {
-            return false;
-        }
-    }
-
     private boolean isAlertPresent() {
         try {
             driver.switchTo().alert();

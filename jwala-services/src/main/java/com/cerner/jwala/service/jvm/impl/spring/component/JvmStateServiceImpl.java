@@ -46,6 +46,8 @@ public class JvmStateServiceImpl implements JvmStateService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmStateServiceImpl.class);
 
+    private static final Map<Identifier<Jvm>, Future<CurrentState<Jvm, JvmState>>> PING_FUTURE_MAP = new ConcurrentHashMap<>();
+
     private final JvmPersistenceService jvmPersistenceService;
     private final InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> inMemoryStateManagerService;
     private final JvmStateResolverWorker jvmStateResolverWorker;
@@ -54,9 +56,6 @@ public class JvmStateServiceImpl implements JvmStateService {
     private final GroupStateNotificationService groupStateNotificationService;
     private final RemoteCommandExecutorService remoteCommandExecutorService;
     private final SshConfiguration sshConfig;
-
-    private static final Map<Identifier<Jvm>, Future<CurrentState<Jvm, JvmState>>> PING_FUTURE_MAP = new ConcurrentHashMap<>();
-
     private final KeyLockManager lockManager;
 
     @Autowired
@@ -113,7 +112,8 @@ public class JvmStateServiceImpl implements JvmStateService {
     }
 
     private boolean isFutureNilOrDone(Jvm jvm) {
-        return !PING_FUTURE_MAP.containsKey(jvm.getId()) || PING_FUTURE_MAP.get(jvm.getId()).isDone();
+        final Future<CurrentState<Jvm, JvmState>> pingFuture = PING_FUTURE_MAP.get(jvm.getId());
+        return pingFuture==null || pingFuture.isDone();
     }
 
     private boolean isValidState(Jvm jvm) {

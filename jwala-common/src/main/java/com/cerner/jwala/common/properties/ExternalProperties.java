@@ -10,11 +10,10 @@ import java.util.Properties;
 
 public class ExternalProperties {
 
-    private volatile Properties properties;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ExternalProperties.class);
 
-    public static String PROPERTIES_FILE_PATH = null;
+    private static volatile String propertiesFilePath = null;
+    private static volatile Properties properties;
 
     private ExternalProperties() {
         properties = new Properties();
@@ -35,8 +34,8 @@ public class ExternalProperties {
         return copy;
     }
 
-    public static void setPropertiesFilePath(String propertiesFilePath){
-        PROPERTIES_FILE_PATH = propertiesFilePath;
+    public static void setPropertiesFilePath(String propFilePath){
+        propertiesFilePath = propFilePath;
         reload();
     }
 
@@ -63,7 +62,7 @@ public class ExternalProperties {
     }
 
     private void init() {
-        String propertiesFile = PROPERTIES_FILE_PATH != null ? PROPERTIES_FILE_PATH : null;
+        String propertiesFile = propertiesFilePath != null ? propertiesFilePath : null;
         Properties tempProperties = new Properties();
         if (propertiesFile != null) {
             try {

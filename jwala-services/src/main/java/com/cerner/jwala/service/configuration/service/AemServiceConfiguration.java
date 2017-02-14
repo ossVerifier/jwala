@@ -143,8 +143,6 @@ public class AemServiceConfiguration {
     @Autowired
     private GroupStateNotificationService groupStateNotificationService;
 
-    private final Map webServerFutureMap = new HashMap();
-
     @Autowired
     private BinaryDistributionService binaryDistributionService;
 
@@ -153,8 +151,6 @@ public class AemServiceConfiguration {
 
     @Autowired
     private BinaryDistributionLockManager binaryDistributionLockManager;
-
-    private final Map<String, ReentrantReadWriteLock> binaryWriteLockMap = new HashMap<>();
 
     /**
      * Make vars.properties available to spring integration configuration
