@@ -8,10 +8,8 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.type.MediaType;
-import com.cerner.jwala.service.exception.ApplicationStartupException;
 import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.media.MediaService;
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,8 +23,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -108,121 +104,11 @@ public class ApplicationContextListenerTest {
     }
 
     @Test
-    public void testFoundJDKMediaAndNoJVMs() {
-        JpaMedia mockJdkMedia = mock(JpaMedia.class);
-        when(mockJdkMedia.getType()).thenReturn(MediaType.JDK);
-        List<JpaMedia> mediaList = Collections.singletonList(mockJdkMedia);
-
-        when(Config.mediaServiceMock.findAll()).thenReturn(mediaList);
-        when(Config.jvmServiceMock.getJvms()).thenReturn(new ArrayList<Jvm>());
-
+    public void testApplicationContextWithParent() {
         applicationContextListener.handleEvent(mockStartupEvent);
 
         verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
         verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap());
-    }
-
-    @Test
-    public void testFoundJdkMediaWithJvms() {
-        JpaMedia mockJdkMedia = mock(JpaMedia.class);
-        when(mockJdkMedia.getType()).thenReturn(MediaType.JDK);
-        List<JpaMedia> mediaList = Collections.singletonList(mockJdkMedia);
-
-        when(Config.mediaServiceMock.findAll()).thenReturn(mediaList);
-        when(Config.jvmServiceMock.getJvms()).thenReturn(Collections.singletonList(mockJvm));
-
-        applicationContextListener.handleEvent(mockStartupEvent);
-
-        verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap()); // the JDK already exists so no need to create
-        verify(Config.jvmServiceMock, times(1)).updateJvm(any(UpdateJvmRequest.class));
-    }
-
-    @Test
-    public void testEmptyMediaAndNoJVMs() {
-        List<JpaMedia> mediaList = new ArrayList<>();
-
-        when(Config.mediaServiceMock.findAll()).thenReturn(mediaList);
-        when(Config.jvmServiceMock.getJvms()).thenReturn(new ArrayList<Jvm>());
-
-        applicationContextListener.handleEvent(mockStartupEvent);
-
-        verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap());
-        verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
-    }
-
-    @Test(expected = ApplicationStartupException.class)
-    public void testEmpyMediaNoDefaultJDK() throws IOException {
-        String propertiesRootPath = System.getProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
-        try {
-            // copy vars property that overrides data.binary location and reload the properties
-            final String tempPropertiesRootPath = new File(".").getAbsolutePath() + "/build";
-            FileUtils.copyFile(new File(propertiesRootPath + "/vars-applicationContextListener.properties"), new File(tempPropertiesRootPath + "/vars.properties"));
-            System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, tempPropertiesRootPath);
-            ApplicationProperties.reload();
-
-            List<JpaMedia> mediaList = new ArrayList<>();
-
-            when(Config.mediaServiceMock.findAll()).thenReturn(mediaList);
-            when(Config.jvmServiceMock.getJvms()).thenReturn(Collections.singletonList(mock(Jvm.class)));
-
-            applicationContextListener.handleEvent(mockStartupEvent);
-            verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap());
-            verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
-        } finally {
-            System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, propertiesRootPath);
-            ApplicationProperties.reload();
-        }
-    }
-
-    @Test
-    public void testBypassProperty() throws IOException {
-        String propertiesRootPath = System.getProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
-        try {
-            // copy vars property that overrides data.binary location and reload the properties
-            final String tempPropertiesRootPath = new File(".").getAbsolutePath() + "/build";
-            FileUtils.copyFile(new File(propertiesRootPath + "/vars-applicationContextListenerBypass.properties"), new File(tempPropertiesRootPath + "/vars.properties"));
-            System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, tempPropertiesRootPath);
-            ApplicationProperties.reload();
-
-            applicationContextListener.handleEvent(mockStartupEvent);
-
-            verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap());
-        } finally {
-            System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, propertiesRootPath);
-            ApplicationProperties.reload();
-        }
-    }
-
-    @Test
-    public void testNonEmptyMediaNoJDKAndNoJVMs() {
-        JpaMedia mockJdkMedia = mock(JpaMedia.class);
-        when(mockJdkMedia.getType()).thenReturn(MediaType.TOMCAT);
-        List<JpaMedia> mediaList = Collections.singletonList(mockJdkMedia);
-
-        when(Config.mediaServiceMock.findAll()).thenReturn(mediaList);
-        when(Config.jvmServiceMock.getJvms()).thenReturn(new ArrayList<Jvm>());
-
-        applicationContextListener.handleEvent(mockStartupEvent);
-
-        verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
-        verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap());
-    }
-
-    @Test
-    public void testNonEmptyMediaNoJDKWithJVMs() {
-        JpaMedia mockJdkMedia = mock(JpaMedia.class);
-        when(mockJdkMedia.getType()).thenReturn(MediaType.TOMCAT);
-        when(mockJdkMedia.getName()).thenReturn("test-jdk");
-        List<JpaMedia> mediaList = Collections.singletonList(mockJdkMedia);
-
-        when(Config.mediaServiceMock.findAll()).thenReturn(mediaList);
-        when(Config.jvmServiceMock.getJvms()).thenReturn(Collections.singletonList(mockJvm));
-        when(Config.mediaServiceMock.create(anyMap(), anyMap())).thenReturn(mockJdkMedia);
-
-        applicationContextListener.handleEvent(mockStartupEvent);
-
-        verify(Config.jvmServiceMock, times(1)).updateJvm(any(UpdateJvmRequest.class));
-        verify(Config.mediaServiceMock, times(1)).create(anyMap(), anyMap());
     }
 
     @Configuration
