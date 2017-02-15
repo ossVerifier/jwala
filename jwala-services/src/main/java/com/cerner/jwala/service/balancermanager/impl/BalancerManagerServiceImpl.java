@@ -33,10 +33,10 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BalancerManagerServiceImpl.class);
 
-    private GroupService groupService;
-    private ApplicationService applicationService;
-    private WebServerService webServerService;
-    private JvmService jvmService;
+    private final GroupService groupService;
+    private final ApplicationService applicationService;
+    private final WebServerService webServerService;
+    private final JvmService jvmService;
 
     private final ClientFactoryHelper clientFactoryHelper;
     private final HistoryFacadeService historyFacadeService;

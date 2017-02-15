@@ -29,12 +29,11 @@ import com.cerner.jwala.ws.rest.v1.service.jvm.JvmServiceRest;
 
 public class JvmServiceRestImpl implements JvmServiceRest {
 
+    private static final long DEFAULT_WAIT_TIMEOUT = 300000L;
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceRestImpl.class);
 
     private final JvmService jvmService;
     private final JvmControlService jvmControlService;
-    private static JvmServiceRestImpl instance;
-    private static final long DEFAULT_WAIT_TIMEOUT = 300000L;
 
     @Context
     private MessageContext context;
@@ -132,11 +131,6 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
-        instance = this;
-    }
-
-    @Override
     public Response generateAndDeployFile(final String jvmName, final String fileName, AuthenticatedUser user) {
         LOGGER.info("Generate and deploy file {} to JVM {} by user {}", fileName, jvmName, user.getUser().getId());
         return ResponseBuilder.ok(jvmService.generateAndDeployFile(jvmName, fileName, user.getUser()));
@@ -188,9 +182,5 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     FaultType.INVALID_TEMPLATE, rte.getMessage()));
         }
-    }
-
-    public static JvmServiceRest get() {
-        return instance;
     }
 }

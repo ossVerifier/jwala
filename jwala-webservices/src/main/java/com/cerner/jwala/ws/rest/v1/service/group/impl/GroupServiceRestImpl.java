@@ -61,7 +61,8 @@ import java.util.concurrent.*;
 public class GroupServiceRestImpl implements GroupServiceRest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceRestImpl.class);
-
+    @Autowired
+    private JvmServiceRest jvmServiceRest;
     private final GroupService groupService;
     private final ResourceService resourceService;
     private final ExecutorService executorService;
@@ -494,8 +495,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 LOGGER.info("Checking if setenv.bat exists for the jvm {}", jvm.getJvmName());
                 jvmService.checkForSetenvBat(jvm.getJvmName());
             }
-
-            final JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
 
             // generate and deploy the JVMs
             Map<String, Future<Response>> futuresMap = new HashMap<>();

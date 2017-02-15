@@ -15,7 +15,7 @@ import javax.ws.rs.core.Response;
 
 @Path("/jvms")
 @Produces(MediaType.APPLICATION_JSON)
-public interface JvmServiceRest extends InitializingBean{
+public interface JvmServiceRest {
 
     @GET
     Response getJvms();
