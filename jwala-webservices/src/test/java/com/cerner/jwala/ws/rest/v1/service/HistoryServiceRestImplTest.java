@@ -28,13 +28,13 @@ public class HistoryServiceRestImplTest {
 
     @Test
     public void testFindHistory() {
-        final Response response = historyServiceRest.findHistory("any", null, 1);
+        final Response response = historyServiceRest.findHistory("any", 1);
         assertEquals(response.getStatus(), 200);
     }
 
     @Test
-    public void testFindHistoryWithServer(){
-        final Response response = historyServiceRest.findHistory("any","any",1);
+    public void testFindHistoryWithServer() {
+        final Response response = historyServiceRest.findHistory("any", "any", 1);
         assertEquals(response.getStatus(), 200);
     }
 }
