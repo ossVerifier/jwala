@@ -1,6 +1,7 @@
 package com.cerner.jwala.service.resource;
 
 import com.cerner.jwala.common.domain.model.app.Application;
+import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.group.History;
 import com.cerner.jwala.common.domain.model.id.Identifier;
@@ -12,10 +13,13 @@ import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.exception.InternalErrorException;
+import com.cerner.jwala.common.exec.CommandOutput;
+import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
+import com.cerner.jwala.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
@@ -31,6 +35,7 @@ import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceContentGeneratorServiceImpl;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tika.Tika;
 import org.apache.tika.mime.MediaType;
@@ -45,6 +50,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -88,7 +94,7 @@ public class ResourceServiceImplTest {
     private ResourceHandler mockResourceHandler;
 
     @Mock
-    private RemoteCommandExecutorImpl mockRemoteCommandExector;
+    private RemoteCommandExecutorImpl mockRemoteCommandExecutor;
 
     @Mock
     private HistoryFacadeService mockHistoryFacadeService;
@@ -113,7 +119,7 @@ public class ResourceServiceImplTest {
 
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
-                mockResourceDao, mockResourceHandler, mockRemoteCommandExector,
+                mockResourceDao, mockResourceHandler, mockRemoteCommandExecutor,
                 resourceContentGeneratorService, mockBinaryDistributionService, tika, mockRepositoryService);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));
@@ -970,6 +976,34 @@ public class ResourceServiceImplTest {
     public void testGetResourceMimeTypeErr() {
         final String type = resourceService.getResourceMimeType(new BufferedInputStream(new IoExIns()));
         assertEquals("application/xml", type);
+    }
+
+    @Test
+    public void testGenerateConfigFile() throws IOException {
+        final ResourceIdentifier.Builder builder = new ResourceIdentifier.Builder();
+        final ResourceIdentifier resourceIdentifier = builder.setGroupName("group1").setResourceName("server.xml")
+                .setJvmName("jvm1").build();
+        final ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+        when(mockResourceHandler.fetchResource(resourceIdentifier)).thenReturn(mockConfigTemplate);
+        when(mockConfigTemplate.getMetaData()).thenReturn(IOUtils.toString(this.getClass().getClassLoader()
+                .getResourceAsStream("sample-metadata.json"), StandardCharsets.UTF_8));
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("<server/>");
+        when(mockResourceHandler.getSelectedValue(resourceIdentifier)).thenReturn(mock(Jvm.class));
+        final List<Group> groupList = new ArrayList<>();
+        groupList.add(mock(Group.class));
+        when(mockGroupPesistenceService.getGroups()).thenReturn(groupList);
+        when(mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn("<server/>");
+        when(mockRemoteCommandExecutor.executeRemoteCommand(anyString(), anyString(),
+                any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class),
+                anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
+        when(mockRemoteCommandExecutor.executeRemoteCommand(anyString(), anyString(),
+                eq(ApplicationControlOperation.BACK_UP), any(WindowsApplicationPlatformCommandProvider.class),
+                anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
+        resourceService.generateAndDeployFile(resourceIdentifier, "jvm1", "server.xml",
+                "localhost");
+        verify(mockRemoteCommandExecutor).executeRemoteCommand(anyString(), anyString(),
+                eq(ApplicationControlOperation.BACK_UP), any(WindowsApplicationPlatformCommandProvider.class),
+                anyString(), anyString());
     }
 
     static class IoExIns extends InputStream {
