@@ -37,7 +37,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.cerner.jwala.common.domain.model.id.Identifier.id;
 import static org.junit.Assert.*;
@@ -55,7 +57,19 @@ public class ApplicationServiceRestImplTest {
     private HttpHeaders mockHh;
 
     @Mock
+    Identifier<Application> anAppToGet;
+
+    @Mock
+    private Application mockApplication;
+
+    @Mock
     private GroupService mockGroupService;
+
+    @Mock
+    private Group mockGroup;
+
+    @Mock
+    private Jvm mockJvm;
 
     /*NoMock*/ private ApplicationService service;
     @Mock
@@ -247,6 +261,36 @@ public class ApplicationServiceRestImplTest {
         when(service.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException("jvmName", "server"));
         response = cut.updateResourceTemplate(application.getName(), "ServerXMLTemplate.tpl", updateContent, "jvmName", "groupName");
         assertNotNull(response.getEntity());
+    }
+
+    @Test
+    public void testGetApplicationByName() {
+        when(service.getApplication(anyString())).thenReturn(mockApplication);
+        Response response = cut.getApplicationByName("application");
+        assertEquals(response.getStatus(), 200);
+    }
+
+    @Test
+    public void testDeployConfw() {
+        Response response = cut.deployConf("appName", authenticatedUser, "hostName");
+        assertEquals(response.getStatus(), 200);
+    }
+
+    @Test
+    public void testCheckIfFileExists() {
+        Response response = cut.checkIfFileExists("filePath", authenticatedUser, "hostName");
+        assertEquals(response.getStatus(), 200);
+    }
+
+    @Test
+    public void testDeployWebArchive() {
+        Set<Jvm> set = new HashSet<>();
+        set.add(mockJvm);
+        when(service.getApplication(anAppToGet)).thenReturn(mockApplication);
+        when(mockApplication.getGroup()).thenReturn(mockGroup);
+        when(mockGroup.getJvms()).thenReturn(set);
+        Response response = cut.deployWebArchive(anAppToGet, authenticatedUser);
+        assertEquals(response.getStatus(), 200);
     }
 
     @Test
