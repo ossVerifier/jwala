@@ -7,5 +7,6 @@
     "type" : "GROUPED_JVMS",
     "group" : "HEALTH CHECK 4.0",
     "target" : "HEALTH CHECK 4.0"
-  }
+  },
+  "unpack" : "true"
 }

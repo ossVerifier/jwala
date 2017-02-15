@@ -2,6 +2,7 @@ package com.cerner.jwala.service.resource;
 
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
+import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.group.History;
 import com.cerner.jwala.common.domain.model.id.Identifier;
@@ -999,9 +1000,12 @@ public class ResourceServiceImplTest {
         when(mockRemoteCommandExecutor.executeRemoteCommand(anyString(), anyString(),
                 eq(ApplicationControlOperation.BACK_UP), any(WindowsApplicationPlatformCommandProvider.class),
                 anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
+        when(mockRemoteCommandExecutor.executeRemoteCommand(anyString(), anyString(),
+                eq(BinaryDistributionControlOperation.UNZIP_BINARY), any(WindowsApplicationPlatformCommandProvider.class),
+                anyString(), anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
         resourceService.generateAndDeployFile(resourceIdentifier, "jvm1", "server.xml",
                 "localhost");
-        verify(mockRemoteCommandExecutor).executeRemoteCommand(anyString(), anyString(),
+        verify(mockRemoteCommandExecutor, times(2)).executeRemoteCommand(anyString(), anyString(),
                 eq(ApplicationControlOperation.BACK_UP), any(WindowsApplicationPlatformCommandProvider.class),
                 anyString(), anyString());
     }
