@@ -4,7 +4,6 @@ import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.exception.NotFoundException;
@@ -24,8 +23,6 @@ public interface WebServerCrudService extends CrudService<JpaWebServer> {
 
 	List<WebServer> getWebServers();
 
-	List<WebServer> findWebServers(final String aWebServerNameFragment);
-
 	void removeWebServer(final Identifier<WebServer> aWebServerId);
 
 	List<WebServer> findWebServersBelongingTo(Identifier<Group> aGroupId);
@@ -41,8 +38,6 @@ public interface WebServerCrudService extends CrudService<JpaWebServer> {
     List<String> getResourceTemplateNames(final String webServerName);
 
     String getResourceTemplate(final String webServerName, final String resourceTemplateName);
-
-	void populateWebServerConfig(List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user, boolean overwriteExisting);
 
 	JpaWebServerConfigTemplate uploadWebserverConfigTemplate(UploadWebServerTemplateRequest uploadWebServerTemplateRequest);
 
@@ -66,8 +61,6 @@ public interface WebServerCrudService extends CrudService<JpaWebServer> {
 
 	@Deprecated
 	int removeTemplate(String webServerName, String templateName);
-
-	List<JpaWebServerConfigTemplate> getJpaWebServerConfigTemplates(String webServerName);
 
 	List<WebServer> getWebServersByGroupName(String groupName);
 

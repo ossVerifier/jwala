@@ -17,7 +17,7 @@ public class BinaryDistributionLockManagerImpl implements BinaryDistributionLock
 
     private final Map<String, ReentrantReadWriteLock> binariesWriteLocks = new ConcurrentHashMap<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDistributionLockManagerImpl.class);
-    private static final Object lockObject = new Object();
+    private final Object lockObject = new Object();
 
     @Override
     public void writeLock(String resourceName) {
@@ -31,7 +31,7 @@ public class BinaryDistributionLockManagerImpl implements BinaryDistributionLock
     }
 
     @Override
-    public synchronized void writeUnlock(String resourceName) {
+    public void writeUnlock(String resourceName) {
         if (binariesWriteLocks.containsKey(resourceName)) {
             binariesWriteLocks.get(resourceName).writeLock().unlock();
             LOGGER.info("Removed write lock for resource {}", resourceName);

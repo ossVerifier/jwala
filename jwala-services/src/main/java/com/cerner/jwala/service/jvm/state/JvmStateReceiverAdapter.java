@@ -92,9 +92,9 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
         LOGGER.debug("Retrieving JVM id with name = {}...", name);
         try {
             return jvmPersistenceService.findJvmByExactName(name);
-        } catch (NoResultException e) {
-            LOGGER.warn("Received a notification from a jvm named {} but Jwala doesn't know about a Jvm " +
-                    "with that name!!!  ", name);
+        } catch (final NoResultException e) {
+            LOGGER.error("Received a notification from a jvm named {} but Jwala doesn't know about a Jvm " +
+                    "with that name!!!  ", name, e);
         }
         return null;
     }
@@ -104,8 +104,8 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
         try {
             return jvmPersistenceService.getJvm(new Identifier<Jvm>(id));
         } catch (NoResultException e) {
-            LOGGER.warn("Received a notification from a jvm named {} but Jwala doesn't know about a Jvm " +
-                    "with that name!!!  ", id);
+            LOGGER.error("Received a notification from a jvm named {} but Jwala doesn't know about a Jvm " +
+                    "with that name!!!  ", id, e);
         }
         return null;
     }

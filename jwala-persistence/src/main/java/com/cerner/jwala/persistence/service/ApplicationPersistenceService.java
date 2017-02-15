@@ -43,8 +43,6 @@ public interface ApplicationPersistenceService {
     void createApplicationConfigTemplateForJvm(String jvmName, Application app, Identifier<Group> groupId, String metaData,
                                                String resourceTypeTemplate);
 
-    int removeTemplate(String name);
-
     String getMetaData(String appName, String jvmName, String groupName, String templateName);
 
     /**

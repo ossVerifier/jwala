@@ -51,7 +51,7 @@ public class AdminServiceRestImplTest {
     @Before
     public void setUp() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-            authFlag = ApplicationProperties.get("jwala.authorization");
+        authFlag = ApplicationProperties.get("jwala.authorization");
     }
 
     @After
@@ -113,7 +113,7 @@ public class AdminServiceRestImplTest {
         Response response = cut.view();
         assertNotNull(response.getEntity());
     }
-    
+
     @Test
     public void testIsJwalaAuthorizationEnabled() throws Exception {
         Response response = cut.isJwalaAuthorizationEnabled();
@@ -123,4 +123,9 @@ public class AdminServiceRestImplTest {
         System.setProperty("jwala.authorization", "false");
     }
 
+    @Test
+    public void testGetAuthorizationDetails() {
+        Response response = cut.getAuthorizationDetails();
+        assertEquals(response.getStatus(), 200);
+    }
 }

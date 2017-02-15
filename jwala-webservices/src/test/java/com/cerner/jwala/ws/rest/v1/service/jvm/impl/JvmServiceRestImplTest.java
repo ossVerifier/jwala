@@ -98,7 +98,7 @@ public class JvmServiceRestImplTest {
                 systemProperties,
                 JvmState.JVM_STOPPED,
                 null, null, userName, encryptedPassword,
-                null, null, "");
+                null, null, "", null);
         final List<Jvm> result = new ArrayList<>();
         result.add(ws);
         return result;
@@ -107,7 +107,7 @@ public class JvmServiceRestImplTest {
     @Before
     public void setUp() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        jvmServiceRest = new JvmServiceRestImpl(jvmService, jvmControlService, resourceService);
+        jvmServiceRest = new JvmServiceRestImpl(jvmService, jvmControlService);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
     }
 

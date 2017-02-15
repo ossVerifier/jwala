@@ -345,6 +345,22 @@ public class ResourceServiceRestImplTest {
     }
 
     @Test
+    public void testGetApplicationResourceNames() {
+        List<String> getApplicationResources = new ArrayList<String>();
+        getApplicationResources.add("test-app-Resource");
+        when(impl.getApplicationResourceNames("test-group", "test-app")).thenReturn(getApplicationResources);
+        Response response = cut.getApplicationResourceNames("test-group", "test-app");
+        assertEquals(200, response.getStatus());
+    }
+
+    @Test
+    public void testGetAppTemplate() {
+        when(impl.getAppTemplate("test-group", "test-app", "test-template")).thenReturn("test-app-template");
+        Response response = cut.getAppTemplate("test-group", "test-app", "test-template");
+        assertEquals(200, response.getStatus());
+    }
+
+    @Test
     public void testGetResourceContentReturnsNull() {
         ResourceHierarchyParam param = new ResourceHierarchyParam();
         param.setGroup("test-group");

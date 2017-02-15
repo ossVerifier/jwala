@@ -81,7 +81,7 @@ public class ResourceServiceImpl implements ResourceService {
     private final ResourceDao resourceDao;
 
     @Autowired
-    BinaryDistributionLockManager lockManager;
+    private BinaryDistributionLockManager lockManager;
 
     private final ResourceHandler resourceHandler;
 
@@ -436,7 +436,8 @@ public class ResourceServiceImpl implements ResourceService {
                 jvm.getEncryptedPassword(),
                 jvm.getJdkMedia(),
                 jvm.getTomcatMedia(),
-                jvm.getJavaHome());
+                jvm.getJavaHome(),
+                jvm.getWebApps());
 
         final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmWithParentGroup, metaData.getTemplateName(),
                 templateContent, metaData.getJsonData());

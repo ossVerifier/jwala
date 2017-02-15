@@ -72,7 +72,7 @@ public class JvmServiceImpl implements JvmService {
     private static final String MEDIA_TYPE_TEXT = "text";
 
     private final BinaryDistributionLockManager binaryDistributionLockManager;
-    private String topicServerStates;
+    private final String topicServerStates;
     private final JvmPersistenceService jvmPersistenceService;
     private final GroupPersistenceService groupPersistenceService;
     private final ApplicationService applicationService;

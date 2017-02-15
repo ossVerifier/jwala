@@ -34,8 +34,6 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
  */
 public class JwalaAuthenticationProvider implements AuthenticationProvider {
     private static final Logger LOGGER = Logger.getLogger(JwalaAuthenticationProvider.class);
-    private MBeanServer mBeanServer;
-
     /**
      *
      * @param authentication

@@ -623,7 +623,7 @@ public class GroupServiceImplDeployTest {
 
         @Bean
         public JvmServiceRest getJvmServiceRest() {
-            return new JvmServiceRestImpl(mockJvmService, mockJvmControlService, mockResourceService);
+            return new JvmServiceRestImpl(mockJvmService, mockJvmControlService);
         }
 
         @Bean

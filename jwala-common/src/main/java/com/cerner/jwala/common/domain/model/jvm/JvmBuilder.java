@@ -1,5 +1,6 @@
 package com.cerner.jwala.common.domain.model.jvm;
 
+import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.media.Media;
@@ -7,6 +8,7 @@ import com.cerner.jwala.common.domain.model.path.Path;
 
 import java.util.Calendar;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -32,6 +34,7 @@ public class JvmBuilder {
     private Media jdkMedia;
     private Media tomcatMedia;
     private String javaHome;
+    private List<Application> webApps;
 
     public JvmBuilder setUserName(String userName) {
         this.userName = userName;
@@ -123,7 +126,8 @@ public class JvmBuilder {
 
     public Jvm build() {
         return new Jvm(id, name, hostName, groups, null, httpPort, httpsPort, redirectPort, shutdownPort, ajpPort, statusPath,
-                       systemProperties, state, errorStatus, lastUpdatedDate, userName, encryptedPassword, jdkMedia, tomcatMedia, javaHome);
+                       systemProperties, state, errorStatus, lastUpdatedDate, userName, encryptedPassword, jdkMedia,
+                       tomcatMedia, javaHome, webApps);
     }
 
 
@@ -141,7 +145,13 @@ public class JvmBuilder {
         return javaHome;
     }
 
-    public void setJavaHome(String javaHome) {
+    public JvmBuilder setJavaHome(String javaHome) {
         this.javaHome = javaHome;
+        return this;
+    }
+
+    public JvmBuilder setWebApps(final List<Application> webApps) {
+        this.webApps = webApps;
+        return this;
     }
 }

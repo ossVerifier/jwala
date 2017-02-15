@@ -163,11 +163,6 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public int removeTemplate(final String name) {
-        return applicationCrudService.removeTemplate(name);
-    }
-
-    @Override
     public boolean checkAppResourceFileName(final String groupName, final String appName, final String fileName) {
         return applicationCrudService.checkAppResourceFileName(groupName, appName, fileName);
     }

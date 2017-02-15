@@ -38,11 +38,11 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
     private WebServerService webServerService;
     private JvmService jvmService;
 
-    private ClientFactoryHelper clientFactoryHelper;
-    private HistoryFacadeService historyFacadeService;
-    private BalancerManagerHtmlParser balancerManagerHtmlParser;
-    private BalancerManagerXmlParser balancerManagerXmlParser;
-    private BalancerManagerHttpClient balancerManagerHttpClient;
+    private final ClientFactoryHelper clientFactoryHelper;
+    private final HistoryFacadeService historyFacadeService;
+    private final BalancerManagerHtmlParser balancerManagerHtmlParser;
+    private final BalancerManagerXmlParser balancerManagerXmlParser;
+    private final BalancerManagerHttpClient balancerManagerHttpClient;
 
     public BalancerManagerServiceImpl(final GroupService groupService,
                                       final ApplicationService applicationService,

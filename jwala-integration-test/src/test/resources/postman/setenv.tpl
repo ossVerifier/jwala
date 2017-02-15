@@ -1,16 +1,16 @@
-SET JAVA_HOME=d:\stp\jdk1.8.0_92
+SET JAVA_HOME=${vars['remote.jwala.java.home']}
 SET JRE_HOME=%JAVA_HOME%\jre
 
-SET CATALINA_HOME=d:/stp/app/instances/${jvm.jvmName}/apache-tomcat-7.0.55
+SET CATALINA_HOME=${vars['remote.paths.instances']}/${jvm.jvmName}/apache-tomcat-7.0.55
 SET CATALINA_OPTS=-XX:PermSize=512m -XX:MaxPermSize=512m 
 
-SET PROPERTIES_ROOT_PATH=d:\stp\app\properties
+SET PROPERTIES_ROOT_PATH=${vars['remote.paths.deploy.dir']}\app\properties
 SET STP_OPTS=-DPROPERTIES_ROOT_PATH=%PROPERTIES_ROOT_PATH%
 
-SET STP_PROPERTIES_DIR=d:\stp\app\properties
+SET STP_PROPERTIES_DIR=${vars['remote.paths.deploy.dir']}\app\properties
 SET STP_OPTS=%STP_OPTS% -DSTP_PROPERTIES_DIR=%STP_PROPERTIES_DIR%
 
-SET LOG_ROOT_DIR=d:/stp/app/instances/${jvm.jvmName}/apache-tomcat-7.0.55/logs
+SET LOG_ROOT_DIR=${vars['remote.paths.instances']}/${jvm.jvmName}/apache-tomcat-7.0.55/logs
 SET LOG_OPTS=-Dlog.root.dir=%LOG_ROOT_DIR%
 SET LOG_OPTS=%LOG_OPTS% -Dlog4j.configuration=log4j.xml -Dlog4j.debug=true
 

@@ -5,7 +5,6 @@ import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.exception.BadRequestException;
@@ -95,14 +94,6 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
     @Override
     public List<WebServer> getWebServers() {
         return webServersFrom(findAll());
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<WebServer> findWebServers(final String aWebServerNameFragment) {
-        final Query query = entityManager.createNamedQuery(JpaWebServer.FIND_WEB_SERVER_BY_NAME_LIKE_QUERY);
-        query.setParameter(1, aWebServerNameFragment);
-        return webServersFrom(query.getResultList());
     }
 
     @Override
@@ -236,19 +227,6 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         } catch (NoResultException | NonUniqueResultException e) {
             LOGGER.error("Error getting resource meta data {} for web server {}", resourceTemplateName, webServerName, e);
             throw new NonRetrievableResourceTemplateContentException(webServerName, resourceTemplateName, e);
-        }
-    }
-
-    @Override
-    public void populateWebServerConfig(List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user, boolean overwriteExisting) {
-        for (UploadWebServerTemplateRequest request : uploadWSTemplateCommands) {
-            final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE_CONTENT);
-            q.setParameter("webServerName", request.getWebServer().getName());
-            q.setParameter("templateName", request.getConfFileName());
-            List results = q.getResultList();
-            if (overwriteExisting || results.isEmpty()) {
-                uploadWebServerTemplate(request);
-            }
         }
     }
 
@@ -407,13 +385,6 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_WEBSERVER_NAME, webServerName);
         q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, templateName);
         return q.executeUpdate();
-    }
-
-    @Override
-    public List<JpaWebServerConfigTemplate> getJpaWebServerConfigTemplates(final String webServerName) {
-        final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.QUERY_GET_WEBSERVER_RESOURCE_TEMPLATES);
-        q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_WEBSERVER_NAME, webServerName);
-        return q.getResultList();
     }
 
     @Override

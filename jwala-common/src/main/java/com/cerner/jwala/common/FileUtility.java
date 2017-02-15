@@ -1,6 +1,7 @@
 package com.cerner.jwala.common;
 
 import com.cerner.jwala.common.exception.ApplicationException;
+import org.apache.tika.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -15,8 +16,6 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipFile;
-
-;
 
 /**
  * A utility class for file related operations
@@ -37,8 +36,7 @@ public class FileUtility {
             throw new FileUtilityException("Failed to create zip file destination directory \"" + destination.getAbsolutePath() + "\"!");
         }
         JarFile jarFile = null;
-        long startTime = System.currentTimeMillis();
-        final String errMsg = MessageFormat.format("Failed to unpack {0}!", destination.getAbsolutePath());
+        final long startTime = System.currentTimeMillis();
         try {
             LOGGER.debug("Start unzip {}", zipFile.getAbsoluteFile());
             jarFile = new JarFile(zipFile);
@@ -65,14 +63,22 @@ public class FileUtility {
         } catch (final IOException e) {
             throw new FileUtilityException("Failed to unpack " + zipFile.getAbsolutePath() + "!", e);
         } finally {
-            if (jarFile != null) {
-                try {
-                    jarFile.close();
-                } catch (IOException e) {
-                    throw new FileUtilityException(errMsg, e);
-                }
-            }
+            closeJarFile(jarFile);
             LOGGER.debug("End unzip {} in {} ms", zipFile.getAbsoluteFile(), (System.currentTimeMillis() - startTime));
+        }
+    }
+
+    /**
+     * Closes a {@link JarFile}
+     * @param jarFile the jar file to close
+     */
+    private void closeJarFile(final JarFile jarFile) {
+        try {
+            if (jarFile != null) {
+                jarFile.close();
+            }
+        } catch (final IOException e) {
+            LOGGER.error("Failed to close {}", jarFile.getName(), e);
         }
     }
 

@@ -37,7 +37,7 @@ public class GroupStateNotificationServiceImpl implements GroupStateNotification
     private final JvmCrudService jvmCrudService;
     private final WebServerCrudService webServerCrudService;
     private final MessagingService messagingService;
-    private static final Object lockObject = new Object();
+    private final Object lockObject = new Object();
 
     @Autowired
     public GroupStateNotificationServiceImpl(final JvmCrudService jvmCrudService, final WebServerCrudService webServerCrudService,

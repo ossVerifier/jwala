@@ -61,9 +61,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     private final WebServerService webServerService;
     private final WebServerControlService webServerControlService;
     private final WebServerCommandService webServerCommandService;
-    private ResourceService resourceService;
-    private GroupService groupService;
-    private HistoryFacadeService historyFacadeService;
+    private final ResourceService resourceService;
+    private final GroupService groupService;
+    private final HistoryFacadeService historyFacadeService;
     private final BinaryDistributionService binaryDistributionService;
 
     public WebServerServiceRestImpl(final WebServerService theWebServerService,

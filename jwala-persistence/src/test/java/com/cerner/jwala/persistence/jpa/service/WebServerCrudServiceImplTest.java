@@ -27,7 +27,6 @@ import com.cerner.jwala.persistence.jpa.service.impl.JvmCrudServiceImpl;
 import com.cerner.jwala.persistence.jpa.service.impl.WebServerCrudServiceImpl;
 import com.cerner.jwala.persistence.jpa.type.MediaType;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -158,11 +157,11 @@ public class WebServerCrudServiceImplTest {
         assertEquals(0, webServerCrudService.getWebServers().size());
     }
 
-    @Test
+    /*@Test
     public void testFindWebServers() {
         final List<WebServer> foundWebServers = webServerCrudService.findWebServers("toast");
         assertTrue(foundWebServers.size() == 0);
-    }
+    }*/
 
     @Test
     public void testFindWebServersBelongingTo() {
@@ -283,30 +282,6 @@ public class WebServerCrudServiceImplTest {
         assertNotNull(template);
 
         // test getting the template while we're here
-        final String resourceTemplate = webServerCrudService.getResourceTemplate(webServer.getName(), "httpd.conf");
-        assertTrue(!resourceTemplate.isEmpty());
-    }
-
-    @Test
-    public void testPopulateWebServerConfigTemplate() throws FileNotFoundException {
-        InputStream dataInputStream = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
-        Scanner scanner = new Scanner(dataInputStream).useDelimiter("\\A");
-        String templateContent = scanner.hasNext() ? scanner.next() : "";
-
-        WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer",
-                "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"),
-                new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
-        webServer = webServerCrudService.createWebServer(webServer, "testUser");
-        UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer,
-                "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, templateContent) {
-            @Override
-            public String getConfFileName() {
-                return "httpd.conf";
-            }
-        };
-        List<UploadWebServerTemplateRequest> templateCommands = new ArrayList<>();
-        templateCommands.add(uploadWsTemplateRequest);
-        webServerCrudService.populateWebServerConfig(templateCommands, new User("userId"), false);
         final String resourceTemplate = webServerCrudService.getResourceTemplate(webServer.getName(), "httpd.conf");
         assertTrue(!resourceTemplate.isEmpty());
     }
@@ -485,12 +460,6 @@ public class WebServerCrudServiceImplTest {
     public void testRemoveTemplateWithWebServerName() {
         int result = webServerCrudService.removeTemplate("test-ws", "httpd.conf");
         assertEquals(0, result);
-    }
-
-    @Test
-    public void testGetJpaWebServerConfigTemplates() {
-        List<JpaWebServerConfigTemplate> result = webServerCrudService.getJpaWebServerConfigTemplates("test-ws");
-        assertEquals(0, result.size());
     }
 
     @Test
