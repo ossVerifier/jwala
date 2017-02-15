@@ -77,6 +77,22 @@ public class JschScpCommandProcessorImplTest {
         jschScpCommandProcessor.processCommand();
     }
 
+    @Test(expected = RemoteCommandFailureException.class)
+    public void testProcessCommandAckErr() throws Exception {
+        final ExecCommand command = new ExecCommand("frag1", this.getClass().getClassLoader().getResource("jsch-scp.txt").getPath(), "frag3");
+        final RemoteSystemConnection mockRemoteSystemConnection = mock(RemoteSystemConnection.class);
+        when(mockRemoteExecCommand.getCommand()).thenReturn(command);
+        when(mockRemoteExecCommand.getRemoteSystemConnection()).thenReturn(mockRemoteSystemConnection);
+        when(mockRemoteSystemConnection.getEncryptedPassword()).thenReturn("#$@%aaa==".toCharArray());
+        final Session mockSession = mock(Session.class);
+        final ChannelExec mockChannelExec = mock(ChannelExec.class);
+        final byte [] bytes = {5};
+        when(mockChannelExec.getInputStream()).thenReturn(new ByteArrayInputStream(bytes));
+        when(mockSession.openChannel(eq("exec"))).thenReturn(mockChannelExec);
+        when(mockJsch.getSession(anyString(), anyString(), anyInt())).thenReturn(mockSession);
+        jschScpCommandProcessor.processCommand();
+    }
+
     static class AckIn extends InputStream {
 
         @Override
