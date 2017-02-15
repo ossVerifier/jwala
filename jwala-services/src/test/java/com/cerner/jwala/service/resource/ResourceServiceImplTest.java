@@ -99,6 +99,8 @@ public class ResourceServiceImplTest {
     @Mock
     private RepositoryService mockRepositoryService;
 
+    private Tika tika = new Tika();
+
     @Before
     public void setup() {
         // It is good practice to start with a clean sheet of paper before each test that is why resourceService is
@@ -112,7 +114,7 @@ public class ResourceServiceImplTest {
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
                 mockResourceDao, mockResourceHandler, mockRemoteCommandExector,
-                resourceContentGeneratorService, mockBinaryDistributionService, new Tika(), mockRepositoryService);
+                resourceContentGeneratorService, mockBinaryDistributionService, tika, mockRepositoryService);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));
 
@@ -955,6 +957,28 @@ public class ResourceServiceImplTest {
         // jar
         assertEquals("application/zip", resourceService.getResourceMimeType(new BufferedInputStream(
                 this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/jar.jar"))));
+    }
+
+    @Test
+    public void testGetResourceMimeType() {
+       final String type = resourceService.getResourceMimeType(new BufferedInputStream(this.getClass().getClassLoader()
+                .getResourceAsStream("tika-test-file.xml")));
+       assertEquals("application/xml", type);
+    }
+
+    @Test(expected = ResourceServiceException.class)
+    public void testGetResourceMimeTypeErr() {
+        final String type = resourceService.getResourceMimeType(new BufferedInputStream(new IoExIns()));
+        assertEquals("application/xml", type);
+    }
+
+    static class IoExIns extends InputStream {
+
+        @Override
+        public int read() throws IOException {
+            throw new IOException("IO exception!");
+        }
+
     }
 
 }
