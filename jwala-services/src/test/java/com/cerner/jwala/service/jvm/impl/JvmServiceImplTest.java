@@ -326,10 +326,10 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
 
         when(updateJvmRequest.getAssignmentCommands()).thenReturn(addCommands);
 
-        jvmService.updateJvm(updateJvmRequest);
+        jvmService.updateJvm(updateJvmRequest, true);
 
         verify(updateJvmRequest, times(1)).validate();
-        verify(mockJvmPersistenceService, times(1)).updateJvm(updateJvmRequest);
+        verify(mockJvmPersistenceService, times(1)).updateJvm(updateJvmRequest, true);
         verify(mockJvmPersistenceService, times(1)).removeJvmFromGroups(Matchers.<Identifier<Jvm>>anyObject());
         for (final AddJvmToGroupRequest addCommand : addCommands) {
             verify(mockGroupPersistenceService, times(1)).addJvmToGroup(matchCommand(addCommand));

@@ -13,9 +13,10 @@ import java.util.Collections;
 public class CommonJvmPersistenceServiceBehavior {
 
     private final JvmPersistenceService jvmPersistenceService;
+    private boolean updateJvmPassword = true;
 
-    public CommonJvmPersistenceServiceBehavior(final JvmPersistenceService theJvmPersistenceService) {
-        jvmPersistenceService = theJvmPersistenceService;
+    public CommonJvmPersistenceServiceBehavior(final JvmPersistenceService jvmPersistenceService) {
+        this.jvmPersistenceService = jvmPersistenceService;
     }
 
     public Jvm createJvm(final String aJvmName,
@@ -83,7 +84,7 @@ public class CommonJvmPersistenceServiceBehavior {
                 aJdkMediaId/*,
                 aTomcatMediaId*/);
 
-        return jvmPersistenceService.updateJvm(updateJvmRequest);
+        return jvmPersistenceService.updateJvm(updateJvmRequest, updateJvmPassword);
     }
 
     protected CreateJvmRequest createCreateJvmRequest(final String aJvmName,
@@ -147,5 +148,9 @@ public class CommonJvmPersistenceServiceBehavior {
                 anEncryptedPassword,
                 aJdkMediaId/*,
                 aTomcatMediaId*/);
+    }
+
+    public void setUpdateJvmPassword(boolean updateJvmPassword) {
+        this.updateJvmPassword = updateJvmPassword;
     }
 }

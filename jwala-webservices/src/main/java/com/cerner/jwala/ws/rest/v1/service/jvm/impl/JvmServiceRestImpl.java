@@ -75,10 +75,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response updateJvm(final JsonUpdateJvm aJvmToUpdate, final AuthenticatedUser aUser) {
+    public Response updateJvm(final JsonUpdateJvm aJvmToUpdate, final boolean updateJvmPassword, final AuthenticatedUser aUser) {
         LOGGER.info("Update JVM requested: {} by user {}", aJvmToUpdate, aUser.getUser().getId());
         try {
-            return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmRequest()));
+            return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmRequest(), updateJvmPassword));
         } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     FaultType.DUPLICATE_JVM_NAME, eee.getMessage(), eee));

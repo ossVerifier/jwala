@@ -6,6 +6,7 @@ import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.uri.UriBuilder;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -15,6 +16,7 @@ import java.util.*;
 
 public class Jvm implements Serializable {
 
+    private final String MASKED_PASSWORD = "********";
     private String javaHome;
     private Identifier<Jvm> id;
     private String jvmName;
@@ -59,6 +61,34 @@ public class Jvm implements Serializable {
         this.groups = Collections.unmodifiableSet(new HashSet<>(groups));
     }
 
+    /**
+     * Excludes the encrypted password
+     * @return jvm without the encrypted password
+     */
+    public Jvm toJvmWithoutEncrytedPassword() {
+        return new Jvm(this.id,
+                       this.jvmName,
+                       this.hostName,
+                       this.groups,
+                       this.parentGroup,
+                       this.httpPort,
+                       this.httpsPort,
+                       this.redirectPort,
+                       this.shutdownPort,
+                       this.ajpPort,
+                       this.statusPath,
+                       this.systemProperties,
+                       this.state,
+                       this.errorStatus,
+                       this.lastUpdatedDate,
+                       this.userName,
+                       StringUtils.isEmpty(this.encryptedPassword) ? StringUtils.EMPTY : MASKED_PASSWORD,
+                       this.jdkMedia,
+                       this.tomcatMedia,
+                       this.javaHome,
+                       this.webApps);
+    }
+
     public Jvm(Identifier<Jvm> id,
                String jvmName,
                String hostName,
@@ -101,34 +131,6 @@ public class Jvm implements Serializable {
         this.tomcatMedia = tomcatMedia;
         this.javaHome = javaHome;
         this.webApps = webApps;
-    }
-
-    /**
-     * Excludes the encrypted password
-     * @return jvm without the encrypted password
-     */
-    public Jvm toJvmWithoutEncrytedPassword() {
-        return new Jvm(this.id,
-                       this.jvmName,
-                       this.hostName,
-                       this.groups,
-                       this.parentGroup,
-                       this.httpPort,
-                       this.httpsPort,
-                       this.redirectPort,
-                       this.shutdownPort,
-                       this.ajpPort,
-                       this.statusPath,
-                       this.systemProperties,
-                       this.state,
-                       this.errorStatus,
-                       this.lastUpdatedDate,
-                       this.userName,
-                       "",
-                       this.jdkMedia,
-                       this.tomcatMedia,
-                       this.javaHome,
-                       this.webApps);
     }
 
     public Media getJdkMedia() {

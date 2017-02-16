@@ -125,7 +125,9 @@ var JvmConfig = React.createClass({
     okEditCallback: function() {
         if (this.refs.jvmEditForm.isValid()) {
             var self = this;
+            var updateJvmPassword = this.refs.jvmEditForm.state.showPasswordChangeWarning;
             this.props.service.updateJvm($(this.refs.jvmEditForm.getDOMNode().children[0]).serializeArray(),
+                                           updateJvmPassword,
                                            function(response){
                                                self.state.selectedJvm = response.applicationResponseContent;
                                                self.refreshData({showModalFormEditDialog:false});
@@ -212,7 +214,7 @@ var JvmConfigForm = React.createClass({
         var userName = "";
         var encryptedPassword = "";
 
-        if (this.props.data !== undefined) {
+        if (this.props.data) {
             id = this.props.data.id;
             name = this.props.data.jvmName;
             host = this.props.data.hostName;
@@ -248,7 +250,8 @@ var JvmConfigForm = React.createClass({
             shutdownPort: shutdownPort,
             ajpPort: ajpPort,
             userName: userName,
-            encryptedPassword: encryptedPassword
+            encryptedPassword: encryptedPassword,
+            showPasswordChangeWarning: false
         }
     },
     mixins: [React.addons.LinkedStateMixin],
@@ -377,8 +380,15 @@ var JvmConfigForm = React.createClass({
                             		<label htmlFor="encryptedPassword" className="error"></label>
                             	</td>
                             </tr>
+                            <tr style={{display: this.state.showPasswordChangeWarning ? "inline" : "none"}}>
+                                <td>
+                                    <label htmlFor="encryptedPassword">
+                                        Press ESC or click cancel if you did not mean to change the password
+                                    </label>
+                                </td>
+                            </tr>
                             <tr>
-                        		<td><input name="encryptedPassword" type="password" valueLink={this.linkState("encryptedPassword")} /></td>
+                        		<td><input name="encryptedPassword" type="password" valueLink={this.linkState("encryptedPassword")} onFocus={this.onPasswordTextFocus} /></td>
                         	</tr>
                         	<tr>
                         	    <td>JDK Version</td>
@@ -433,6 +443,11 @@ var JvmConfigForm = React.createClass({
                         </table>
                     </form>
                </div>
+    },
+    onPasswordTextFocus: function() {
+        if (this.props.data) {
+            this.setState({encryptedPassword: "", showPasswordChangeWarning: true});
+        }
     },
     isHttpPortInteger: function() {
         return (this.state.httpPort % 1 === 0);

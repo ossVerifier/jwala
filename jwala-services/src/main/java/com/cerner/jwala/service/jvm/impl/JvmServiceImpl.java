@@ -233,7 +233,7 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional
-    public Jvm updateJvm(final UpdateJvmRequest updateJvmRequest) {
+    public Jvm updateJvm(final UpdateJvmRequest updateJvmRequest, final boolean updateJvmPassword) {
 
         updateJvmRequest.validate();
 
@@ -241,7 +241,7 @@ public class JvmServiceImpl implements JvmService {
 
         addJvmToGroups(updateJvmRequest.getAssignmentCommands());
 
-        return jvmPersistenceService.updateJvm(updateJvmRequest);
+        return jvmPersistenceService.updateJvm(updateJvmRequest, updateJvmPassword);
     }
 
     @Override

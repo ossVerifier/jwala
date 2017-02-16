@@ -30,8 +30,8 @@ public interface JvmServiceRest {
 
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    Response updateJvm(final JsonUpdateJvm aJvmToUpdate,
-                       @BeanParam final AuthenticatedUser aUser);
+    Response updateJvm(JsonUpdateJvm aJvmToUpdate, @QueryParam("updateJvmPassword") boolean updateJvmPassword,
+                       @BeanParam AuthenticatedUser aUser);
 
     @DELETE
     @Path("/{jvmId}")

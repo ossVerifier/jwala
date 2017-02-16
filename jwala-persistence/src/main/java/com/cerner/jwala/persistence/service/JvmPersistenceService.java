@@ -18,7 +18,7 @@ public interface JvmPersistenceService {
 
     Jvm createJvm(CreateJvmRequest createJvmRequest);
 
-    Jvm updateJvm(UpdateJvmRequest updateJvmRequest);
+    Jvm updateJvm(UpdateJvmRequest updateJvmRequest, boolean updateJvmPassword);
 
     Jvm getJvm(final Identifier<Jvm> aJvmId) throws NotFoundException;
 
