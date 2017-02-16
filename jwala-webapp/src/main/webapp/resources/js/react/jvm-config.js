@@ -125,7 +125,7 @@ var JvmConfig = React.createClass({
     okEditCallback: function() {
         if (this.refs.jvmEditForm.isValid()) {
             var self = this;
-            var updateJvmPassword = (this.state.selectedJvmForEditing.encryptedPassword !== this.refs.jvmEditForm.state.encryptedPassword);
+            var updateJvmPassword = this.refs.jvmEditForm.state.showPasswordChangeWarning;
             this.props.service.updateJvm($(this.refs.jvmEditForm.getDOMNode().children[0]).serializeArray(),
                                            updateJvmPassword,
                                            function(response){
@@ -446,7 +446,7 @@ var JvmConfigForm = React.createClass({
     },
     onPasswordTextFocus: function() {
         if (this.props.data) {
-            this.setState({encryptedPassword: "", showPasswordChangeWarning: this.props.data.encryptedPassword});
+            this.setState({encryptedPassword: "", showPasswordChangeWarning: true});
         }
     },
     isHttpPortInteger: function() {
