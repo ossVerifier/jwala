@@ -81,7 +81,7 @@ public class ApplicationContextListenerTest {
 
         applicationContextListener.handleEvent(mockStartupEvent);
 
-        verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
+        verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class), eq(true));
         verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap());
     }
 
@@ -99,7 +99,7 @@ public class ApplicationContextListenerTest {
 
         applicationContextListener.handleEvent(mockStartupEvent);
 
-        verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
+        verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class), eq(true));
         verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap());
     }
 
@@ -107,7 +107,7 @@ public class ApplicationContextListenerTest {
     public void testApplicationContextWithParent() {
         applicationContextListener.handleEvent(mockStartupEvent);
 
-        verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class));
+        verify(Config.jvmServiceMock, never()).updateJvm(any(UpdateJvmRequest.class), eq(true));
         verify(Config.mediaServiceMock, never()).create(anyMap(), anyMap());
     }
 
