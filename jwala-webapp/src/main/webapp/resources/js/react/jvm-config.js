@@ -258,7 +258,7 @@ var JvmConfigForm = React.createClass({
     render: function() {
         var jvmId =  this.props.data !== undefined ? this.props.data.id.id : "";
         return <div className={this.props.className}>
-                    <form ref="jvmConfigForm">
+                    <form ref="jvmConfigForm" className="JvmForm">
                         <input type="hidden" name="id" value={jvmId} />
                         <input type="hidden" name="systemProperties" value="" />
                         <table>
@@ -426,7 +426,7 @@ var JvmConfigForm = React.createClass({
                             </tr>
                             <tr>
                                 <td>
-                                    <div className="jvmStatusUrl">
+                                    <div className="groupListMsg">
                                     {this.props.data === undefined && this.state.groupIds.length > 1 ? "The JVM templates will only be inherited from a single group" : ""}
                                     </div>
                                     <DataMultiSelectBox name="groupSelector[]"
