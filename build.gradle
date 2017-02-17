@@ -49,6 +49,7 @@ subprojects {
     apply plugin: "jacoco"
     apply plugin: "pmd"
     apply plugin: "eclipse"
+    apply plugin: "maven-publish"
 
     sourceCompatibility = 1.7
     group = "com.cerner.cto.jwala"

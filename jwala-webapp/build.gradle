@@ -1,6 +1,5 @@
 apply plugin: 'com.moowork.node'
 apply plugin: "war"
-apply plugin: 'maven-publish'
 
 ext {
     localVersions = [jstl: "1.2"]
