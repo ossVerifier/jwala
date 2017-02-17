@@ -258,8 +258,6 @@ sonarRunner {
 subprojects {
     sourceCompatibility = 1.7
 
-    group = "com.cerner.jwala"
-
     version = project.properties['buildVersion']
 
     sonarRunner {
