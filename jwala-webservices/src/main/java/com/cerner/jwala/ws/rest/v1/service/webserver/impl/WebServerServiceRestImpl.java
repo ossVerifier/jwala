@@ -377,7 +377,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         if (!webServer.getState().equals(WebServerReachableState.WS_NEW)) {
             CommandOutput commandOutput = webServerControlService.controlWebServer(controlWebServerRequest, user.getUser());
             if (commandOutput.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Delete of windows service {} was successful", webServerName);
+                LOGGER.info("Delete of service {} was successful", webServerName);
             } else if (ExecReturnCode.JWALA_EXIT_CODE_SERVICE_DOES_NOT_EXIST == commandOutput.getReturnCode().getReturnCode()) {
                 LOGGER.info("No such service found for {} during delete. Continuing with request.", webServerName);
             } else {
@@ -393,7 +393,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     protected File createTempWebServerResourceFile(String aWebServerName, String httpdDataDir, String fileName, String generatedTemplate) {
         String fileNamePrefix = FilenameUtils.getBaseName(fileName);
         String fileNameSuffix = FilenameUtils.getExtension(fileName);
-
         PrintWriter out = null;
         final File httpdConfFile =
                 new File(httpdDataDir + System.getProperty("file.separator") + aWebServerName + "_" + fileNamePrefix + "."

@@ -63,7 +63,7 @@ public class ResourceHandlerConfigurationTest {
     @Mock
     private RepositoryService mockRepositoryService;
 
-    private ResourceService resourceService = new ResourceServiceImpl(null, null, null, null, null, null, null,
+    private ResourceService resourceService = new ResourceServiceImpl(null, null, null, null, null, null,
             null, null, null, new Tika(), mockRepositoryService);
 
     @BeforeClass

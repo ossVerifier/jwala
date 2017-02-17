@@ -64,28 +64,21 @@ import java.util.*;
 
 public class ResourceServiceImpl implements ResourceService {
 
-    @Autowired
-    ShellCommandFactory shellCommandFactory;
-    @Autowired
-    DistributionService distributionService;
-    @Autowired
-    BinaryDistributionControlService distributionControlService;
-    @Autowired
-    HistoryFacadeService historyFacadeService;
-    @Autowired
-    BinaryDistributionLockManager lockManager;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceServiceImpl.class);
     private static final String WAR_FILE_EXTENSION = ".war";
-    private static final String UNZIP_EXE = "unzip.exe";
     private static final String MEDIA_TYPE_TEXT = "text";
 
+    @Autowired
+    private DistributionService distributionService;
+    @Autowired
+    private BinaryDistributionControlService distributionControlService;
+
     private final Expression encryptExpression;
+
     private final ResourcePersistenceService resourcePersistenceService;
 
     private final GroupPersistenceService groupPersistenceService;
-
-    private final RemoteCommandExecutorImpl remoteCommandExecutor;
 
     private final ApplicationPersistenceService applicationPersistenceService;
 
@@ -93,11 +86,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final WebServerPersistenceService webServerPersistenceService;
 
-
     private final ResourceDao resourceDao;
-
-    @Autowired
-    private BinaryDistributionLockManager lockManager;
 
     private final ResourceHandler resourceHandler;
 
@@ -116,14 +105,12 @@ public class ResourceServiceImpl implements ResourceService {
                                final WebServerPersistenceService webServerPersistenceService,
                                final ResourceDao resourceDao,
                                final ResourceHandler resourceHandler,
-                               final RemoteCommandExecutorImpl remoteCommandExecutor,
                                final ResourceContentGeneratorService resourceContentGeneratorService,
                                final BinaryDistributionService binaryDistributionService,
                                final Tika fileTypeDetector,
                                final RepositoryService repositoryService) {
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
-        this.remoteCommandExecutor = remoteCommandExecutor;
         SpelExpressionParser expressionParser = new SpelExpressionParser();
         String encryptExpressionString = ApplicationProperties.get("encryptExpression");
         encryptExpression = expressionParser.parseExpression(encryptExpressionString);

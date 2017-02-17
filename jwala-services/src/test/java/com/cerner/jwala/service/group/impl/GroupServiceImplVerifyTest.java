@@ -108,8 +108,8 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
-                 mockResourceDao, mockResourceHandler, mockRemoteCommandExector,
-                resourceContentGeneratorService, binaryDistributionService, new Tika(), mockRepositoryService);
+                 mockResourceDao, mockResourceHandler, resourceContentGeneratorService,
+                binaryDistributionService, new Tika(), mockRepositoryService);
 
         groupService = new GroupServiceImpl(groupPersistenceService,
                 applicationPersistenceService,

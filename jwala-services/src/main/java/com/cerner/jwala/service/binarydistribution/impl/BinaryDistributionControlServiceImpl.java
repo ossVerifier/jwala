@@ -17,7 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.util.Date;
 
 /**
  * Created by Arvindo Kinny on 10/11/2016.
@@ -111,7 +113,8 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
 
     @Override
     public CommandOutput backupFile(final String hostname, final String remotePath) throws CommandFailureException {
-        final String destPathBackup = remotePath + "." +Instant.now();
+        final String currentDateSuffix = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Date.from(Instant.now()));
+        final String destPathBackup = remotePath + "." + currentDateSuffix;
         RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(hostname),  new ExecCommand(MOVE, remotePath, destPathBackup)));
         CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                 remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);

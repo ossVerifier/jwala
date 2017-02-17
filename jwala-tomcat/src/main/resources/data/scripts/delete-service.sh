@@ -17,8 +17,10 @@ if $cygwin; then
 fi
 
 if $linux; then
-	if [ -f "/etc/init.d/$1" ]; then
-	        echo delete /etc/init.d/$1
-			/usr/bin/sudo rm /etc/init.d/$1
-	fi
+    if $linux; then
+        if [ test -e "/etc/init.d/$1" ]; then
+          echo delete /etc/init.d/$1
+          /usr/bin/sudo rm /etc/init.d/$1
+        fi
+    fi
 fi

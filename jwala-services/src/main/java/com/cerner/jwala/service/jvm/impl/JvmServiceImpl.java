@@ -551,16 +551,20 @@ public class JvmServiceImpl implements JvmService {
         }
     }
 
-    private void secureCopyJvmConfigJar(Jvm jvm, String jvmConfigTar, User user) throws CommandFailureException {
+    private void secureCopyJvmConfigJar(Jvm jvm, String jvmConfigJar, User user) throws CommandFailureException {
+        long startTime = System.currentTimeMillis();
         String configTarName = jvm.getJvmName() + ".jar";
         final String scriptsDir = ApplicationProperties.get(PropertyKeys.REMOTE_SCRIPT_DIR);
-        secureCopyFileToJvm(jvm, ApplicationProperties.get("paths.generated.resource.dir") + '/' + jvm.getJvmName() + '/' + configTarName, scriptsDir + '/' + configTarName, user);
-        LOGGER.info("Copy of config tar successful: {}", jvmConfigTar);
+        String jvmJarFile  = ApplicationProperties.get("paths.generated.resource.dir") + File.separator + jvm.getJvmName() + File.separator + configTarName;
+        String destination = scriptsDir + "/" + configTarName;
+        LOGGER.info("Copy config jar {} to {} ", jvmJarFile, destination);
+        secureCopyFileToJvm(jvm, jvmJarFile, destination , user);
+        LOGGER.info("Copy of config jar successful: {} in {}ms ", jvmConfigJar, System.currentTimeMillis() - startTime);
     }
 
     private void deployJvmConfigJar(Jvm jvm, User user, String jvmJar) throws CommandFailureException {
         final String parentDir = ApplicationProperties.get("remote.paths.instances");
-        CommandOutput execData = jvmControlService.executeCreateDirectoryCommand(jvm, parentDir);
+        CommandOutput execData = jvmControlService.executeCreateDirectoryCommand(jvm, parentDir+"/"+jvm.getJvmName());
         if (execData.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully created the parent directory {}", parentDir);
         } else {
@@ -570,8 +574,9 @@ public class JvmServiceImpl implements JvmService {
         }
         execData = jvmControlService.controlJvm(
                 new ControlJvmRequest(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_ARCHIVE), user);
+        execData.getStandardOutput();
         if (execData.getReturnCode().wasSuccessful()) {
-            LOGGER.info("Deployment of config tar was successful: {}", jvmJar);
+            LOGGER.info("Deployment of config jar was successful: {}", jvmJar);
         } else {
             String standardError =
                     execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
@@ -586,7 +591,9 @@ public class JvmServiceImpl implements JvmService {
         String tomcatDirName = ApplicationProperties.getRequired(PropertyKeys.REMOTE_TOMCAT_DIR_NAME);
 
         final String targetAbsoluteDir = instancesDir + '/' + jvm.getJvmName() + '/' + tomcatDirName + "/bin";
-
+        if(!jvmControlService.executeCheckFileExistsCommand(jvm,targetAbsoluteDir).getReturnCode().wasSuccessful()){
+            LOGGER.debug("JVM not generated yet.. ");
+        }
         if (!jvmControlService.executeChangeFileModeCommand(jvm, "a+x", targetAbsoluteDir, "*.sh").getReturnCode().wasSuccessful()) {
             String message = "Failed to change the file permissions in " + targetAbsoluteDir + " for jvm " + jvm.getJvmName();
             LOGGER.error(message);

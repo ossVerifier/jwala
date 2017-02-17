@@ -4,6 +4,7 @@ import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
+import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.properties.PropertyKeys;
@@ -20,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.io.File;
 import java.text.MessageFormat;
 
 /**
@@ -52,7 +54,12 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             String apacheDirName = ApplicationProperties.get(PropertyKeys.REMOTE_PATHS_HTTPD_ROOT_DIR_NAME);
             String remoteDeployDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_DEPLOY_DIR);
             String httpdZipFile = ApplicationProperties.getRequired(PropertyKeys.APACHE_HTTPD_FILE_NAME);
-            distributeBinary(hostname, apacheDirName, httpdZipFile, remoteDeployDir, APACHE_EXCLUDE);
+            String jwalaBinaryDir = ApplicationProperties.getRequired(PropertyKeys.LOCAL_JWALA_BINARY_DIR);
+            if (!binaryDistributionControlService.checkFileExists(hostname, remoteDeployDir+"/"+apacheDirName).getReturnCode().wasSuccessful()) {
+                distributeBinary(hostname, jwalaBinaryDir + File.separator + httpdZipFile, remoteDeployDir, APACHE_EXCLUDE);
+            } else {
+                LOGGER.warn("Webserver directories already exists, installation of {} skipped!", httpdZipFile);
+            }
         } finally {
             binaryDistributionLockManager.writeUnlock(writeLockResourceName);
         }
@@ -67,29 +74,26 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             historyFacadeService.write(jvm.getHostName(), jvm.getGroups(), "DISTRIBUTE_JDK " + jdkMedia.getName(),
                     EventType.APPLICATION_EVENT, getUserNameFromSecurityContext());
             if (!checkIfMediaDirExists(jvm.getJdkMedia().getMediaDir().split(","), jvm.getHostName(), binaryDeployDir)) {
-                distributeBinary(jvm.getHostName(), jdkMedia.getName(), binaryDeployDir, "", jdkMedia.getPath());
+                distributeBinary(jvm.getHostName(), jdkMedia.getPath(), jdkMedia.getRemoteHostPath(), "");
             } else {
                 LOGGER.warn("Jdk directories already exists, installation of {} skipped!", jvm.getJdkMedia().getName());
             }
         } else {
             final String errMsg = MessageFormat.format("JDK dir location is null or empty for JVM {0}. Not deploying JDK.", jvm.getJvmName());
-            LOGGER.info("Start deploy jdk for host {}", jvm.getHostName());
-            String remoteDeployDir = jdkMedia.getRemoteHostPath();
-            String javaDirName = jdkMedia.getMediaDir();
-            String jdkBinary = jdkMedia.getPath();
-            distributeBinary(jvm.getHostName(), javaDirName, jdkBinary, remoteDeployDir, "");
-            LOGGER.info("End deploy jdk for {}", jvm.getHostName());
+            throw new ApplicationException(errMsg);
         }
+        LOGGER.info("End deploy jdk for {}", jvm.getHostName());
     }
 
-    private void distributeBinary(final String hostname, final String zipFileRootDir, final String zipFileName, final String jwalaRemoteHome, final String exclude) {
-        String jwalaBinaryDir = ApplicationProperties.getRequired(PropertyKeys.LOCAL_JWALA_BINARY_DIR);
-        String binaryDeployDir = jwalaRemoteHome + "/" + zipFileRootDir;
-        String zipFile = jwalaBinaryDir + "/" + zipFileName;
+    private void distributeBinary(final String hostname, final String zipFileName, final String jwalaRemoteHome, final String exclude) {
         remoteCreateDirectory(hostname, jwalaRemoteHome);
-        remoteSecureCopyFile(hostname, zipFile, jwalaRemoteHome + "/" + zipFileName);
-        remoteUnzipBinary(hostname, jwalaRemoteHome + "/" + zipFileName, jwalaRemoteHome + "/", exclude);
-        remoteDeleteBinary(hostname, jwalaRemoteHome + "/" + zipFileName);
+        remoteSecureCopyFile(hostname, zipFileName, jwalaRemoteHome);
+        remoteUnzipBinary(hostname, jwalaRemoteHome + "/" + getFileName(zipFileName), jwalaRemoteHome + "/", exclude);
+        remoteDeleteBinary(hostname, jwalaRemoteHome + "/" + getFileName(zipFileName));
+    }
+
+    private String getFileName(String fullPath){
+        return fullPath.substring(fullPath.lastIndexOf(File.separator), fullPath.length());
     }
 
     @Override

@@ -630,6 +630,7 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
 
         when(mockResourceService.generateResourceGroup()).thenReturn(mockResourceGroup);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), anyObject(), any(ResourceGeneratorType.class))).thenReturn("<server>some xml</server>");
+        when(mockJvmControlService.executeCheckFileExistsCommand(any(Jvm.class), anyString())).thenReturn(commandOutput);
 
         final List<String> templateNames = new ArrayList<>();
         templateNames.add("setenv.bat");

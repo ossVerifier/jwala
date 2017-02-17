@@ -111,8 +111,8 @@ public class ResourceServiceImplTest {
 
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
-                mockResourceDao, mockResourceHandler, mockRemoteCommandExector,
-                resourceContentGeneratorService, mockBinaryDistributionService, new Tika(), mockRepositoryService);
+                mockResourceDao, mockResourceHandler, resourceContentGeneratorService,
+                mockBinaryDistributionService, new Tika(), mockRepositoryService);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));
 

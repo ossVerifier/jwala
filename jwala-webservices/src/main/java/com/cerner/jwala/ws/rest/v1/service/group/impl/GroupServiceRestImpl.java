@@ -515,7 +515,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 });
                 futuresMap.put(jvmName, responseFuture);
             }
-
             checkResponsesForErrorStatus(futuresMap);
         } else {
             LOGGER.info("No JVMs in group {}", aGroupId);

@@ -83,8 +83,7 @@ public class WebServerCommandFactory {
         commands.put(WebServerControlOperation.DELETE_SERVICE.getExternalValue(), (WebServer webServer)
                 -> remoteCommandExecutorService.executeCommand(
                 new RemoteExecCommand(getConnection(webServer),getExecCommand(DELETE_SERVICE_SCRIPT_NAME.getValue(),
-                                                                              webServer,
-                                                                              webServer.getName()))));
+                                                                              webServer))));
         commands.put(WebServerControlOperation.INSTALL_SERVICE.getExternalValue(), (WebServer webServer)
                 -> remoteCommandExecutorService.executeCommand(
                 new RemoteExecCommand(getConnection(webServer),
