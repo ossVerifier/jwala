@@ -13,6 +13,7 @@ var uiLoadingIndicator = function() {
             loadingDialog.parents(".ui-dialog")
                 .css("border", "0 none")
                 .css("background", "transparent")
+                .css("z-index", "999")
                 .find(".ui-dialog-titlebar").remove();
         },
         removeLoadingIndicator : function() {
