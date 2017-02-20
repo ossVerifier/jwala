@@ -43,6 +43,7 @@ import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
+import org.apache.cxf.common.util.CollectionUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -385,11 +386,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             Response response;
             try {
                 long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "600"));
-                response = futureMap.get(keyEntityName).get(timeout, TimeUnit.SECONDS);
-                if (response.getStatus() > 399) {
-                    final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
-                    LOGGER.error(MessageFormat.format("Remote command failed for {0}: {1}", keyEntityName, reasonPhrase));
-                    entityDetailsMap.put(keyEntityName, Collections.singletonList(reasonPhrase));
+                Future<Response> responseFuture = futureMap.get(keyEntityName);
+                if(responseFuture != null) {
+                    response = responseFuture.get(timeout, TimeUnit.SECONDS);
+                    if (response.getStatus() > 399) {
+                        final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
+                        LOGGER.error(MessageFormat.format("Remote command failed for {0}: {1}", keyEntityName, reasonPhrase));
+                        entityDetailsMap.put(keyEntityName, Collections.singletonList(reasonPhrase));
+                    }
                 }
             } catch (InterruptedException | ExecutionException e) {
                 LOGGER.error("FAILURE getting response for {}", keyEntityName, e);
@@ -493,7 +497,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
             for (Jvm jvm : jvms) {
                 LOGGER.info("Checking if setenv.bat exists for the jvm {}", jvm.getJvmName());
-                jvmService.checkForSetenvBat(jvm.getJvmName());
+                jvmService.checkForSetenvScript(jvm.getJvmName());
             }
 
             // generate and deploy the JVMs
@@ -510,7 +514,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 });
                 futuresMap.put(jvmName, responseFuture);
             }
-
             checkResponsesForErrorStatus(futuresMap);
         } else {
             LOGGER.info("No JVMs in group {}", aGroupId);
@@ -712,8 +715,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "All JVMs on the host " + hostName + " must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
                 }
             }
-            futureMap.put(hostName, createFutureResponseForAppDeploy(groupName, fileName, appName, null, hostName));
-            checkResponsesForErrorStatus(futureMap);
+            Future<Response> response  = createFutureResponseForAppDeploy(groupName, fileName, appName, null, hostName);
+            if(response != null) {
+                futureMap.put(hostName, response);
+                checkResponsesForErrorStatus(futureMap);
+            }
         }
     }
 
@@ -732,11 +738,15 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 final String hostName = jvm.getHostName();
                 if (!deployedHosts.contains(hostName)) {
                     deployedHosts.add(hostName);
-                    futureMap.put(hostName, createFutureResponseForAppDeploy(groupName, fileName, appName, jvm, null));
+                    Future<Response> response  = createFutureResponseForAppDeploy(groupName, fileName, appName, jvm, null);
+                    if(response!=null)
+                        futureMap.put(hostName, response);
+                    }
                 }
             }
-            checkResponsesForErrorStatus(futureMap);
-        }
+            if(futureMap.size()>0){
+                checkResponsesForErrorStatus(futureMap);
+            }
     }
 
     protected void performGroupAppDeployToJvms(final String groupName, final String fileName, final AuthenticatedUser aUser, final Group group,

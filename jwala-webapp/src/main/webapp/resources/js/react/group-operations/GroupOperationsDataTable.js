@@ -347,7 +347,9 @@ var GroupOperationsDataTable = React.createClass({
                 errorMsgDlgTitle: oData.name + " State Error Messages" }), nTd, function () {
                 GroupOperations.webServerStatusWidgetMap[key] = this;
                 // TODO: Include lastUpdatedDate from REST and replace "new Date()".
-                this.setStatus(oData.stateLabel, new Date(), oData.errorStatus);
+                if(oData.stateLabel) {
+                    this.setStatus(oData.stateLabel, new Date(), oData.errorStatus);
+                }
             });
         }.bind(this);
     },

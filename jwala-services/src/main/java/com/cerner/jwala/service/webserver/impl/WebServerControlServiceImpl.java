@@ -8,17 +8,15 @@ import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.*;
-import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
-import com.cerner.jwala.control.command.ServiceCommandBuilder;
-import com.cerner.jwala.control.webserver.command.impl.WindowsWebServerPlatformCommandProvider;
-import com.cerner.jwala.control.webserver.command.windows.WindowsWebServerNetOperation;
+import com.cerner.jwala.control.webserver.command.WebServerCommandFactory;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
+import com.cerner.jwala.service.binarydistribution.DistributionService;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
 import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
@@ -26,41 +24,48 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 import static com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation.START;
 import static com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation.STOP;
 
 public class WebServerControlServiceImpl implements WebServerControlService {
 
-    private static final String FORCED_STOPPED = "FORCED STOPPED";
-    private static final String WEB_SERVER = "Web Server";
-    private final WebServerService webServerService;
-    private final RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerControlServiceImpl.class);
-    private final RemoteCommandExecutorService remoteCommandExecutorService;
-    private final HistoryFacadeService historyFacadeService;
-    private final SshConfiguration sshConfig;
     private static final int SLEEP_DURATION = 1000;
-
     private static final String MSG_SERVICE_ALREADY_STARTED = "Service already started";
     private static final String MSG_SERVICE_ALREADY_STOPPED = "Service already stopped";
+    private static final String FORCED_STOPPED = "FORCED STOPPED";
+    private static final String WEB_SERVER = "Web Server";
 
-    public WebServerControlServiceImpl(final WebServerService webServerService,
-                                       final RemoteCommandExecutor<WebServerControlOperation> commandExecutor,
-                                       final RemoteCommandExecutorService remoteCommandExecutorService,
-                                       final SshConfiguration sshConfig, HistoryFacadeService historyFacadeService) {
-        this.webServerService = webServerService;
-        this.commandExecutor = commandExecutor;
-        this.remoteCommandExecutorService = remoteCommandExecutorService;
-        this.sshConfig = sshConfig;
-        this.historyFacadeService = historyFacadeService;
-    }
+    @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
+    protected String topicServerStates;
+
+    @Autowired
+    private WebServerCommandFactory webServerCommandFactory;
+
+    @Autowired
+    private DistributionService distributionService;
+
+    @Autowired
+    private WebServerService webServerService;
+
+    @Autowired
+    private RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
+
+    @Autowired
+    private RemoteCommandExecutorService remoteCommandExecutorService;
+
+    @Autowired
+    private HistoryFacadeService historyFacadeService;
+
+    @Autowired
+    private SshConfiguration sshConfig;
+
 
     @Override
     public CommandOutput controlWebServer(final ControlWebServerRequest controlWebServerRequest, final User aUser) {
@@ -71,16 +76,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                     controlOperation.name() : controlOperation.getOperationState().toStateLabel();
 
             historyFacadeService.write(getServerName(webServer), new ArrayList<>(webServer.getGroups()), event, EventType.USER_ACTION_INFO, aUser.getId());
-
-            final WindowsWebServerPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsWebServerPlatformCommandProvider();
-
-            final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlOperation);
-            final ExecCommand execCommand = serviceCommandBuilder.buildCommandForService(webServer.getName());
-
-            final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
-                    sshConfig.getEncryptedPassword(), webServer.getHost(), sshConfig.getPort()), execCommand);
-
-            RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
+            RemoteCommandReturnInfo remoteCommandReturnInfo = webServerCommandFactory.executeCommand(webServer, controlOperation);
 
             CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                     remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
@@ -150,9 +146,9 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
     private String createCommandErrorMessage(CommandOutput commandOutput, Integer returnCode, String commandName) {
         return "Web Server control command [" + commandName + "] was not successful! Return code = "
-                                        + returnCode + ", description = " +
-                                        CommandOutputReturnCode.fromReturnCode(returnCode).getDesc() +
-                                        ", message = " + commandOutput.standardErrorOrStandardOut();
+                + returnCode + ", description = " +
+                CommandOutputReturnCode.fromReturnCode(returnCode).getDesc() +
+                ", message = " + commandOutput.standardErrorOrStandardOut();
     }
 
     private void sendMessageToActionEventLogs(User aUser, WebServer webServer, String commandOutputReturnDescription) {
@@ -172,104 +168,28 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     }
 
     @Override
-    public CommandOutput secureCopyFile(final String aWebServerName, final String sourcePath, final String destPath, String userId) throws CommandFailureException {
-
+    public void secureCopyFile(final String aWebServerName, final String sourcePath, final String destPath, String userId) throws CommandFailureException {
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
         final String fileName = new File(destPath).getName();
         if (destPath.endsWith(fileName)) {
             historyFacadeService.write(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()),
-                    WindowsWebServerNetOperation.SCP.name() + " " + fileName, EventType.USER_ACTION_INFO, userId);
+                    WebServerControlOperation.SCP.name() + " " + fileName, EventType.USER_ACTION_INFO, userId);
         }
-
-        // back up the original file first
-        final String host = aWebServer.getHost();
-        CommandOutput commandOutput = commandExecutor.executeRemoteCommand(
-                aWebServerName,
-                host,
-                WebServerControlOperation.CHECK_FILE_EXISTS,
-                new WindowsWebServerPlatformCommandProvider(),
-                destPath
-        );
-        if (commandOutput.getReturnCode().wasSuccessful()) {
+        if(distributionService.remoteFileCheck(aWebServer.getHost(),destPath)){
             LOGGER.info("Found the file {}", destPath);
-        } else {
-            final String parentDir;
-            if (destPath.startsWith("~")) {
-                parentDir = destPath.substring(0, destPath.lastIndexOf("/"));
-            } else {
-                parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-            }
-            commandOutput = commandExecutor.executeRemoteCommand(
-                    aWebServerName,
-                    host,
-                    WebServerControlOperation.CREATE_DIRECTORY,
-                    new WindowsWebServerPlatformCommandProvider(),
-                    parentDir
-            );
-            if (commandOutput.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Successfully created parent directory {} on host {}", parentDir, host);
-            } else {
-                final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                LOGGER.error("create command failed with error trying to create parent directory {} on {} :: ERROR: {}", parentDir, host, standardError);
-                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
-            }
+            distributionService.backupFile(aWebServer.getHost(),destPath);
         }
-        commandOutput = commandExecutor.executeRemoteCommand(aWebServerName,
-                host,
-                WebServerControlOperation.CHECK_FILE_EXISTS,
-                new WindowsWebServerPlatformCommandProvider(),
-                destPath);
-        if (commandOutput.getReturnCode().wasSuccessful()) {
-            String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
-            final String destPathBackup = destPath + currentDateSuffix;
-            commandOutput = commandExecutor.executeRemoteCommand(
-                    aWebServerName,
-                    host,
-                    WebServerControlOperation.BACK_UP,
-                    new WindowsWebServerPlatformCommandProvider(),
-                    destPath,
-                    destPathBackup);
-            if (!commandOutput.getReturnCode().wasSuccessful()) {
-                final String standardError = "Failed to back up the " + destPath + " for " + aWebServerName + ". Continuing with secure copy.";
-                LOGGER.error(standardError);
-                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
-            } else {
-                LOGGER.info("Successfully backed up " + destPath + " at " + host);
-            }
-        }
-
-        // run the scp command
-        return commandExecutor.executeRemoteCommand(
-                aWebServer.getName(),
-                host,
-                WebServerControlOperation.SCP,
-                new WindowsWebServerPlatformCommandProvider(),
-                sourcePath,
-                destPath);
+        distributionService.remoteSecureCopyFile(aWebServer.getHost(), sourcePath,destPath);
     }
 
     @Override
-    public CommandOutput createDirectory(WebServer webServer, String dirAbsolutePath) throws CommandFailureException {
-        return commandExecutor.executeRemoteCommand(
-                webServer.getName(),
-                webServer.getHost(),
-                WebServerControlOperation.CREATE_DIRECTORY,
-                new WindowsWebServerPlatformCommandProvider(),
-                dirAbsolutePath);
-
+    public void createDirectory(WebServer webServer, String dirAbsolutePath) throws CommandFailureException {
+        distributionService.remoteCreateDirectory(webServer.getHost(), dirAbsolutePath);
     }
 
     @Override
-    public CommandOutput changeFileMode(WebServer webServer, String fileMode, String targetDirPath, String targetFile) throws CommandFailureException {
-        return commandExecutor.executeRemoteCommand(
-                webServer.getName(),
-                webServer.getHost(),
-                WebServerControlOperation.CHANGE_FILE_MODE,
-                new WindowsWebServerPlatformCommandProvider(),
-                fileMode,
-                targetDirPath,
-                targetFile);
-
+    public void changeFileMode(WebServer webServer, String fileMode, String targetDirPath, String targetFile) throws CommandFailureException {
+        distributionService.changeFileMode(webServer.getHost(),fileMode, targetDirPath, targetFile);
     }
 
     @Override
@@ -292,7 +212,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                     }
                     break;
                 default:
-                    throw new InternalErrorException(FaultType.SERVICE_EXCEPTION, "Command: " + webServerControlOperation.toString() + " not supported");
+                    throw new InternalErrorException(FaultType.SERVICE_EXCEPTION, "JvmCommand: " + webServerControlOperation.toString() + " not supported");
             }
             if (DateTime.now().getMillis() - startTime > waitTimeout) {
                 LOGGER.warn("Timeout reached to get the state for webserver: {}", webServer.getName());

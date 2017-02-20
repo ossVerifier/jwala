@@ -58,5 +58,4 @@ public class RemoteCommandExecutorImpl<T> implements RemoteCommandExecutor<T> {
                     jsche);
         }
     }
-
 }

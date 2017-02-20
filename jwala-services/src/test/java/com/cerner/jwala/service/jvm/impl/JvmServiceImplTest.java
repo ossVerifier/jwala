@@ -13,6 +13,7 @@ import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
+import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
@@ -25,12 +26,14 @@ import com.cerner.jwala.common.request.jvm.CreateJvmAndAddToGroupsRequest;
 import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.control.AemControl;
+import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.HistoryFacadeService;
+import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.VerificationBehaviorSupport;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
@@ -113,6 +116,12 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
 
     @Mock
     private FileUtility mockFileUtility;
+
+    @Mock
+    SshConfiguration sshConfiguration;
+
+    @Mock
+    RemoteCommandExecutorService remoteCommandExecutorService;
 
     private JvmService jvmService;
 
@@ -362,34 +371,6 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
     }
 
     @Test
-    public void testDeleteJvmWindowsServiceForNonExistentService() {
-        Jvm mockJvm = mock(Jvm.class);
-        ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>(123L), JvmControlOperation.DELETE_SERVICE);
-        CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(36), "", "Fail for non-existent service");
-
-        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        when(mockJvm.getJvmName()).thenReturn("jvm-name-delete-service");
-        when(mockJvmControlService.controlJvm(eq(controlJvmRequest), any(User.class))).thenReturn(commandOutput);
-
-        jvmService.deleteJvmWindowsService(controlJvmRequest, mockJvm, mockUser);
-        verify(mockJvmControlService).controlJvm(eq(controlJvmRequest), eq(mockUser));
-    }
-
-    @Test(expected = InternalErrorException.class)
-    public void testDeleteJvmWindowsServiceFailsForOtherErrorCode() {
-        Jvm mockJvm = mock(Jvm.class);
-        ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>(123L), JvmControlOperation.DELETE_SERVICE);
-        CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(1111), "", "Fail some other reason than service does not exist");
-
-        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        when(mockJvm.getJvmName()).thenReturn("jvm-name-delete-service");
-        when(mockJvmControlService.controlJvm(eq(controlJvmRequest), any(User.class))).thenReturn(commandOutput);
-
-        jvmService.deleteJvmWindowsService(controlJvmRequest, mockJvm, mockUser);
-        verify(mockJvmControlService).controlJvm(eq(controlJvmRequest), eq(mockUser));
-    }
-
-    @Test
     public void testGetAll() {
 
         jvmService.getJvms();
@@ -615,12 +596,12 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
     public void testCheckSetenvBat() {
         final String jvmName = "test-jvm-check-for-setenvbat";
         when(mockJvmPersistenceService.getResourceTemplate(jvmName, "setenv.bat")).thenReturn("ignore template content, just need to check no exception is thrown");
-        jvmService.checkForSetenvBat(jvmName);
+        jvmService.checkForSetenvScript(jvmName);
 
         verify(mockJvmPersistenceService).getResourceTemplate(anyString(), anyString());
 
         when(mockJvmPersistenceService.getResourceTemplate(jvmName, "setenv.bat")).thenThrow(new NonRetrievableResourceTemplateContentException("JVM", "setenv.bat", new Throwable()));
-        jvmService.checkForSetenvBat(jvmName);
+        jvmService.checkForSetenvScript(jvmName);
     }
 
     @Test
@@ -648,6 +629,11 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
 
         when(mockResourceService.generateResourceGroup()).thenReturn(mockResourceGroup);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), anyObject(), any(ResourceGeneratorType.class))).thenReturn("<server>some xml</server>");
+        when(mockJvmControlService.executeCheckFileExistsCommand(any(Jvm.class), anyString())).thenReturn(commandOutput);
+
+        final List<String> templateNames = new ArrayList<>();
+        templateNames.add("setenv.bat");
+        when(mockJvmPersistenceService.getResourceTemplateNames(anyString())).thenReturn(templateNames);
 
         Jvm response = jvmService.generateAndDeployJvm(mockJvm.getJvmName(), mockUser);
         assertEquals(response.getJvmName(), mockJvm.getJvmName());

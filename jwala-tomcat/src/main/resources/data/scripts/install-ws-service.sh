@@ -33,19 +33,21 @@ if $cygwin; then
     /usr/bin/sleep 1
   done
 
-  export WSINST=`sc queryex $1 | head -1 | awk '{ sub(/:/,"",$4); print $4 }'`
-  if [ "$WSINST" = "1060" ]; then
-      /usr/bin/echo Failed to install service $1
-      exit $JWALA_EXIT_CODE_FAILED
-  fi
-  /usr/bin/echo Invoke of service $1 was successful
-  exit $JWALA_EXIT_CODE_SUCCESS
+    export WSINST=`sc queryex $1 | head -1 | awk '{ sub(/:/,"",$4); print $4 }'`
+    if [ "$WSINST" = "1060" ]; then
+        /usr/bin/echo Failed to install service $1
+        exit $JWALA_EXIT_CODE_FAILED
+    fi
+    /usr/bin/echo Invoke of service $1 was successful
+    exit $JWALA_EXIT_CODE_SUCCESS
 fi
 
 if $linux; then
   # Need to pass $3 for apache home ex: /opt/ctp/apache-httpd-2.4.20, remote.paths.apache.httpd from vars.properties
-  sed -e "s/@APACHE_HOME@/${3//\//\\/}/g" -e "s/@HTTPD_CONF@/${2//\//\\/}\\/httpd.conf/g" /linux/httpd-ws-service> $1
-  chmod 755 $1
-  sudo cp $1 /etc/init.d
-  sudo chkconfig --add $1
+  	pushd $(dirname $0)
+  sed -e "s/@APACHE_HOME@/${3//\//\\/}/g" -e "s/@HTTPD_CONF@/${2//\//\\/}\\/httpd.conf/g" linux/httpd-ws-service> $1
+  /bin/chmod 755 $1
+  /usr/bin/sudo cp $1 /etc/init.d
+  /usr/bin/sudo /sbin/chkconfig --add $1
+  popd
 fi

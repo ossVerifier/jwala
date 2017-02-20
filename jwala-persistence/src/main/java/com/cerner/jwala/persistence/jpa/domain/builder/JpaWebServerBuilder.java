@@ -2,7 +2,6 @@ package com.cerner.jwala.persistence.jpa.domain.builder;
 
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
@@ -41,7 +40,7 @@ public class JpaWebServerBuilder {
                 webServer.getPort(),
                 webServer.getHttpsPort(),
                 new Path(webServer.getStatusPath()),
-                new FileSystemPath(webServer.getHttpConfigFile()),
+                new Path(webServer.getHttpConfigFile()),
                 new Path(webServer.getSvrRoot()),
                 new Path(webServer.getDocRoot()),
                 webServer.getState(),

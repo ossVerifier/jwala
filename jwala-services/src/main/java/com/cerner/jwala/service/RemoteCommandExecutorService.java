@@ -11,5 +11,4 @@ import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 public interface RemoteCommandExecutorService {
 
     RemoteCommandReturnInfo executeCommand(RemoteExecCommand remoteExecCommand);
-
 }

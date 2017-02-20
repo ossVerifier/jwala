@@ -4,7 +4,6 @@ import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
@@ -111,7 +110,7 @@ public class WebServerServiceImplTest {
         when(mockWebServer.getPort()).thenReturn(51000);
         when(mockWebServer.getHttpsPort()).thenReturn(52000);
         when(mockWebServer.getStatusPath()).thenReturn(new Path("/statusPath"));
-        when(mockWebServer.getHttpConfigFile()).thenReturn(new FileSystemPath("d:/some-dir/httpd.conf"));
+        when(mockWebServer.getHttpConfigFile()).thenReturn(new Path("d:/some-dir/httpd.conf"));
         when(mockWebServer.getSvrRoot()).thenReturn(new Path("./"));
         when(mockWebServer.getDocRoot()).thenReturn(new Path("htdocs"));
 
@@ -123,7 +122,7 @@ public class WebServerServiceImplTest {
         when(mockWebServer2.getPort()).thenReturn(51000);
         when(mockWebServer2.getHttpsPort()).thenReturn(52000);
         when(mockWebServer2.getStatusPath()).thenReturn(new Path("/statusPath"));
-        when(mockWebServer2.getHttpConfigFile()).thenReturn(new FileSystemPath("d:/some-dir/httpd.conf"));
+        when(mockWebServer2.getHttpConfigFile()).thenReturn(new Path("d:/some-dir/httpd.conf"));
         when(mockWebServer2.getSvrRoot()).thenReturn(new Path("./"));
         when(mockWebServer2.getDocRoot()).thenReturn(new Path("htdocs"));
 

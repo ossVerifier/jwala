@@ -52,5 +52,5 @@ if $cygwin; then
 fi
 
 if $linux; then
-  /sbin/sudo service $1 stop
+  /usr/bin/sudo /sbin/service $1 stop
 fi

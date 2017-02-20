@@ -1,20 +1,27 @@
 package com.cerner.jwala.common;
 
 import com.cerner.jwala.common.exception.ApplicationException;
-import org.apache.tika.io.IOUtils;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.compress.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
 import java.text.MessageFormat;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipFile;
 
 /**
@@ -24,8 +31,10 @@ import java.util.zip.ZipFile;
  */
 @Component
 public class FileUtility {
-
+    private static final String ZIP_FILE_EXT = ".zip";
+    private static final String TAR_GZIP_FILE_EXT = ".gz";
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUtility.class);
+    private ZipFile zipFile;
 
     /**
      * Unzips the file to the specified destination
@@ -82,6 +91,7 @@ public class FileUtility {
         }
     }
 
+
     /**
      * Gets the root directories of a zip file
      * @param zipFilename the zip filename
@@ -90,7 +100,10 @@ public class FileUtility {
     public Set<String> getZipRootDirs(final String zipFilename) {
         final Set<String> zipRootDirs = new HashSet<>();
         try {
-            final ZipFile zipFile = new ZipFile(zipFilename);
+            if(zipFilename.indexOf(TAR_GZIP_FILE_EXT)>0){
+                return getGZipRootDirs(zipFilename);
+            }
+            final ZipFile zipFile =  new ZipFile(zipFilename);
             final Enumeration zipEntryEnumeration = zipFile.entries();
             while (zipEntryEnumeration.hasMoreElements()) {
                 final String zipEntry = zipEntryEnumeration.nextElement().toString();
@@ -106,6 +119,12 @@ public class FileUtility {
         }
     }
 
+    /**
+     * Create archive in zip format
+     * @param archiveFile
+     * @param filesToBeJared
+     * @param parent
+     */
     public void createJarArchive(File archiveFile, File[] filesToBeJared, String parent) {
 
         final int BUFFER_SIZE = 10240;
@@ -153,4 +172,42 @@ public class FileUtility {
             throw new ApplicationException(e);
         }
     }
+
+    /**
+     * Get the list of tar gzip
+     *
+     * @param tarGzipFile tar gzip filename
+     * @return the list of extracted filenames
+     * @throws IOException
+     */
+    public static Set<String> getGZipRootDirs(String tarGzipFile){
+        final Set<String> zipRootDirs = new HashSet<>();
+        TarArchiveInputStream in = null;
+        try {
+            in = new TarArchiveInputStream(new GzipCompressorInputStream(new FileInputStream(tarGzipFile)));
+            TarArchiveEntry entry = in.getNextTarEntry();
+            while (entry != null) {
+                final int slashIdx = entry.getName().indexOf('/');
+                if (slashIdx > 0) {
+                    zipRootDirs.add(entry.getName().substring(0, slashIdx));
+                }
+                entry = in.getNextTarEntry();
+            }
+        }catch (Throwable th){
+            throw new ApplicationException(th);
+        }
+        finally {
+            try {
+                if(in !=null) {
+                    in.close();
+                }
+            }catch (IOException e){
+                LOGGER.error("Error closing gzip stream",e);
+            }
+        }
+
+        return zipRootDirs;
+
+    }
+
 }

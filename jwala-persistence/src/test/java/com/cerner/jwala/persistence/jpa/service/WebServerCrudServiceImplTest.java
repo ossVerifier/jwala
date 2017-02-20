@@ -5,7 +5,6 @@ import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
@@ -28,6 +27,7 @@ import com.cerner.jwala.persistence.jpa.service.impl.WebServerCrudServiceImpl;
 import com.cerner.jwala.persistence.jpa.type.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,7 +97,7 @@ public class WebServerCrudServiceImplTest {
                 8080,
                 443,
                 new Path("any"),
-                new FileSystemPath("any"),
+                new Path("any"),
                 new Path("any"),
                 new Path("any"),
                 WebServerReachableState.WS_UNREACHABLE,
@@ -114,7 +114,7 @@ public class WebServerCrudServiceImplTest {
                 808,
                 44,
                 new Path("anyx"),
-                new FileSystemPath("anyx"),
+                new Path("anyx"),
                 new Path("anyx"),
                 new Path("anyx"),
                 WebServerReachableState.WS_UNREACHABLE,
@@ -171,7 +171,7 @@ public class WebServerCrudServiceImplTest {
         assertTrue(webServersBelongingTo.size() == 0);
 
         WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer",
-                "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"),
+                "testHost", 101, 102, new Path("./statusPath"), new Path("./httpdConfPath"), new Path("./svrRootPath"),
                 new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
         webServer = webServerCrudService.createWebServer(webServer, "testUser");
         List<JpaWebServer> wsList = new ArrayList<>();
@@ -184,7 +184,7 @@ public class WebServerCrudServiceImplTest {
     @Test(expected = EntityExistsException.class)
     public void testCreateWebServerThrowsException() {
         WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost",
-                101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"), new Path("./docRoot"),
+                101, 102, new Path("./statusPath"), new Path("./httpdConfPath"), new Path("./svrRootPath"), new Path("./docRoot"),
                 WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
         webServerCrudService.createWebServer(webServer, "testUser");
         // causes problems
@@ -194,7 +194,7 @@ public class WebServerCrudServiceImplTest {
     @Test
     public void testFindApplications() {
         WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost",
-                101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"),
+                101, 102, new Path("./statusPath"), new Path("./httpdConfPath"), new Path("./svrRootPath"),
                 new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
         webServer = webServerCrudService.createWebServer(webServer, "testUser");
         List<Application> applications = webServerCrudService.findApplications("testWebServer");
@@ -231,7 +231,7 @@ public class WebServerCrudServiceImplTest {
     @Test
     public void testFindJvms() {
         WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer",
-                "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"),
+                "testHost", 101, 102, new Path("./statusPath"), new Path("./httpdConfPath"), new Path("./svrRootPath"),
                 new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
         webServerCrudService.createWebServer(webServer, "testUser");
         List<Jvm> jvms = webServerCrudService.findJvms("testWebServer");
@@ -256,7 +256,7 @@ public class WebServerCrudServiceImplTest {
         String templateContent = scanner.hasNext() ? scanner.next() : "";
 
         WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer",
-                "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"),
+                "testHost", 101, 102, new Path("./statusPath"), new Path("./httpdConfPath"), new Path("./svrRootPath"),
                 new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
         webServer = webServerCrudService.createWebServer(webServer, "testUser");
         UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer,
@@ -282,6 +282,31 @@ public class WebServerCrudServiceImplTest {
         assertNotNull(template);
 
         // test getting the template while we're here
+        final String resourceTemplate = webServerCrudService.getResourceTemplate(webServer.getName(), "httpd.conf");
+        assertTrue(!resourceTemplate.isEmpty());
+    }
+
+    @Ignore
+    @Test
+    public void testPopulateWebServerConfigTemplate() throws FileNotFoundException {
+        InputStream dataInputStream = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
+        Scanner scanner = new Scanner(dataInputStream).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
+        WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer",
+                "testHost", 101, 102, new Path("./statusPath"), new Path("./httpdConfPath"), new Path("./svrRootPath"),
+                new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
+        webServer = webServerCrudService.createWebServer(webServer, "testUser");
+        UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer,
+                "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, templateContent) {
+            @Override
+            public String getConfFileName() {
+                return "httpd.conf";
+            }
+        };
+        List<UploadWebServerTemplateRequest> templateCommands = new ArrayList<>();
+        templateCommands.add(uploadWsTemplateRequest);
+//        webServerCrudService.populateWebServerConfig(templateCommands, new User("userId"), false);
         final String resourceTemplate = webServerCrudService.getResourceTemplate(webServer.getName(), "httpd.conf");
         assertTrue(!resourceTemplate.isEmpty());
     }

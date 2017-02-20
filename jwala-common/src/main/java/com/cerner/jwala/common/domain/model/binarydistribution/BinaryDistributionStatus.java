@@ -1,7 +1,7 @@
 package com.cerner.jwala.common.domain.model.binarydistribution;
 
 /**
- * Created by LW044480 on 9/7/2016.
+ * Created by Lin-Hung Wu on 9/7/2016.
  */
 public enum BinaryDistributionStatus {
 
@@ -16,8 +16,9 @@ public enum BinaryDistributionStatus {
     UNZIP_FAIL("unzip fail"),
     UNZIP_SUCCESSFUL("unzip successful"),
     CHANGE_MODE_FAIL("change mode fail"),
-    CHANGE_MODE_SUCCESSFUL("change mode successful");
-
+    CHANGE_MODE_SUCCESSFUL("change mode successful"),
+    UNAME_FAIL("uname fail"),
+    UNAME_SUCCESSFUL("uname  successful");
     private String message;
     BinaryDistributionStatus(String message) {
         this.message = message;

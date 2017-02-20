@@ -151,18 +151,6 @@ public interface ApplicationService {
      * @return
      * @throws CommandFailureException
      */
-    public CommandOutput executeBackUpCommand(String entity, String host, String source) throws CommandFailureException;
-
-    CommandOutput executeCreateDirectoryCommand(String entity, String host, String directoryName) throws CommandFailureException;
-
-    CommandOutput executeSecureCopyCommand(String entity, String host, String source, String destination) throws CommandFailureException;
-
-    CommandOutput executeCheckIfFileExistsCommand(String entity, String host, String fileName) throws CommandFailureException;
-
-    CommandOutput executeChangeFileModeCommand(String entity, String host, String mode, String fileName, String fileOptions) throws CommandFailureException;
-
-    CommandOutput executeUnzipBinaryCommand(String entity, String host, String fileName, String destination, String options) throws CommandFailureException;
-
     /**
      * Method to deploy application configuration
      * @param appName

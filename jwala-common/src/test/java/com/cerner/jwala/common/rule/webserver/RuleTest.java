@@ -36,19 +36,19 @@ public class RuleTest {
     private Identifier [] groupIds = {new Identifier<Group>(1L)};
     private Identifier [] jvmIds = {new Identifier<Jvm>(1L)};
     private Rule [] rules = {new HostNameRule("any"),
-                             new MultipleRules(),
-                             new PortNumberRule(8080, FaultType.CANNOT_CONNECT),
-                             new ShutdownPortNumberRule(8080, FaultType.CANNOT_CONNECT),
-                             new StatusPathRule(mockPath),
-                             new ValidTemplateNameRule("any"),
-                             new ApplicationIdRule(new Identifier<Application>(1L)),
-                             new GroupIdRule(groupIds[0]),
-                             new GroupIdsRule(new HashSet<Identifier<Group>>(Arrays.<Identifier<Group>>asList(groupIds))),
-                             new GroupNameRule("any"),
-                             new JvmIdRule(jvmIds[0]),
-                             new JvmIdsRule(new HashSet<Identifier<Jvm>>(Arrays.<Identifier<Jvm>>asList(jvmIds))),
-                             new JvmStateRule(JvmState.JVM_STOPPED),
-                             new WebServerIdRule(new Identifier<WebServer>(1L))};
+            new MultipleRules(),
+            new PortNumberRule(8080, FaultType.CANNOT_CONNECT),
+            new ShutdownPortNumberRule(8080, FaultType.CANNOT_CONNECT),
+            new StatusPathRule(mockPath),
+            new ValidTemplateNameRule("any"),
+            new ApplicationIdRule(new Identifier<Application>(1L)),
+            new GroupIdRule(groupIds[0]),
+            new GroupIdsRule(new HashSet<Identifier<Group>>(Arrays.<Identifier<Group>>asList(groupIds))),
+            new GroupNameRule("any"),
+            new JvmIdRule(jvmIds[0]),
+            new JvmIdsRule(new HashSet<Identifier<Jvm>>(Arrays.<Identifier<Jvm>>asList(jvmIds))),
+            new JvmStateRule(JvmState.JVM_STOPPED),
+            new WebServerIdRule(new Identifier<WebServer>(1L))};
 
     @Before
     public void setup() {
@@ -64,7 +64,7 @@ public class RuleTest {
                 rule.validate();
             } catch (final RuntimeException e) {
                 if (rule.getClass().getSimpleName().equalsIgnoreCase("StatusPathRule") &&
-                    !e.getClass().getSimpleName().equalsIgnoreCase("BadRequestException")) {
+                        !e.getClass().getSimpleName().equalsIgnoreCase("BadRequestException")) {
                     e.printStackTrace();
                     fail("There shouldn't be any exceptions thrown for this test to pass! Class = " + rule.getClass().getSimpleName() +
                             "; Exception Message = " + e.getMessage());

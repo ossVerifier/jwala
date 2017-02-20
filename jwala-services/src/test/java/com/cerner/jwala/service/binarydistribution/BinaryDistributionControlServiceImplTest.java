@@ -1,134 +1,183 @@
 package com.cerner.jwala.service.binarydistribution;
 
+import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
 import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
-import com.cerner.jwala.common.exec.CommandOutput;
-import com.cerner.jwala.common.exec.ExecReturnCode;
+import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
+import com.cerner.jwala.common.exec.RemoteExecCommand;
+import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.control.command.impl.WindowsBinaryDistributionPlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
-import com.cerner.jwala.exception.CommandFailureException;
+import com.cerner.jwala.control.configuration.AemSshConfig;
+import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionControlServiceImpl;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.mockito.MockitoAnnotations.initMocks;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(loader = AnnotationConfigContextLoader.class,
+                      classes = {BinaryDistributionControlServiceImplTest.Config.class})
 public class BinaryDistributionControlServiceImplTest {
 
-    @Mock
-    private RemoteCommandExecutor<BinaryDistributionControlOperation> remoteCommandExecutor;
+    @Autowired
+    private ApplicationContext appContext;
 
-    private BinaryDistributionControlServiceImpl binaryDistributionControlServiceImpl;
+    @Autowired
+    private BinaryDistributionControlService binaryDistributionControlService;
 
     @Before
     public void setup() {
-        binaryDistributionControlServiceImpl = new BinaryDistributionControlServiceImpl(remoteCommandExecutor);
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
     }
 
     @After
     public void tearDown() {
+        reset(Config.mockSshConfig);
+        reset(Config.mockAemSshConfig);
+        reset(Config.mockRemoteCommandExecutor);
+        reset(Config.mockRemoteCommandExecutorService);
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test
-    public void testSecureCopyFile() {
-        final String hostname = "localhost";
-        final String source = "/src/test/resources/binarydistribution/copy.txt";
-        final String destination = "/build/tmp/";
-        final CommandOutput execData = mock(CommandOutput.class);
-        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(0));
-        try {
-            when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), eq(BinaryDistributionControlOperation.SCP),
-                    any(WindowsBinaryDistributionPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
-            binaryDistributionControlServiceImpl.secureCopyFile(hostname, source, destination);
-            verify(remoteCommandExecutor).executeRemoteCommand(anyString(), eq(hostname), eq(BinaryDistributionControlOperation.SCP),
-                    any(WindowsBinaryDistributionPlatformCommandProvider.class), eq(source), eq(destination));
-        } catch (CommandFailureException e) {
-            e.printStackTrace();
-        }
+    public void testSecureCopyFile() throws JSchException, IOException {
+        final JschBuilder mockJschBuilder = mock(JschBuilder.class);
+        final JSch mockJsch = mock(JSch.class);
+        final Session mockSession = mock(Session.class);
+        final ChannelExec mockChannelExec = mock(ChannelExec.class);
+        final byte [] bytes = {0};
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        when(mockChannelExec.getInputStream()).thenReturn(new TestInputStream());
+        when(mockChannelExec.getOutputStream()).thenReturn(out);
+        when(mockSession.openChannel(eq("exec"))).thenReturn(mockChannelExec);
+        when(mockJsch.getSession(anyString(), anyString(), anyInt())).thenReturn(mockSession);
+        when(mockJschBuilder.build()).thenReturn(mockJsch);
+        when(Config.mockAemSshConfig.getJschBuilder()).thenReturn(mockJschBuilder);
+        when(Config.mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(mock(RemoteCommandReturnInfo.class));
+        final String source = BinaryDistributionControlServiceImplTest.class.getClassLoader().getResource("binarydistribution/copy.txt").getPath();
+        binaryDistributionControlService.secureCopyFile("someHost", source, "./build/tmp");
+        verify(Config.mockAemSshConfig).getJschBuilder();
+        assertEquals("C0644 12 copy.txt\nsome content\0", out.toString(StandardCharsets.UTF_8));
     }
 
     @Test
     public void testCreateDirectory() {
-        final String hostname = "localhost";
-        final String destination = "/build/tmp/";
-        final CommandOutput execData = mock(CommandOutput.class);
-        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(0));
-        try {
-            when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), eq(BinaryDistributionControlOperation.CREATE_DIRECTORY),
-                    any(WindowsBinaryDistributionPlatformCommandProvider.class), anyString())).thenReturn(execData);
-            binaryDistributionControlServiceImpl.createDirectory(hostname, destination);
-            verify(remoteCommandExecutor).executeRemoteCommand(anyString(), eq(hostname), eq(BinaryDistributionControlOperation.CREATE_DIRECTORY),
-                    any(WindowsBinaryDistributionPlatformCommandProvider.class), eq(destination));
-        } catch (CommandFailureException e) {
-            e.printStackTrace();
-        }
+        when(Config.mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(mock(RemoteCommandReturnInfo.class));
+        binaryDistributionControlService.createDirectory("localhost", "/build/tmp");
+        verify(Config.mockRemoteCommandExecutorService).executeCommand(any(RemoteExecCommand.class));
     }
 
     @Test
     public void testCheckFileExists() {
-        final String hostname = "localhost";
-        final String destination = "/build/tmp/";
-        final CommandOutput execData = mock(CommandOutput.class);
-        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(0));
-        try {
-            when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), eq(BinaryDistributionControlOperation.CHECK_FILE_EXISTS),
-                    any(WindowsBinaryDistributionPlatformCommandProvider.class), anyString())).thenReturn(execData);
-            binaryDistributionControlServiceImpl.checkFileExists(hostname, destination);
-            verify(remoteCommandExecutor).executeRemoteCommand(anyString(), eq(hostname), eq(BinaryDistributionControlOperation.CHECK_FILE_EXISTS),
-                    any(WindowsBinaryDistributionPlatformCommandProvider.class), eq(destination));
-        } catch (CommandFailureException e) {
-            e.printStackTrace();
-        }
+        when(Config.mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(mock(RemoteCommandReturnInfo.class));
+        binaryDistributionControlService.checkFileExists("localhost", "/build/tmp");
+        verify(Config.mockRemoteCommandExecutorService).executeCommand(any(RemoteExecCommand.class));
     }
 
     @Test
     public void testUnzipBinary() {
-        final String hostname = "localhost";
-        final String binaryLocation = "/src/test/resources/binarydistribution/copy.txt";
-        final String destination = "/build/tmp/";
-        final String zipPath = "";
-        final String exclude = "";
-        final CommandOutput execData = mock(CommandOutput.class);
-        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(0));
-        try {
-            when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), eq(BinaryDistributionControlOperation.UNZIP_BINARY),
-                    any(WindowsBinaryDistributionPlatformCommandProvider.class), anyString(), anyString(), anyString(), anyString())).thenReturn(execData);
-            binaryDistributionControlServiceImpl.unzipBinary(hostname, zipPath, binaryLocation, destination, exclude);
-            verify(remoteCommandExecutor).executeRemoteCommand(anyString(), eq(hostname), eq(BinaryDistributionControlOperation.UNZIP_BINARY),
-                    any(WindowsBinaryDistributionPlatformCommandProvider.class), eq(zipPath), eq(binaryLocation), eq(destination), eq(exclude));
-        } catch (CommandFailureException e) {
-            e.printStackTrace();
-        }
+        when(Config.mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(mock(RemoteCommandReturnInfo.class));
+        binaryDistributionControlService.unzipBinary("localhost", "file.zip", "dest", "exclude");
+        verify(Config.mockRemoteCommandExecutorService).executeCommand(any(RemoteExecCommand.class));
     }
 
     @Test
     public void testDeleteBinary() {
-        final String hostname = "localhost";
-        final String destination = "/build/tmp/";
-        final CommandOutput execData = mock(CommandOutput.class);
-        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(0));
-        try {
-            when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), eq(BinaryDistributionControlOperation.DELETE_BINARY),
-                    any(WindowsBinaryDistributionPlatformCommandProvider.class), anyString())).thenReturn(execData);
-            binaryDistributionControlServiceImpl.deleteBinary(hostname, destination);
-            verify(remoteCommandExecutor).executeRemoteCommand(anyString(), eq(hostname), eq(BinaryDistributionControlOperation.DELETE_BINARY),
-                    any(WindowsBinaryDistributionPlatformCommandProvider.class), eq(destination));
-        } catch (CommandFailureException e) {
-            e.printStackTrace();
-        }
+        when(Config.mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(mock(RemoteCommandReturnInfo.class));
+        binaryDistributionControlService.deleteBinary("localhost", "/build/tmp");
+        verify(Config.mockRemoteCommandExecutorService).executeCommand(any(RemoteExecCommand.class));
     }
+
+    @Configuration
+    static class Config {
+
+        @Mock
+        static RemoteCommandExecutor<BinaryDistributionControlOperation> mockRemoteCommandExecutor;
+
+        @Mock
+        static SshConfiguration mockSshConfig;
+
+        @Mock
+        static AemSshConfig mockAemSshConfig;
+
+        @Mock
+        static RemoteCommandExecutorService mockRemoteCommandExecutorService;
+
+        public Config() {
+            initMocks(this);
+        }
+
+        @Bean
+        public SshConfiguration getSshConfiguration() {
+            return mockSshConfig;
+        }
+
+        @Bean
+        public AemSshConfig getAemSshConfig() {
+            return mockAemSshConfig;
+        }
+
+        @Bean
+        public RemoteCommandExecutor<BinaryDistributionControlOperation> getRemoteCommandExecutor() {
+            return mockRemoteCommandExecutor;
+        }
+
+        @Bean
+        public RemoteCommandExecutorService getRemoteCommandExecutorService() {
+            return mockRemoteCommandExecutorService;
+        }
+
+        @Bean
+        @Scope("prototype")
+        public BinaryDistributionControlService getBinaryDistributionControlService() {
+            return new BinaryDistributionControlServiceImpl();
+        }
+
+    }
+
+    static class TestInputStream extends InputStream {
+
+        private int available = 1;
+
+        @Override
+        public int available() throws IOException {
+            if (available == 0) {
+                available = 1;
+            }
+            return available;
+        }
+
+        @Override
+        public int read() throws IOException {
+            available = 0;
+            return 0;
+        }
+
+    }
+
 }

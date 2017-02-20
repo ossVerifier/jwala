@@ -47,7 +47,7 @@ buildscript {
 }
 
 task downloadDeploymentBinaries(type: Download) {
-        src([jdkBinaryUrl, apachehttpdBinaryUrl, apachetomcatDeploymentBinaryUrl, unZipExeBinaryUrl])
+        src([jdkBinaryUrl, apachehttpdBinaryUrl, apachetomcatDeploymentBinaryUrl, tomcatBinaryUrl, unZipExeBinaryUrl])
         dest "$buildDir/$tomcatDir/data/binaries"
 }
 

@@ -1,5 +1,4 @@
-description "This module is the service layer for Jwala, it mostly used by the webservice layers to manage the Jwala resources.  " +
-        "The business logic for this application resides here."
+description "This module is the service layer for Jwala, it mostly used by the webservice layers to manage the Jwala resources"
 
 configurations { providedCompile }
 

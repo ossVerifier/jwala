@@ -10,11 +10,11 @@ public interface WebServerControlService {
 
     CommandOutput controlWebServer(final ControlWebServerRequest controlWebServerRequest, final User aUser);
 
-    CommandOutput secureCopyFile(final String aWebServerName, final String sourcePath, final String destPath, String userId) throws CommandFailureException;
+    void secureCopyFile(final String aWebServerName, final String sourcePath, final String destPath, String userId) throws CommandFailureException;
 
-    CommandOutput createDirectory(WebServer webServer, String dirAbsolutePath) throws CommandFailureException;
+    void createDirectory(WebServer webServer, String dirAbsolutePath) throws CommandFailureException;
 
-    CommandOutput changeFileMode(WebServer webServer, String fileMode, String targetDirPath, String targetFile) throws CommandFailureException;
+    void changeFileMode(WebServer webServer, String fileMode, String targetDirPath, String targetFile) throws CommandFailureException;
 
     boolean waitForState(final ControlWebServerRequest controlWebServerRequest, final Long waitTimeout);
 }

@@ -230,7 +230,9 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
 
         // get an instance and then do a create or update
         Query query = entityManager.createNamedQuery(JpaApplicationConfigTemplate.GET_APP_TEMPLATE);
-        query.setParameter("jvmName", jpaJvm.getName());
+        if(jpaJvm!=null) {
+            query.setParameter("jvmName", jpaJvm.getName());
+        }
         query.setParameter("appName", application.getName());
         query.setParameter("tempName", uploadAppTemplateRequest.getConfFileName());
         List<JpaApplicationConfigTemplate> templates = query.getResultList();

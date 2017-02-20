@@ -8,7 +8,7 @@ import com.cerner.jwala.common.domain.model.group.History;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
-import com.cerner.jwala.common.domain.model.path.FileSystemPath;
+import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.resource.*;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
@@ -20,7 +20,6 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
-import com.cerner.jwala.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
@@ -120,7 +119,7 @@ public class ResourceServiceImplTest {
 
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
-                mockResourceDao, mockResourceHandler, mockRemoteCommandExecutor,
+                mockResourceDao, mockResourceHandler,
                 resourceContentGeneratorService, mockBinaryDistributionService, tika, mockRepositoryService);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));
@@ -332,7 +331,7 @@ public class ResourceServiceImplTest {
             applications.add(new Application(new Identifier<Application>(222L), "hello-world-2", "d:/jwala/app/archive", "/hello-world-2", group, true, true, false, "testWar.war"));
             applications.add(new Application(new Identifier<Application>(333L), "hello-world-3", "d:/jwala/app/archive", "/hello-world-3", group, true, true, false, "testWar.war"));
             WebServer webServer = new WebServer(new Identifier<WebServer>(1L), groups, "Apache2.4", "localhost", 80, 443,
-                    new com.cerner.jwala.common.domain.model.path.Path("/statusPath"), new FileSystemPath("D:/jwala/app/data/httpd//httpd.conf"),
+                    new com.cerner.jwala.common.domain.model.path.Path("/statusPath"), new Path("D:/jwala/app/data/httpd//httpd.conf"),
                     new com.cerner.jwala.common.domain.model.path.Path("./"), new com.cerner.jwala.common.domain.model.path.Path("htdocs"), WebServerReachableState.WS_UNREACHABLE, "");
             webServers.add(webServer);
             jvms.add(new Jvm(new Identifier<Jvm>(11L), "tc1", "someHostGenerateMe", new HashSet<>(groups), group, 11010, 11011, 11012, -1, 11013,
@@ -994,7 +993,7 @@ public class ResourceServiceImplTest {
         groupList.add(mock(Group.class));
         when(mockGroupPesistenceService.getGroups()).thenReturn(groupList);
         when(mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn("<server/>");
-        when(mockRemoteCommandExecutor.executeRemoteCommand(anyString(), anyString(),
+/*        when(mockRemoteCommandExecutor.executeRemoteCommand(anyString(), anyString(),
                 any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class),
                 anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
         when(mockRemoteCommandExecutor.executeRemoteCommand(anyString(), anyString(),
@@ -1007,7 +1006,7 @@ public class ResourceServiceImplTest {
                 "localhost");
         verify(mockRemoteCommandExecutor, times(2)).executeRemoteCommand(anyString(), anyString(),
                 eq(ApplicationControlOperation.BACK_UP), any(WindowsApplicationPlatformCommandProvider.class),
-                anyString(), anyString());
+                anyString(), anyString());*/
     }
 
     static class IoExIns extends InputStream {
