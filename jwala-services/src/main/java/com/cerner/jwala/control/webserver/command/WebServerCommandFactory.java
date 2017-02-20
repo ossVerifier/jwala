@@ -11,6 +11,7 @@ import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
+import com.cerner.jwala.common.exec.ShellCommand;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.properties.PropertyKeys;
@@ -87,7 +88,7 @@ public class WebServerCommandFactory {
         commands.put(WebServerControlOperation.INSTALL_SERVICE.getExternalValue(), (WebServer webServer)
                 -> remoteCommandExecutorService.executeCommand(
                 new RemoteExecCommand(getConnection(webServer),
-                                      getExecCommand(INSTALL_SERVICE_WS_SERVICE_SCRIPT_NAME.getValue() ,
+                                      getShellCommand(INSTALL_SERVICE_WS_SERVICE_SCRIPT_NAME.getValue() ,
                                                      webServer,
                                                      ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_APACHE_HTTPD_CONF),
                                                      ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_APACHE_HTTPD)))));
@@ -142,6 +143,6 @@ public class WebServerCommandFactory {
             paramConcat+=param + " ";
         }
 
-        return new ExecCommand(getFullPathScript(scriptName), webserver.getName(), paramConcat);
+        return new ShellCommand(getFullPathScript(scriptName), webserver.getName(), paramConcat);
     }
 }

@@ -92,7 +92,6 @@ public class JvmCommandFactory {
         commands.put(JvmControlOperation.DELETE_SERVICE.getExternalValue(), (Jvm jvm)
                 -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForDeleteService(jvm))));
 
-
     }
 
     /**
@@ -217,9 +216,12 @@ public class JvmCommandFactory {
                 remotePathsInstancesDir,
                 ApplicationProperties.getRequired(PropertyKeys.REMOTE_TOMCAT_DIR_NAME));
         List<String> unformatStrings = Arrays.asList(quotedUsername, decryptedPassword);
-        return new ExecCommand(
-                formatStrings,
-                unformatStrings);
+
+        return new ShellCommand(remoteScriptDir+ "/" + jvm.getJvmName() + "/" +INSTALL_SERVICE_SCRIPT_NAME,
+                jvm.getJvmName(),
+                remotePathsInstancesDir,
+                ApplicationProperties.getRequired(PropertyKeys.REMOTE_TOMCAT_DIR_NAME),
+                quotedUsername, decryptedPassword);
     }
 
     private ExecCommand getExecCommandForDeleteService(Jvm jvm){
