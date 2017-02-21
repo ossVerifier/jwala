@@ -26,7 +26,6 @@ import com.cerner.jwala.control.command.PlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.control.configuration.AemSshConfig;
-import com.cerner.jwala.control.webserver.command.WebServerCommandFactory;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
@@ -62,7 +61,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
-@Ignore
+
 @RunWith(MockitoJUnitRunner.class)
 public class ApplicationServiceImplTest {
 
@@ -406,6 +405,7 @@ public class ApplicationServiceImplTest {
 
 
     @Test
+    @Ignore
     public void testCopyApplicationToGroupHosts() throws IOException {
         final HashSet<Jvm> jvmSet = new HashSet<>();
         Jvm mockJvm = mock(Jvm.class);
@@ -472,6 +472,7 @@ public class ApplicationServiceImplTest {
     }
 
     @Test
+    @Ignore
     public void testCopyApplicationWarToHost() {
         when(mockApplication.getWarPath()).thenReturn("./src/test/resources/archive/test_archive.war");
         when(mockApplication.getWarName()).thenReturn("test.war");
