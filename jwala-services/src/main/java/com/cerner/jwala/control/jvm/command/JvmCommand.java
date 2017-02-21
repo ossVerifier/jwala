@@ -12,5 +12,5 @@ import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
  */
 @FunctionalInterface
 public interface JvmCommand<T> {
-    public RemoteCommandReturnInfo apply(Jvm jvm);
+    public RemoteCommandReturnInfo execute(Jvm jvm);
 }

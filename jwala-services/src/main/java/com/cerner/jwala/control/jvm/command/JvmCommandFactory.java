@@ -21,18 +21,16 @@ import com.cerner.jwala.service.exception.ApplicationServiceException;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 import static com.cerner.jwala.control.AemControl.Properties.*;
 
@@ -61,7 +59,7 @@ public class JvmCommandFactory {
      */
     public RemoteCommandReturnInfo executeCommand(Jvm jvm, JvmControlOperation operation) throws ApplicationServiceException{
         if (commands.containsKey(operation.getExternalValue())) {
-            return commands.get(operation.getExternalValue()).apply(jvm);
+            return commands.get(operation.getExternalValue()).execute(jvm);
         }
         throw new ApplicationServiceException("JvmCommand not implemented: "+ operation.getExternalValue());
     }
