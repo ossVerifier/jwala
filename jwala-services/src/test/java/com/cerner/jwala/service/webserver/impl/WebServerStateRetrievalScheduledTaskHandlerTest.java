@@ -38,15 +38,7 @@ public class WebServerStateRetrievalScheduledTaskHandlerTest {
     }
 
     @Test
-    public void testExecute() {
-        webServerStateRetrievalScheduledTaskHandler.execute();
-        verify(mockWebServerService, never()).getWebServersPropagationNew();
-        verify(mockWebServerStateSetterWorker, never()).pingWebServer(any(WebServer.class));
-    }
-
-    @Test
     public void testExecuteEnableTaskHandler() {
-        webServerStateRetrievalScheduledTaskHandler.setEnabled(true);
         final List<WebServer> webServerList = new ArrayList<>();
         webServerList.add(mock(WebServer.class));
         webServerList.add(mock(WebServer.class));
