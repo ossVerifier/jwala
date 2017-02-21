@@ -56,8 +56,8 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
             jschScpCommandProcessor.close();
             return  new CommandOutput(new ExecReturnCode(jschScpCommandProcessor.getExecutionReturnCode().getReturnCode()),
                     jschScpCommandProcessor.getCommandOutputStr(), jschScpCommandProcessor.getErrorOutputStr());
-        } catch (Throwable th) {
-            throw new ApplicationException(th);
+        } catch (Exception ex) {
+            throw new ApplicationException(ex);
         }
     }
 

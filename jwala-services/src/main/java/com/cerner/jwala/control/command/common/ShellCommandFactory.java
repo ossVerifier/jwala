@@ -85,8 +85,8 @@ public class ShellCommandFactory {
             jschScpCommandProcessor.processCommand();
             return  new RemoteCommandReturnInfo(jschScpCommandProcessor.getExecutionReturnCode().getReturnCode(),
                     jschScpCommandProcessor.getCommandOutputStr(), jschScpCommandProcessor.getErrorOutputStr());
-        } catch (Throwable th) {
-            throw new ApplicationException(th);
+        } catch (Exception ex) {
+            throw new ApplicationException(ex);
         }
     }
 }

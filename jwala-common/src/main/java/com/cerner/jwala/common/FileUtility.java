@@ -3,26 +3,23 @@ package com.cerner.jwala.common;
 import com.cerner.jwala.common.exception.ApplicationException;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.commons.compress.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermission;
 import java.text.MessageFormat;
-import java.util.*;;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipFile;
+
+;
 
 /**
  * A utility class for file related operations
@@ -193,8 +190,8 @@ public class FileUtility {
                 }
                 entry = in.getNextTarEntry();
             }
-        }catch (Throwable th){
-            throw new ApplicationException(th);
+        }catch (Exception ex){
+            throw new ApplicationException(ex);
         }
         finally {
             try {
