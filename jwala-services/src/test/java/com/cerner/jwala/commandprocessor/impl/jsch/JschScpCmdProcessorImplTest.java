@@ -2,36 +2,28 @@ package com.cerner.jwala.commandprocessor.impl.jsch;
 
 import com.cerner.jwala.commandprocessor.CommandProcessor;
 import com.cerner.jwala.common.exec.ExecCommand;
-import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
-import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.exception.RemoteCommandFailureException;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.OngoingStubbing;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class JschScpCommandProcessorImplTest {
+public class JschScpCmdProcessorImplTest {
 
     @Mock
     private JSch mockJsch;
@@ -44,7 +36,7 @@ public class JschScpCommandProcessorImplTest {
     private static final String PROPERTIES_ROOT_PATH = "PROPERTIES_ROOT_PATH";
     private String resourceDir;
 
-    public JschScpCommandProcessorImplTest() {
+    public JschScpCmdProcessorImplTest() {
         resourceDir = this.getClass().getClassLoader().getResource("vars.properties").getPath();
         resourceDir = resourceDir.substring(0, resourceDir.lastIndexOf("/"));
     }
