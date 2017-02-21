@@ -13,13 +13,11 @@ import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
-import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
 import com.cerner.jwala.common.request.webserver.CreateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UpdateWebServerRequest;
-import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.HistoryService;
@@ -65,7 +63,6 @@ import static org.mockito.Mockito.*;
 /**
  * @author horspe00
  */
-@Ignore
 @RunWith(MockitoJUnitRunner.class)
 public class WebServerServiceRestImplTest {
 
@@ -488,6 +485,7 @@ public class WebServerServiceRestImplTest {
     }
 
     @Test (expected = InternalErrorException.class)
+    @Ignore
     public void testGenerateAndDeployWebServerFailsMakeDirectory() throws CommandFailureException, IOException {
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
@@ -503,6 +501,7 @@ public class WebServerServiceRestImplTest {
     }
 
     @Test (expected = InternalErrorException.class)
+    @Ignore
     public void testGenerateAndDeployWebServerFailsSecureCopyScriptsStartScript() throws CommandFailureException, IOException {
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
@@ -520,6 +519,7 @@ public class WebServerServiceRestImplTest {
     }
 
     @Test (expected = InternalErrorException.class)
+    @Ignore
     public void testGenerateAndDeployWebServerFailsSecureCopyScriptsStopScript() throws CommandFailureException, IOException {
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
@@ -537,6 +537,7 @@ public class WebServerServiceRestImplTest {
     }
 
     @Test (expected = InternalErrorException.class)
+    @Ignore
     public void testGenerateAndDeployWebServerFailsSecureCopyScriptsInvokeScript() throws CommandFailureException, IOException {
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
@@ -555,6 +556,7 @@ public class WebServerServiceRestImplTest {
     }
 
     @Test (expected = InternalErrorException.class)
+    @Ignore
     public void testGenerateAndDeployWebServerFailsChangeFileMode() throws CommandFailureException, IOException {
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
@@ -576,6 +578,7 @@ public class WebServerServiceRestImplTest {
     }
 
     @Test (expected = InternalErrorException.class)
+    @Ignore
     public void testGenerateAndDeployWebServerSecureCopyInstallServiceWSServiceFails() throws CommandFailureException, IOException {
         List<String> webServerResourceNames = new ArrayList<>();
         webServerResourceNames.add("httpd.conf");
@@ -663,6 +666,7 @@ public class WebServerServiceRestImplTest {
     }
 
     @Test (expected = InternalErrorException.class)
+    @Ignore
     public void testGenerateAndDeployWebServerDeleteServiceFails() throws CommandFailureException, IOException {
         List<String> webServerResourceNames = new ArrayList<>();
         webServerResourceNames.add("httpd.conf");
