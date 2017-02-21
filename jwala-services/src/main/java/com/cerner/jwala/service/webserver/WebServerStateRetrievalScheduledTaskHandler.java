@@ -16,10 +16,10 @@ import java.util.List;
  * Created by Jedd Cuison on 6/16/2015.
  */
 public class WebServerStateRetrievalScheduledTaskHandler {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerStateRetrievalScheduledTaskHandler.class);
     private final WebServerService webServerService;
     private final WebServerStateSetterWorker webServerStateSetterWorker;
-    private boolean enabled;
 
     public WebServerStateRetrievalScheduledTaskHandler(final WebServerService webServerService,
                                                        final WebServerStateSetterWorker webServerStateSetterWorker) {
@@ -32,30 +32,15 @@ public class WebServerStateRetrievalScheduledTaskHandler {
                                                        final boolean enabled) {
         this.webServerService = webServerService;
         this.webServerStateSetterWorker = webServerStateSetterWorker;
-        this.enabled = enabled;
     }
 
     @Scheduled(fixedDelayString = "${ping.webServer.period.millis}")
     public void execute() {
-
-        if (!isEnabled()) {
-            return;
-        }
-
         final List<WebServer> webServers = webServerService.getWebServersPropagationNew();
         LOGGER.debug("# of web servers to ping = {}", webServers.size());
         for (final WebServer webServer : webServers) {
             webServerStateSetterWorker.pingWebServer(webServer);
         }
-
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
     }
 
 }
