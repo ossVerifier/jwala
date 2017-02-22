@@ -321,7 +321,7 @@ public class JvmControlServiceImpl implements JvmControlService {
 
         } else if (fileExists){
             // exit without deploying since the file exists and overwrite is false
-            String message = MessageFormat.format("File {0} exists and overwrite set to false. Skipping deploy.", destPath);
+            String message = MessageFormat.format("SKIPPING scp of file. File {0} already exists and overwrite is set to false.", destPath);
             LOGGER.info(message);
             return new CommandOutput(new ExecReturnCode(0), message, "");
         }

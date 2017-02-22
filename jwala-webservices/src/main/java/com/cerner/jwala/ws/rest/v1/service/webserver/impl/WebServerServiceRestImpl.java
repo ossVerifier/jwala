@@ -234,7 +234,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             //String destinationPath = resourceService.generateResourceFile(resourceFileName,metaData.getDeployPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName)) + "/" + resourceFileName;
             String destinationPath = metaData.getDeployPath() + "/" + deployFileName;
             final CommandOutput execData;
-            execData = webServerControlService.secureCopyFile(aWebServerName, configFilePath, destinationPath, user.getUser().getId());
+            execData = webServerControlService.secureCopyFile(aWebServerName, configFilePath, destinationPath, user.getUser().getId(), metaData.isOverwrite());
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of {} successful: {}", deployFileName, configFilePath);
             } else {
@@ -365,13 +365,14 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         final String sourceStartServicePath = COMMANDS_SCRIPTS_PATH + "/" + startScriptName;
         final String destHttpdConfParentDir = ApplicationProperties.get("remote.paths.httpd.conf");
         final String destHttpdConfStartScript = destHttpdConfParentDir + "/" + startScriptName;
+        final boolean alwaysOverwriteStartStopScripts = true;
         if (webServerControlService.createDirectory(webServer, destHttpdConfParentDir).getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully created the directory {}", destHttpdConfParentDir);
         } else {
             LOGGER.error("Failed to create the directory {} during creation of {}", destHttpdConfParentDir, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
         }
-        if (!webServerControlService.secureCopyFile(webServerName, sourceStartServicePath, destHttpdConfStartScript, userId).getReturnCode().wasSuccessful()) {
+        if (!webServerControlService.secureCopyFile(webServerName, sourceStartServicePath, destHttpdConfStartScript, userId, alwaysOverwriteStartStopScripts).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStartServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
         }
@@ -379,7 +380,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         final String stopScriptName = AemControl.Properties.STOP_SCRIPT_NAME.getValue();
         final String sourceStopServicePath = COMMANDS_SCRIPTS_PATH + "/" + stopScriptName;
         final String destHttpdConfStopScript = destHttpdConfParentDir + "/" + stopScriptName;
-        if (!webServerControlService.secureCopyFile(webServerName, sourceStopServicePath, destHttpdConfStopScript, userId).getReturnCode().wasSuccessful()) {
+        if (!webServerControlService.secureCopyFile(webServerName, sourceStopServicePath, destHttpdConfStopScript, userId, alwaysOverwriteStartStopScripts).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStopServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStopServicePath + " during the creation of " + webServerName);
         }
@@ -387,7 +388,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         final String invokeWsScriptName = AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue();
         final String sourceInvokeWsServicePath = COMMANDS_SCRIPTS_PATH + "/" + invokeWsScriptName;
         final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
-        if (!webServerControlService.secureCopyFile(webServerName, sourceInvokeWsServicePath, jwalaScriptsPath + "/" + invokeWsScriptName, userId).getReturnCode().wasSuccessful()) {
+        if (!webServerControlService.secureCopyFile(webServerName, sourceInvokeWsServicePath, jwalaScriptsPath + "/" + invokeWsScriptName, userId, alwaysOverwriteStartStopScripts).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceInvokeWsServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceInvokeWsServicePath + " during the creation of " + webServerName);
         }
@@ -411,10 +412,11 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         final String httpdDataDir = ApplicationProperties.get("remote.paths.httpd.conf");
         final String name = webServer.getName();
         final File invokeWsBatFile = createTempWebServerResourceFile(name, jwalaGeneratedResourcesDir, "invokeWS", "bat", invokeWSBatText);
+        final boolean alwaysOverwriteInvokeScript = true;
 
         // copy the invokeWs.bat file
         final String invokeWsBatFileAbsolutePath = invokeWsBatFile.getAbsolutePath().replaceAll("\\\\", "/");
-        CommandOutput copyResult = webServerControlService.secureCopyFile(name, invokeWsBatFileAbsolutePath, httpdDataDir + "/invokeWS.bat", user.getUser().getId());
+        CommandOutput copyResult = webServerControlService.secureCopyFile(name, invokeWsBatFileAbsolutePath, httpdDataDir + "/invokeWS.bat", user.getUser().getId(), alwaysOverwriteInvokeScript);
         if (copyResult.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully copied {} to {}", invokeWsBatFileAbsolutePath, webServer.getHost());
         } else {
