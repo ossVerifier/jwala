@@ -1,4 +1,4 @@
-package com.cerner.jwala.ui.selenium.operations;
+package com.cerner.jwala.ui.selenium.configuration.resources;
 
 import com.cerner.jwala.ui.selenium.SeleniumTestCase;
 import org.junit.Before;
