@@ -128,7 +128,8 @@ public class UploadModifySaveDeleteExternalPropertiesTest extends SeleniumTestCa
         }
     }
 
-    private boolean isElementPresent(By by) {
+    @Override
+    protected boolean isElementPresent(By by) {
         try {
             driver.findElement(by);
             return true;
