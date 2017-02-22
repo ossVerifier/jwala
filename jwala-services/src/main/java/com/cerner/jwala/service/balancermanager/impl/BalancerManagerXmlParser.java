@@ -26,11 +26,11 @@ public class BalancerManagerXmlParser {
         this.jvmService = jvmService;
     }
 
-    public String getUrlPath(final String host, final String balancerName, final String nonce) {
+    String getUrlPath(final String host, final String balancerName, final String nonce) {
         return "https://" + host + "/balancer-manager" + "?b=" + balancerName + "&xml=1&nonce=" + nonce;
     }
 
-    public Manager getWorkerXml(final String balancerManagerContent) {
+    Manager getWorkerXml(final String balancerManagerContent) {
         Manager manager;
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(Manager.class);
