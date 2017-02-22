@@ -304,7 +304,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         return jvmDrainStatusList;
     }
 
-    public String findJvmUrl(final String jvmName) {
+    private String findJvmUrl(final String jvmName) {
         String jvmUrl = "";
         if ("".equals(jvmName)) return jvmUrl;
         List<Application> applications = applicationService.getApplications();

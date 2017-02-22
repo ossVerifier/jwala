@@ -1,5 +1,6 @@
 package com.cerner.jwala.service.balancermanager.impl;
 
+import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.service.balancermanager.impl.xml.data.Manager;
 import com.cerner.jwala.service.jvm.JvmService;
 import org.junit.Before;
@@ -7,11 +8,13 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created on 2/22/2017.
@@ -78,14 +81,38 @@ public class BalancerManagerXmlParserTest {
     }
 
     @Test
-    public void testGetWorkerXml() {
+    public void testManager() {
         Manager manager = balancerManagerXmlParser.getWorkerXml(BALANCER_MANAGER_CONTENT);
 
         final List<Manager.Balancer> balancers = manager.getBalancers();
         assertEquals(1, balancers.size());
         assertEquals(1, balancers.get(0).getWorkers().size());
 
-        Map<String, String> workers = balancerManagerXmlParser.getWorkers(manager, "lb-health-check-4.0");
+        final String balancerName = "lb-health-check-4.0";
+        Map<String, String> workers = balancerManagerXmlParser.getWorkers(manager, balancerName);
         assertEquals(1, workers.size());
+
+        Map<String, String> jvmWorkers = balancerManagerXmlParser.getJvmWorker(manager, balancerName, "https://usmlvv1cds0047:9121/hct");
+        assertEquals(1, jvmWorkers.size());
+    }
+
+    @Test
+    public void testGetJvmByWorker() {
+        Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getJvmName()).thenReturn("CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0047-3");
+        when(mockJvm.getHostName()).thenReturn("usmlvv1cds0047");
+        when(mockJvm.getHttpPort()).thenReturn(9120);
+        when(mockJvm.getHttpsPort()).thenReturn(9121);
+        when(mockJvm.getAjpPort()).thenReturn(9122);
+        when(mockJvmService.getJvms()).thenReturn(Collections.singletonList(mockJvm));
+
+        String jvmName = balancerManagerXmlParser.findJvmNameByWorker("https://usmlvv1cds0047:9121/hct");
+        assertEquals("CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0047-3", jvmName);
+
+        jvmName = balancerManagerXmlParser.findJvmNameByWorker("http://usmlvv1cds0047:9120/hct");
+        assertEquals("CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0047-3", jvmName);
+
+        jvmName = balancerManagerXmlParser.findJvmNameByWorker("ajp://usmlvv1cds0047:9122/hct");
+        assertEquals("CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0047-3", jvmName);
     }
 }

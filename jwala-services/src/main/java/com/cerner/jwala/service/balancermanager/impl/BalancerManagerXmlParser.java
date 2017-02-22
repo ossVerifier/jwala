@@ -79,7 +79,7 @@ public class BalancerManagerXmlParser {
         return workers;
     }
 
-    public String findJvmNameByWorker(final String worker) {
+    String findJvmNameByWorker(final String worker) {
         LOGGER.info("Entering findJvmNameByWorker");
         List<Jvm> jvms = jvmService.getJvms();
         String jvmName = "";
