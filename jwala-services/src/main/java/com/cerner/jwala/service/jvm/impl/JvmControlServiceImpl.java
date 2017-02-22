@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -273,7 +274,7 @@ public class JvmControlServiceImpl implements JvmControlService {
 
     @Override
     public CommandOutput secureCopyFile(final ControlJvmRequest secureCopyRequest, final String sourcePath,
-                                        final String destPath, String userId) throws CommandFailureException {
+                                        final String destPath, String userId, boolean overwrite) throws CommandFailureException {
         final Identifier<Jvm> jvmId = secureCopyRequest.getJvmId();
 
         final String event = secureCopyRequest.getControlOperation().name();
@@ -305,7 +306,9 @@ public class JvmControlServiceImpl implements JvmControlService {
         }
         commandOutput = executeCheckFileExistsCommand(jvm, destPath);
 
-        if (commandOutput.getReturnCode().wasSuccessful()) {
+        final boolean fileExists = commandOutput.getReturnCode().wasSuccessful();
+        if (fileExists && overwrite) {
+            // do the backup of the existing file before overwriting
             commandOutput = executeBackUpCommand(jvm, destPath);
 
             if (!commandOutput.getReturnCode().wasSuccessful()) {
@@ -316,6 +319,11 @@ public class JvmControlServiceImpl implements JvmControlService {
                 LOGGER.info("Successfully backed up " + destPath + " at " + hostName);
             }
 
+        } else if (fileExists){
+            // exit without deploying since the file exists and overwrite is false
+            String message = MessageFormat.format("File {0} exists and overwrite set to false. Skipping deploy.", destPath);
+            LOGGER.info(message);
+            return new CommandOutput(new ExecReturnCode(0), message, "");
         }
 
         return remoteCommandExecutor.executeRemoteCommand(name, hostName, secureCopyRequest.getControlOperation(),

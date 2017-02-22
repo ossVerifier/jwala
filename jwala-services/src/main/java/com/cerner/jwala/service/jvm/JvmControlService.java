@@ -12,7 +12,7 @@ public interface JvmControlService {
 
     CommandOutput controlJvmSynchronously(ControlJvmRequest controlJvmRequest, long timeout, User user) throws InterruptedException;
 
-    CommandOutput secureCopyFile(ControlJvmRequest secureCopyRequest, String sourcePath, String destPath, String userId) throws CommandFailureException;
+    CommandOutput secureCopyFile(ControlJvmRequest secureCopyRequest, String sourcePath, String destPath, String userId, boolean overwrite) throws CommandFailureException;
 
     CommandOutput executeCreateDirectoryCommand(Jvm jvm, String dirAbsolutePath) throws CommandFailureException;
 

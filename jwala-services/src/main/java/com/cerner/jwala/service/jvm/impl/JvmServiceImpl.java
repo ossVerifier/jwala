@@ -327,7 +327,8 @@ public class JvmServiceImpl implements JvmService {
             final String jvmConfigJar = generateJvmConfigJar(jvm);
 
             // copy the tar file
-            secureCopyJvmConfigJar(jvm, jvmConfigJar, user);
+            // set 'overwrite' to always be 'true'
+            secureCopyJvmConfigJar(jvm, jvmConfigJar, user, true);
 
             // call script to backup and tar the current directory and
             // then untar the new tar, needs jar
@@ -392,7 +393,8 @@ public class JvmServiceImpl implements JvmService {
         final String failedToCopyMessage = "Failed to secure copy ";
         final String duringCreationMessage = " during the creation of ";
         final String destinationDeployJarPath = stagingArea + "/" + AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue();
-        if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, destinationDeployJarPath, userId).getReturnCode().wasSuccessful()) {
+        final boolean alwaysOverwriteTocUserScripts = true;
+        if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, destinationDeployJarPath, userId, alwaysOverwriteTocUserScripts).getReturnCode().wasSuccessful()) {
             String message = failedToCopyMessage + deployConfigJarPath + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
@@ -400,7 +402,7 @@ public class JvmServiceImpl implements JvmService {
 
         final String invokeServicePath = commandsScriptsPath + "/" + AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue();
         final String destinationInvokeServicePath = stagingArea + "/" + AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue();
-        if (!jvmControlService.secureCopyFile(secureCopyRequest, invokeServicePath, destinationInvokeServicePath, userId).getReturnCode().wasSuccessful()) {
+        if (!jvmControlService.secureCopyFile(secureCopyRequest, invokeServicePath, destinationInvokeServicePath, userId, alwaysOverwriteTocUserScripts).getReturnCode().wasSuccessful()) {
             String message = failedToCopyMessage + invokeServicePath + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
@@ -495,7 +497,7 @@ public class JvmServiceImpl implements JvmService {
         return jvmResourcesNameDir;
     }
 
-    protected void createParentDir(final Jvm jvm, final String parentDir) throws CommandFailureException {
+    private void createParentDir(final Jvm jvm, final String parentDir) throws CommandFailureException {
         final CommandOutput commandOutput = jvmControlService.executeCreateDirectoryCommand(jvm, parentDir);
         if (commandOutput.getReturnCode().wasSuccessful()) {
             LOGGER.info("created {} directory successfully", parentDir);
@@ -506,13 +508,13 @@ public class JvmServiceImpl implements JvmService {
         }
     }
 
-    protected void secureCopyJvmConfigJar(Jvm jvm, String jvmConfigTar, User user) throws CommandFailureException {
+    private void secureCopyJvmConfigJar(Jvm jvm, String jvmConfigTar, User user, boolean overwrite) throws CommandFailureException {
         String configTarName = jvm.getJvmName() + CONFIG_JAR;
-        secureCopyFileToJvm(jvm, ApplicationProperties.get("paths.generated.resource.dir") + "/" + configTarName, REMOTE_COMMANDS_USER_SCRIPTS + "/" + configTarName, user);
+        secureCopyFileToJvm(jvm, ApplicationProperties.get("paths.generated.resource.dir") + "/" + configTarName, REMOTE_COMMANDS_USER_SCRIPTS + "/" + configTarName, user, overwrite);
         LOGGER.info("Copy of config tar successful: {}", jvmConfigTar);
     }
 
-    protected void deployJvmConfigJar(Jvm jvm, User user, String jvmConfigTar) throws CommandFailureException {
+    private void deployJvmConfigJar(Jvm jvm, User user, String jvmConfigTar) throws CommandFailureException {
         final String parentDir = ApplicationProperties.get("remote.paths.instances");
         CommandOutput execData = jvmControlService.executeCreateDirectoryCommand(jvm, parentDir);
         if (execData.getReturnCode().wasSuccessful()) {
@@ -547,10 +549,11 @@ public class JvmServiceImpl implements JvmService {
     }
 
     protected void deployJvmResourceFiles(Jvm jvm, User user) throws IOException, CommandFailureException {
-        final Map<String, String> generatedFiles = generateResourceFiles(jvm.getJvmName());
+        final Map<String, ScpDestination> generatedFiles = generateResourceFiles(jvm.getJvmName());
         if (generatedFiles != null) {
-            for (Map.Entry<String, String> entry : generatedFiles.entrySet()) {
-                secureCopyFileToJvm(jvm, entry.getKey(), entry.getValue(), user);
+            for (Map.Entry<String, ScpDestination> entry : generatedFiles.entrySet()) {
+                final ScpDestination scpDest = entry.getValue();
+                secureCopyFileToJvm(jvm, entry.getKey(), scpDest.destination, user, scpDest.overwrite);
             }
         }
     }
@@ -585,7 +588,7 @@ public class JvmServiceImpl implements JvmService {
      * @param user
      * @throws CommandFailureException If the command fails, this exception contains the details of the failure.
      */
-    protected void secureCopyFileToJvm(final Jvm jvm, final String sourceFile, final String destinationFile, User user) throws CommandFailureException {
+    private void secureCopyFileToJvm(final Jvm jvm, final String sourceFile, final String destinationFile, User user, boolean overwrite) throws CommandFailureException {
         final String parentDir;
         if (destinationFile.startsWith("~")) {
             parentDir = destinationFile.substring(0, destinationFile.lastIndexOf("/"));
@@ -594,7 +597,7 @@ public class JvmServiceImpl implements JvmService {
         }
         createParentDir(jvm, parentDir);
         final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
-        final CommandOutput commandOutput = jvmControlService.secureCopyFile(controlJvmRequest, sourceFile, destinationFile, user.getId());
+        final CommandOutput commandOutput = jvmControlService.secureCopyFile(controlJvmRequest, sourceFile, destinationFile, user.getId(), overwrite);
         if (commandOutput.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully copied {} to destination location {} on {}", sourceFile, destinationFile, jvm.getHostName());
         } else {
@@ -674,7 +677,7 @@ public class JvmServiceImpl implements JvmService {
                 createConfigFile(jvmResourcesNameDir + "/", deployFileName, fileContent);
             }
 
-            deployJvmConfigFile(deployFileName, jvm, resourceDestPath, resourceSourceCopy, user);
+            deployJvmConfigFile(deployFileName, jvm, resourceDestPath, resourceSourceCopy, user, resourceTemplateMetaData.isOverwrite());
         } catch (IOException e) {
             String message = "Failed to write file " + fileName + " for JVM " + jvmName;
             LOGGER.error(badStreamMessage + message, e);
@@ -690,7 +693,7 @@ public class JvmServiceImpl implements JvmService {
         return jvm;
     }
 
-    protected void deployJvmConfigFile(String fileName, Jvm jvm, String destPath, String sourcePath, User user)
+    private void deployJvmConfigFile(String fileName, Jvm jvm, String destPath, String sourcePath, User user, boolean overwrite)
             throws CommandFailureException {
         final String parentDir;
         if (destPath.startsWith("~")) {
@@ -700,7 +703,7 @@ public class JvmServiceImpl implements JvmService {
         }
         createParentDir(jvm, parentDir);
         CommandOutput result =
-                jvmControlService.secureCopyFile(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), sourcePath, destPath, user.getId());
+                jvmControlService.secureCopyFile(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), sourcePath, destPath, user.getId(), overwrite);
         if (result.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successful generation and deploy of {} to {}", fileName, jvm.getJvmName());
         } else {
@@ -879,9 +882,8 @@ public class JvmServiceImpl implements JvmService {
         return jvmPersistenceService.getJvmForciblyStoppedCount(groupName);
     }
 
-    @Override
-    public Map<String, String> generateResourceFiles(final String jvmName) throws IOException {
-        Map<String, String> generatedFiles = null;
+    private Map<String, ScpDestination> generateResourceFiles(final String jvmName) throws IOException {
+        Map<String, ScpDestination> generatedFiles = null;
         final List<JpaJvmConfigTemplate> jpaJvmConfigTemplateList = jvmPersistenceService.getConfigTemplates(jvmName);
         boolean resourceFileGeneratorException = false;
         String resourceFileGeneratorExceptionString = "";
@@ -906,13 +908,13 @@ public class JvmServiceImpl implements JvmService {
                     generatedFiles = new HashMap<>();
                 }
                 generatedFiles.put(jpaJvmConfigTemplate.getTemplateContent(),
-                        resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
+                        new ScpDestination(resourceTemplateMetaData.getDeployPath() + "/" + deployFileName, resourceTemplateMetaData.isOverwrite()));
             } else {
                 try {
                     final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getTemplateContent(),
                             resourceGroup, jvm, ResourceGeneratorType.TEMPLATE);
                     generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName, deployFileName, generatedResourceStr),
-                            resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
+                            new ScpDestination(resourceTemplateMetaData.getDeployPath() + "/" + deployFileName, resourceTemplateMetaData.isOverwrite()));
                 } catch (ResourceFileGeneratorException e) {
                     LOGGER.error(e.getMessage(), e);
                     resourceFileGeneratorExceptionString += e.getMessage();
@@ -958,6 +960,16 @@ public class JvmServiceImpl implements JvmService {
         } else {
             LOGGER.error("The target JVM {} must be stopped before attempting to delete it", jvm.getJvmName());
             throw new JvmServiceException("The target JVM must be stopped before attempting to delete it");
+        }
+    }
+
+    private class ScpDestination {
+        private String destination;
+        private boolean overwrite;
+
+        ScpDestination(String destination, boolean overwrite){
+            this.destination = destination;
+            this.overwrite = overwrite;
         }
     }
 }

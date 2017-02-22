@@ -9,9 +9,7 @@ import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.common.request.jvm.CreateJvmAndAddToGroupsRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 public interface JvmService {
 
@@ -65,17 +63,6 @@ public interface JvmService {
     Long getJvmStoppedCount(String groupName);
 
     Long getJvmForciblyStoppedCount(String groupName);
-
-    /**
-     * Generates all the required templates for the required jvm, and returns the source location and the destination
-     * location.
-     *
-     * @param jvmName Name of the jvm for which the templates need to be generated.
-     * @return a map with the key as the absolute location of the source file and the value
-     * as the absolute location of the destination file.
-     * @throws IOException
-     */
-    Map<String, String> generateResourceFiles(String jvmName) throws IOException;
 
     /**
      * Create JVM default templates.

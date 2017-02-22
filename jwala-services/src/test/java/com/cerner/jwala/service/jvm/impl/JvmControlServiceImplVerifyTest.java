@@ -205,7 +205,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(ControlJvmRequest.class), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(mockCommandOutput);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CHECK_FILE_EXISTS), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "File doesn't exist", ""));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CREATE_DIRECTORY), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Backup succeeded", ""));
-        jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/path", "./dest/path", "user-id");
+        jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/path", "./dest/path", "user-id", true);
 
         verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.SECURE_COPY), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString());
     }
@@ -227,7 +227,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CHECK_FILE_EXISTS), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "File exists - do backup", ""));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.BACK_UP), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Backup succeeded", ""));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CREATE_DIRECTORY), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Backup succeeded", ""));
-        jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/path", "./dest/path", "user-id");
+        jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/path", "./dest/path", "user-id", true);
 
         verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.SECURE_COPY), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString());
     }
@@ -249,7 +249,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CHECK_FILE_EXISTS), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "File exists - do backup", ""));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.BACK_UP), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "Back up failed"));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CREATE_DIRECTORY), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Backup succeeded", ""));
-        jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/path", "./dest/path", "user-id");
+        jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/path", "./dest/path", "user-id", true);
     }
 
     @Test
