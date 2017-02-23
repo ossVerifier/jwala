@@ -443,7 +443,7 @@ public class GroupServiceImplDeployTest {
         when(mockEntity.getTarget()).thenReturn("group-app");
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
         when(mockMetaData.isUnpack()).thenReturn(false);
-        when(mockMetaData.isOverwrite()).thenReturn(false);
+        when(mockMetaData.isOverwrite()).thenReturn(true);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn(metaData);
         when(mockResourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(),anyString())).thenReturn(mockMetaData);
         assertEquals(commandOutput, groupServiceImpl.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm));
