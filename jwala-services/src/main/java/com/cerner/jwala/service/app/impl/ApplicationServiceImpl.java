@@ -307,8 +307,10 @@ public class ApplicationServiceImpl implements ApplicationService {
             final boolean fileExists = commandOutput.getReturnCode().wasSuccessful();
             if (fileExists && !templateMetaData.isOverwrite()) {
                 // exit without deploying since the file exists and overwrite is false
-                String message = MessageFormat.format("SKIPPING scp of file. File {0} already exists and overwrite is set to false.", destPath);
+                String message = MessageFormat.format("SKIPPING scp of file: {0} already exists and overwrite is set to false.", destPath);
                 LOGGER.info(message);
+                historyService.createHistory("JVM " + jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), message, EventType.USER_ACTION, id);
+                messagingService.send(new JvmHistoryEvent(jvm.getId(), message, id, DateTime.now(), JvmControlOperation.SECURE_COPY));
                 return new CommandOutput(new ExecReturnCode(0), message, "");
             }
 

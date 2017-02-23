@@ -220,8 +220,10 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
         if (fileExists && !overwrite){
             // exit without deploying since the file exists and overwrite is false
-            String message = MessageFormat.format("SKIPPING scp of file. File {0} already exists and overwrite is set to false.", destPath);
+            String message = MessageFormat.format("SKIPPING scp of file: {0} already exists and overwrite is set to false.", destPath);
             LOGGER.info(message);
+            historyService.createHistory(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()), message, EventType.USER_ACTION, userId);
+            messagingService.send(new WebServerHistoryEvent(aWebServer.getId(), message, userId, DateTime.now(), WebServerControlOperation.SECURE_COPY));
             return new CommandOutput(new ExecReturnCode(0), message, "");
         }
 

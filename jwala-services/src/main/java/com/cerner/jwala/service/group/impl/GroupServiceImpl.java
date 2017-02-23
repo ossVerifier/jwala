@@ -457,8 +457,8 @@ public class GroupServiceImpl implements GroupService {
      * @param id
      * @return returns a command output object
      */
-    protected CommandOutput executeDeployGroupAppTemplate(final String groupName, final String fileName, final ResourceGroup resourceGroup,
-                                                          final Application application, final String jvmName, final String hostName, Identifier<Jvm> id) {
+    private CommandOutput executeDeployGroupAppTemplate(final String groupName, final String fileName, final ResourceGroup resourceGroup,
+                                                        final Application application, final String jvmName, final String hostName, Identifier<Jvm> id) {
         String metaDataStr = getGroupAppResourceTemplateMetaData(groupName, fileName);
         ResourceTemplateMetaData metaData;
         try {
@@ -487,8 +487,12 @@ public class GroupServiceImpl implements GroupService {
             final boolean fileExists = commandOutput.getReturnCode().wasSuccessful();
             if (fileExists && !metaData.isOverwrite()) {
                 // exit without deploying since the file exists and overwrite is false
-                String message = MessageFormat.format("SKIPPING scp of file. File {0} already exists and overwrite is set to false.", destPath);
+                String message = MessageFormat.format("SKIPPING scp of file: {0} already exists and overwrite is set to false.", destPath);
                 LOGGER.info(message);
+                final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                final String userName = null != authentication ? authentication.getName() : "";
+                historyService.createHistory(hostName, Collections.singletonList(application.getGroup()), message, EventType.USER_ACTION, userName);
+                messagingService.send(new JvmHistoryEvent(id, message, userName, DateTime.now(), JvmControlOperation.SECURE_COPY));
                 return new CommandOutput(new ExecReturnCode(0), message, "");
             }
 
