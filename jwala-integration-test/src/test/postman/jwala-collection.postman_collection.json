@@ -2,7 +2,7 @@
 	"variables": [],
 	"info": {
 		"name": "jwala-collection",
-		"_postman_id": "36cf2af1-d1ce-d488-576a-b210eaf623a4",
+		"_postman_id": "021b2fc0-f280-ed15-8b63-45f77e079055",
 		"description": "",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
 	},
@@ -1506,6 +1506,17 @@
 				},
 				{
 					"name": "upload external properties",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
 					"request": {
 						"url": "{{url}}/v1.0/resources/ext.properties",
 						"method": "POST",
@@ -1528,6 +1539,17 @@
 				},
 				{
 					"name": "deploy web archive",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
 					"request": {
 						"url": "{{url}}/v1.0/applications/{{AppId}}/war/deploy",
 						"method": "PUT",
@@ -2150,6 +2172,17 @@
 				},
 				{
 					"name": "get media types ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
 					"request": {
 						"url": "{{url}}/v1.0/media/types",
 						"method": "GET",
@@ -2313,6 +2346,17 @@
 				},
 				{
 					"name": "control group jvms",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
 					"request": {
 						"url": "{{url}}/v1.0/groups/{{GroupId}}/jvms/commands",
 						"method": "POST",
@@ -2827,6 +2871,17 @@
 				},
 				{
 					"name": "get application hello",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
 					"request": {
 						"url": "https://{{host}}:9131/hello/",
 						"method": "GET",
@@ -2841,6 +2896,17 @@
 				},
 				{
 					"name": "get application by name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
 					"request": {
 						"url": "{{url}}/v1.0/applications/application;name={{WebappName}}",
 						"method": "GET",
@@ -3811,6 +3877,17 @@
 				},
 				{
 					"name": "get group by name v2 service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
 					"request": {
 						"url": "{{url}}/services/v2.0/groups/{{GroupName}}",
 						"method": "GET",
@@ -4109,6 +4186,17 @@
 				},
 				{
 					"name": "get external properties download",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
 					"request": {
 						"url": "{{url}}/v1.0/resources/properties/download",
 						"method": "GET",
@@ -4151,6 +4239,17 @@
 				},
 				{
 					"name": "get resource content error",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 500\"] = responseCode.code === 500;"
+								]
+							}
+						}
+					],
 					"request": {
 						"url": "{{url}}/v1.0/resources/test/content",
 						"method": "GET",
@@ -4397,6 +4496,17 @@
 				},
 				{
 					"name": "generate webapp",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
 					"request": {
 						"url": "{{url}}/v1.0/applications/{{WebappName}}/conf",
 						"method": "PUT",
@@ -5357,6 +5467,17 @@
 				},
 				{
 					"name": "update resource template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
 					"request": {
 						"url": "{{url}}/v1.0/applications/HEALTH-CHECK-4.0/resources/template/hct.xml;groupName=HEALTH%20CHECK%204.0;jvmName={{HealthCheckJvm}}",
 						"method": "PUT",
@@ -5716,6 +5837,28 @@
 						"description": ""
 					},
 					"response": []
+				},
+				{
+					"name": "download external properties error No external properties uploaded",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 500\"] = responseCode.code === 500;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{url}}/v1.0/resources/properties/download",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "no external propertiy file has been uploaded"
+					},
+					"response": []
 				}
 			]
 		},
@@ -5725,6 +5868,17 @@
 			"item": [
 				{
 					"name": "jwala page constants",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
 					"request": {
 						"url": "{{url}}/page-constants",
 						"method": "GET",
@@ -5786,6 +5940,17 @@
 				},
 				{
 					"name": "toc about page",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
 					"request": {
 						"url": "{{url}}/about",
 						"method": "GET",
