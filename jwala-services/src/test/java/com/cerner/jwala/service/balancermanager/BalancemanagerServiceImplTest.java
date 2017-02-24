@@ -255,7 +255,7 @@ public class BalancemanagerServiceImplTest {
         when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
         when(mockApplicationService.getApplications()).thenReturn(mockGroup.getApplications());
 
-        BalancerManagerState balancerManagerState = balancerManagerServiceImpl.drainUserWebServer("mygroupName", "myWebServerName", "jvmname", getUser());
+        BalancerManagerState balancerManagerState = balancerManagerServiceImpl.drainUserWebServer("mygroupName", "myWebServerName", "CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0057-1", getUser());
         List<BalancerManagerState.GroupDrainStatus> groupDrainStatusList = balancerManagerState.getGroups();
         assertEquals(1, groupDrainStatusList.size());
         for (BalancerManagerState.GroupDrainStatus groupDrainStatus : groupDrainStatusList) {
@@ -548,7 +548,7 @@ public class BalancemanagerServiceImplTest {
         mockGroup.getGroup();
         when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
         final String worker = "https://USMLVV1CDS0057:9101/mywebAppContext";
-        assertEquals("jvmname", balancerManagerXmlParser.findJvmNameByWorker(worker));
+        assertEquals("CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0057-1", balancerManagerXmlParser.findJvmNameByWorker(worker));
     }
 
     @Test
@@ -557,7 +557,7 @@ public class BalancemanagerServiceImplTest {
         mockGroup.getGroup();
         when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
         final String worker = "ajp://USMLVV1CDS0057:9103/mywebAppContext";
-        assertEquals("jvmname", balancerManagerXmlParser.findJvmNameByWorker(worker));
+        assertEquals("CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0057-1", balancerManagerXmlParser.findJvmNameByWorker(worker));
     }
 
     @Test
@@ -574,7 +574,7 @@ public class BalancemanagerServiceImplTest {
         final MockGroup mockGroup = new MockGroup();
         mockGroup.getGroup();
         when(mockApplicationService.getApplications()).thenReturn(mockGroup.getApplications());
-        assertEquals("https://USMLVV1CDS0057:9101/hct", balancerManagerServiceImpl.findJvmUrl("jvmname"));
+        assertEquals("https://USMLVV1CDS0057:9101/hct", balancerManagerServiceImpl.findJvmUrl("CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0057-1"));
     }
 
     @Test
@@ -629,10 +629,10 @@ public class BalancemanagerServiceImplTest {
         when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9121/hct"))).thenReturn(mockWorkerResponse);
         when(mockWorkerResponse.getBody()).thenReturn(new ByteArrayInputStream(getWorkerHtml().getBytes()));
 
-        when(mockJvmService.getJvm("jvmname")).thenReturn(mockGroup.getJvm("jvmname"));
+        when(mockJvmService.getJvm("CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0057-1")).thenReturn(mockGroup.getJvm("CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0057-1"));
         when(mockApplicationService.getApplications()).thenReturn(mockGroup.getApplications());
 
-        BalancerManagerState balancerManagerState = balancerManagerServiceImpl.drainUserJvm("jvmname", getUser());
+        BalancerManagerState balancerManagerState = balancerManagerServiceImpl.drainUserJvm("CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0057-1", getUser());
 
         List<BalancerManagerState.GroupDrainStatus> groupDrainStatusList = balancerManagerState.getGroups();
         assertEquals(1, groupDrainStatusList.size());
@@ -698,11 +698,11 @@ public class BalancemanagerServiceImplTest {
         when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9121/hct"))).thenReturn(mockWorkerResponse);
         when(mockWorkerResponse.getBody()).thenReturn(new ByteArrayInputStream(getWorkerHtml().getBytes()));
 
-        when(mockJvmService.getJvm("jvmname")).thenReturn(mockGroup.getJvm("jvmname"));
+        when(mockJvmService.getJvm("CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0057-1")).thenReturn(mockGroup.getJvm("CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0057-1"));
         when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
         when(mockApplicationService.getApplications()).thenReturn(mockGroup.getApplications());
 
-        BalancerManagerState balancerManagerState = balancerManagerServiceImpl.drainUserGroupJvm("mygroupName", "jvmname", getUser());
+        BalancerManagerState balancerManagerState = balancerManagerServiceImpl.drainUserGroupJvm("mygroupName", "CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0057-1", getUser());
 
         List<BalancerManagerState.GroupDrainStatus> groupDrainStatusList = balancerManagerState.getGroups();
         assertEquals(1, groupDrainStatusList.size());
@@ -713,9 +713,87 @@ public class BalancemanagerServiceImplTest {
                 System.out.println(groupDrainStatus.getwebServers().toString());
                 assertEquals(1, webServerDrainStatus.getjvms().size());
                 for(BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus jvmDrainStatus : webServerDrainStatus.getjvms()){
-                    assertEquals("JvmDrainStatus{jvmName='jvmname', ignoreError='Off', drainingMode='On', disabled='Off', hotStandby='Off', appName='HEALTH-CHECK-4.0', workerUrl='https://usmlvv1cds0057:9101/hct'}",
+                    assertEquals("JvmDrainStatus{jvmName='CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0057-1', ignoreError='Off', drainingMode='On', disabled='Off', hotStandby='Off', appName='HEALTH-CHECK-4.0', workerUrl='https://usmlvv1cds0057:9101/hct'}",
                             jvmDrainStatus.toString());
                 }
+
+            }
+        }
+    }
+
+    @Test
+    public void testDrainUserGroupJvmMultiApp() throws IOException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
+        final MockGroup mockGroup = new MockGroup();
+        when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroupMultiApp());
+        when(mockGroupService.getGroupWithWebServers(mockGroup.getGroup().getId())).thenReturn(mockGroup.getGroupMultiApp());
+        when(mockApplicationService.findApplications(new Identifier<Group>(1L))).thenReturn(mockGroup.findApplications());
+        when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
+        WebServer webServer = mockGroup.getWebServer("myWebServerName");
+        when(mockWebServerService.isStarted(webServer)).thenReturn(true);
+
+        ClientHttpResponse mockResponseHtml = mock(ClientHttpResponse.class);
+        when(mockResponseHtml.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager"))).thenReturn(mockResponseHtml);
+        when(mockResponseHtml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtmlMultiApp().getBytes()));
+
+        //ClientHttpResponse mockResponseHtml2 = mock(ClientHttpResponse.class);
+        //when(mockResponseHtml2.getStatusCode()).thenReturn(HttpStatus.OK);
+        //when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager"))).thenReturn(mockResponseHtml2);
+        //when(mockResponseHtml2.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
+
+        ClientHttpResponse mockResponseXmlProd = mock(ClientHttpResponse.class);
+        when(mockResponseXmlProd.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0-prod&xml=1&nonce=caa8cc9f-7bcc-504b-a0f8-88329d746091"))).thenReturn(mockResponseXmlProd);
+        when(mockResponseXmlProd.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXmlMultiAppProd().getBytes()));
+
+        ClientHttpResponse mockResponseXmlReg = mock(ClientHttpResponse.class);
+        when(mockResponseXmlReg.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=ba8a1b62-cbf1-b44a-a87a-d4d8f79889d4"))).thenReturn(mockResponseXmlReg);
+        when(mockResponseXmlReg.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXmlMultiAppReg().getBytes()));
+
+        CloseableHttpResponse mockResponse = mock(CloseableHttpResponse.class);
+        StatusLine mockStatusLine = mock(StatusLine.class);
+        when(mockStatusLine.getStatusCode()).thenReturn(HttpStatus.OK.value());
+        when(mockResponse.getStatusLine()).thenReturn(mockStatusLine);
+        when(mockBalancerManagerHttpClient.doHttpClientPost(any(String.class), anyListOf(NameValuePair.class))).thenReturn(mockResponse);
+
+        ClientHttpResponse mockWorkerResponse = mock(ClientHttpResponse.class);
+        when(mockWorkerResponse.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=ba8a1b62-cbf1-b44a-a87a-d4d8f79889d4&w=https://win-9npduhc7ccp:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=ba8a1b62-cbf1-b44a-a87a-d4d8f79889d4&w=https://win-9npduhc7ccp:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=ba8a1b62-cbf1-b44a-a87a-d4d8f79889d4&w=https://win-9npduhc7ccp:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=ba8a1b62-cbf1-b44a-a87a-d4d8f79889d4&w=https://win-9npduhc7ccp:9101/hct-prod"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=ba8a1b62-cbf1-b44a-a87a-d4d8f79889d4&w=https://win-9npduhc7ccp:9111/hct-prod"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=ba8a1b62-cbf1-b44a-a87a-d4d8f79889d4&w=https://win-9npduhc7ccp:9121/hct-prod"))).thenReturn(mockWorkerResponse);
+
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0-prod&nonce=caa8cc9f-7bcc-504b-a0f8-88329d746091&w=https://win-9npduhc7ccp:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0-prod&nonce=caa8cc9f-7bcc-504b-a0f8-88329d746091&w=https://win-9npduhc7ccp:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0-prod&nonce=caa8cc9f-7bcc-504b-a0f8-88329d746091&w=https://win-9npduhc7ccp:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0-prod&nonce=caa8cc9f-7bcc-504b-a0f8-88329d746091&w=https://win-9npduhc7ccp:9101/hct-prod"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0-prod&nonce=caa8cc9f-7bcc-504b-a0f8-88329d746091&w=https://win-9npduhc7ccp:9111/hct-prod"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0-prod&nonce=caa8cc9f-7bcc-504b-a0f8-88329d746091&w=https://win-9npduhc7ccp:9121/hct-prod"))).thenReturn(mockWorkerResponse);
+
+        when(mockWorkerResponse.getBody()).thenReturn(new ByteArrayInputStream(getWorkerHtmlMultiApp().getBytes()));
+
+        when(mockJvmService.getJvm("CTO-N9SF-LTST-HEALTH-CHECK-4.0-WIN-9NPDUHC7CCP-1")).thenReturn(mockGroup.getJvmMulti("CTO-N9SF-LTST-HEALTH-CHECK-4.0-WIN-9NPDUHC7CCP-1"));
+        when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvmsMulti());
+        when(mockApplicationService.getApplications()).thenReturn(mockGroup.getApplicationsMultiApp());
+
+        BalancerManagerState balancerManagerState = balancerManagerServiceImpl.drainUserGroupJvm("mygroupName", "CTO-N9SF-LTST-HEALTH-CHECK-4.0-WIN-9NPDUHC7CCP-1", getUser());
+
+        List<BalancerManagerState.GroupDrainStatus> groupDrainStatusList = balancerManagerState.getGroups();
+        assertEquals(1, groupDrainStatusList.size());
+
+        for (BalancerManagerState.GroupDrainStatus groupDrainStatus : groupDrainStatusList) {
+            System.out.println("groupDrainStatus.getwebServers().size(): " + groupDrainStatus.getwebServers().size());
+            assertEquals(1, groupDrainStatus.getwebServers().size());
+            for (BalancerManagerState.GroupDrainStatus.WebServerDrainStatus webServerDrainStatus : groupDrainStatus.getwebServers()) {
+                System.out.println("groupDrainStatus.getwebServers().toString(): " + groupDrainStatus.getwebServers().toString());
+                assertEquals(4, webServerDrainStatus.getjvms().size());
+                //for(BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus jvmDrainStatus : webServerDrainStatus.getjvms()){
+                //    assertEquals("JvmDrainStatus{jvmName='jvmname', ignoreError='Off', drainingMode='Off', disabled='Off', hotStandby='Off', appName='HEALTH-CHECK-4.0-PROD', workerUrl='https://win-9npduhc7ccp:9101/hct'}",
+                //            jvmDrainStatus.toString());
+                //}
 
             }
         }
@@ -769,6 +847,42 @@ public class BalancemanagerServiceImplTest {
         return contents;
     }
 
+    private String getBalancerManagerResponseXmlMultiAppProd() {
+        final File file = new File("./src/test/resources/balancermanager/balancer-manager-response-multiApp-prod.xml");
+        String contents = "";
+        try {
+            byte[] bytes = Files.readAllBytes(file.toPath());
+            contents = new String(bytes, "UTF-8");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return contents;
+    }
+
+    private String getBalancerManagerResponseXmlMultiAppReg() {
+        final File file = new File("./src/test/resources/balancermanager/balancer-manager-response-multiApp-reg.xml");
+        String contents = "";
+        try {
+            byte[] bytes = Files.readAllBytes(file.toPath());
+            contents = new String(bytes, "UTF-8");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return contents;
+    }
+
+    private String getBalancerManagerResponseHtmlMultiApp() {
+        final File file = new File("./src/test/resources/balancermanager/balancer-manager-response-multiApp.html");
+        String contents = "";
+        try {
+            byte[] bytes = Files.readAllBytes(file.toPath());
+            contents = new String(bytes, "UTF-8");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return contents;
+    }
+
     private List<NameValuePair> getNvp() {
         List<NameValuePair> nvp = new ArrayList<>();
         nvp.add(new BasicNameValuePair("a", "1"));
@@ -781,6 +895,18 @@ public class BalancemanagerServiceImplTest {
 
     private String getWorkerHtml() {
         final File file = new File("./src/test/resources/balancermanager/balancer-manager-response-worker.html");
+        String contents = "";
+        try {
+            byte[] bytes = Files.readAllBytes(file.toPath());
+            contents = new String(bytes, "UTF-8");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return contents;
+    }
+
+    private String getWorkerHtmlMultiApp() {
+        final File file = new File("./src/test/resources/balancermanager/balancer-manager-response-worker-multiApp.html");
         String contents = "";
         try {
             byte[] bytes = Files.readAllBytes(file.toPath());

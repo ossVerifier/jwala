@@ -297,7 +297,8 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
             if (jvmName == "") {
                 workers = balancerManagerXmlParser.getWorkers(manager, balancerName);
             } else {
-                workers = balancerManagerXmlParser.getJvmWorker(manager, balancerName, findJvmUrl(jvmName));
+                //workers = balancerManagerXmlParser.getJvmWorker(manager, balancerName, findJvmUrl(jvmName));
+                workers = balancerManagerXmlParser.getJvmWorkerByName(manager, balancerName, jvmName);
             }
             if (post) {
                 doDrain(workers, balancerManagerHtmlUrl, webServer, balancerName, nonce);
@@ -380,7 +381,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
                         final WebServer webServer,
                         final String balancerName,
                         final String nonce) {
-        LOGGER.info("Entering doDrain");
+        LOGGER.info("Entering doDrain for worker size " + workers.size());
         for (String workerUrl : workers.keySet()) {
             final String message = "Drain request for " + workerUrl;
             sendMessage(webServer, message);

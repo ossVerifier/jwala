@@ -34,11 +34,50 @@ public class MockGroup {
         return group;
     }
 
+    public Group getGroupMultiApp() {
+        getJvmsMulti();
+        getApplicationsMultiApp();
+        getWebServers();
+        Group group = new Group(groupId,
+                groupName,
+                jvms,
+                webServers,
+                null,
+                null,
+                applications);
+        this.groups.add(group);
+        return group;
+    }
+
     public List<Jvm> getJvms() {
         List<Jvm> jvms = new LinkedList<>();
         Jvm jvm = new Jvm(id(0L, Jvm.class),
-                "jvmname",
+                "CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0057-1",
                 "USMLVV1CDS0057",
+                groups,
+                9100,
+                9101,
+                9102,
+                -1,
+                9103,
+                new Path("statusPath"),
+                "systemProperties",
+                JvmState.JVM_START,
+                "errorStatus",
+                getApplications(),
+                Calendar.getInstance(),
+                "username",
+                "encryptedpassword");
+        this.jvms.add(jvm);
+        jvms.add(jvm);
+        return jvms;
+    }
+
+    public List<Jvm> getJvmsMulti() {
+        List<Jvm> jvms = new LinkedList<>();
+        Jvm jvm = new Jvm(id(0L, Jvm.class),
+                "CTO-N9SF-LTST-HEALTH-CHECK-4.0-WIN-9NPDUHC7CCP-1",
+                "WIN-9NPDUHC7CCP",
                 groups,
                 9100,
                 9101,
@@ -62,6 +101,27 @@ public class MockGroup {
         Jvm jvm = new Jvm(id(0L, Jvm.class),
                 jvmName,
                 "USMLVV1CDS0057",
+                groups,
+                9100,
+                9101,
+                9102,
+                -1,
+                9103,
+                new Path("statusPath"),
+                "systemProperties",
+                JvmState.JVM_START,
+                "errorStatus",
+                getApplications(),
+                Calendar.getInstance(),
+                "username",
+                "encryptedpassword");
+        return jvm;
+    }
+
+    public Jvm getJvmMulti(final String jvmName) {
+        Jvm jvm = new Jvm(id(0L, Jvm.class),
+                jvmName,
+                "WIN-9NPDUHC7CCP",
                 groups,
                 9100,
                 9101,
@@ -131,6 +191,46 @@ public class MockGroup {
         }
         application.setJvms(jvmsList);
         this.applications.add(application);
+        applications.add(application);
+        return applications;
+    }
+
+    public List<Application> getApplicationsMultiApp() {
+        Group myGroup = new Group(groupId, groupName, jvms);
+        List<Application> applications = new LinkedList<>();
+        Application application = new Application(id(0L, Application.class),
+                "HEALTH-CHECK-4.0",
+                "myaWarPath",
+                "/hct",
+                myGroup,
+                true,
+                false,
+                false,
+                "myWarName");
+        List<Jvm> jvmsList = new LinkedList<>();
+        for (Jvm jvm : jvms) {
+            jvmsList.add(jvm);
+        }
+        application.setJvms(jvmsList);
+
+        Application applicationProd = new Application(id(0L, Application.class),
+                "HEALTH-CHECK-4.0-PROD",
+                "myaWarPath",
+                "/hct",
+                myGroup,
+                true,
+                false,
+                false,
+                "myWarName");
+        List<Jvm> jvmsListProd = new LinkedList<>();
+        for (Jvm jvm : jvms) {
+            jvmsListProd.add(jvm);
+        }
+        applicationProd.setJvms(jvmsList);
+
+        this.applications.add(application);
+        this.applications.add(applicationProd);
+        applications.add(applicationProd);
         applications.add(application);
         return applications;
     }
