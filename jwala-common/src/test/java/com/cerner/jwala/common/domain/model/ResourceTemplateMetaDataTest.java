@@ -33,12 +33,12 @@ public class ResourceTemplateMetaDataTest {
     private static final String EXPECTED_META_DATA_STR = "ResourceTemplateMetaData{templateName='SetenvBatTemplate.tpl', " +
             "contentType=PLAIN_TEXT_UTF_8, deployFileName='setenv.bat', deployPath='${vars.'remote.paths.instances'}/${jvm.jvmName}/bin', " +
             "entity=Entity{type='GROUPED_JVMS', group='HEALTH CHECK 4.0', target='HEALTH CHECK 4.0', parentName='null', deployToJvms=true}, " +
-            "unpack=false, overwrite=false}";
+            "unpack=false, overwrite=true}";
 
     private static final String EXPECTED_META_DATA_JSON = "{\"templateName\":\"SetenvBatTemplate.tpl\",\"contentType\"" +
             ":\"text/plain\",\"deployFileName\":\"setenv.bat\",\"deployPath\":\"${vars.'remote.paths.instances'}/" +
             "${jvm.jvmName}/bin\",\"entity\":{\"type\":\"GROUPED_JVMS\",\"group\":\"HEALTH CHECK 4.0\",\"target\":\"" +
-            "HEALTH CHECK 4.0\",\"parentName\":null,\"deployToJvms\":true},\"unpack\":false,\"overwrite\":false}";
+            "HEALTH CHECK 4.0\",\"parentName\":null,\"deployToJvms\":true},\"unpack\":false,\"overwrite\":true}";
 
     @Test
     public void testCreateMetaData() throws IOException {

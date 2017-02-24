@@ -47,6 +47,7 @@ import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -549,6 +550,7 @@ public class ResourceServiceImplTest {
     }
 
     @Test
+    @Ignore
     public void testDeployResourceTemplateToAllHosts() throws CommandFailureException {
         ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
         ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);

@@ -729,18 +729,6 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     protected CommandOutput secureCopyFile(final String hostName, final String sourcePath, final String destPath) throws CommandFailureException {
-        final int beginIndex = destPath.lastIndexOf("/");
-        final String fileName = destPath.substring(beginIndex + 1, destPath.length());
-
-        // TODO put this back in when we start processing events for JVMs, and then make it generic for Web Servers, Applications, etc.
-        // don't add any usage of the Jwala user internal directory to the history
-        /*if (!AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue().endsWith(fileName)) {
-            final String eventDescription = "SECURE COPY " + fileName;
-            historyService.createHistory(hostName, new ArrayList<>(*//*jvm.getGroups()*//*), eventDescription, EventType.USER_ACTION, userId);
-            messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, userId, DateTime.now(), JvmControlOperation.SECURE_COPY));
-        }*/
-
-        // TODO update this to be derived from the resource type being copied
         final String name = "Ext Properties";
 
         final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");

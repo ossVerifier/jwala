@@ -18,6 +18,7 @@ import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
+import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.group.*;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
@@ -53,6 +54,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -455,8 +457,8 @@ public class GroupServiceImpl implements GroupService {
      * @param id
      * @return returns a command output object
      */
-    protected CommandOutput executeDeployGroupAppTemplate(final String groupName, final String fileName, final ResourceGroup resourceGroup,
-                                                          final Application application, final String jvmName, final String hostName, Identifier<Jvm> id) {
+    private CommandOutput executeDeployGroupAppTemplate(final String groupName, final String fileName, final ResourceGroup resourceGroup,
+                                                        final Application application, final String jvmName, final String hostName, Identifier<Jvm> id) {
         String metaDataStr = getGroupAppResourceTemplateMetaData(groupName, fileName);
         ResourceTemplateMetaData metaData;
         try {
@@ -482,7 +484,19 @@ public class GroupServiceImpl implements GroupService {
             LOGGER.debug("checking if file: {} exists on remote location", destPath);
             commandOutput = executeCheckFileExistsCommand(jvmName, hostName, destPath);
 
-            if (commandOutput.getReturnCode().wasSuccessful()) {
+            final boolean fileExists = commandOutput.getReturnCode().wasSuccessful();
+            if (fileExists && !metaData.isOverwrite()) {
+                // exit without deploying since the file exists and overwrite is false
+                String message = MessageFormat.format("SKIPPING scp of file: {0} already exists and overwrite is set to false.", destPath);
+                LOGGER.info(message);
+                final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                final String userName = null != authentication ? authentication.getName() : "";
+                historyService.createHistory(hostName, Collections.singletonList(application.getGroup()), message, EventType.USER_ACTION, userName);
+                messagingService.send(new JvmHistoryEvent(id, message, userName, DateTime.now(), JvmControlOperation.SECURE_COPY));
+                return new CommandOutput(new ExecReturnCode(0), message, "");
+            }
+
+            if (fileExists) {
                 LOGGER.debug("backing up file: {}", destPath);
                 commandOutput = executeBackUpCommand(jvmName, hostName, destPath);
 

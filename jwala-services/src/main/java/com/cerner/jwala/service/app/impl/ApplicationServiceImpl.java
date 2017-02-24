@@ -13,6 +13,7 @@ import com.cerner.jwala.common.domain.model.resource.*;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
+import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.app.*;
 import com.cerner.jwala.control.AemControl;
@@ -54,6 +55,7 @@ import org.springframework.util.FileCopyUtils;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
@@ -302,7 +304,17 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
             commandOutput = executeCheckIfFileExistsCommand(deployJvmName, hostName, destPath);
 
-            if (commandOutput.getReturnCode().wasSuccessful()) {
+            final boolean fileExists = commandOutput.getReturnCode().wasSuccessful();
+            if (fileExists && !templateMetaData.isOverwrite()) {
+                // exit without deploying since the file exists and overwrite is false
+                String message = MessageFormat.format("SKIPPING scp of file: {0} already exists and overwrite is set to false.", destPath);
+                LOGGER.info(message);
+                historyService.createHistory("JVM " + jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), message, EventType.USER_ACTION, id);
+                messagingService.send(new JvmHistoryEvent(jvm.getId(), message, id, DateTime.now(), JvmControlOperation.SECURE_COPY));
+                return new CommandOutput(new ExecReturnCode(0), message, "");
+            }
+
+            if (fileExists) {
                 commandOutput = executeBackUpCommand(deployJvmName, hostName, destPath);
 
                 if (!commandOutput.getReturnCode().wasSuccessful()) {

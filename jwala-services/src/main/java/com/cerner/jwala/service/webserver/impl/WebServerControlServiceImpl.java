@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -196,7 +197,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     }
 
     @Override
-    public CommandOutput secureCopyFile(final String aWebServerName, final String sourcePath, final String destPath, String userId) throws CommandFailureException {
+    public CommandOutput secureCopyFile(final String aWebServerName, final String sourcePath, final String destPath, String userId, boolean overwrite) throws CommandFailureException {
 
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
         final String fileName = new File(destPath).getName();
@@ -215,7 +216,18 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                 new WindowsWebServerPlatformCommandProvider(),
                 destPath
         );
-        if (commandOutput.getReturnCode().wasSuccessful()) {
+        final boolean fileExists = commandOutput.getReturnCode().wasSuccessful();
+
+        if (fileExists && !overwrite){
+            // exit without deploying since the file exists and overwrite is false
+            String message = MessageFormat.format("SKIPPING scp of file: {0} already exists and overwrite is set to false.", destPath);
+            LOGGER.info(message);
+            historyService.createHistory(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()), message, EventType.USER_ACTION, userId);
+            messagingService.send(new WebServerHistoryEvent(aWebServer.getId(), message, userId, DateTime.now(), WebServerControlOperation.SECURE_COPY));
+            return new CommandOutput(new ExecReturnCode(0), message, "");
+        }
+
+        if (fileExists) {
             LOGGER.info("Found the file {}", destPath);
         } else {
             final String parentDir;

@@ -177,7 +177,7 @@ public class GroupServiceImplDeployTest {
         when(mockJvmService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new server.xml content");
         when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(mockJvmService.generateConfigFile(anyString(), anyString())).thenReturn("new server.xml content");
-        when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString(), anyBoolean())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
 
         Response returnedResponse = groupServiceRest.generateAndDeployGroupJvmFile("testGroup", "server.xml", mockAuthUser);
         assertEquals(200, returnedResponse.getStatusInfo().getStatusCode());
@@ -221,12 +221,12 @@ public class GroupServiceImplDeployTest {
         when(mockWebServerService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(mockWebServerService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new httpd.conf context");
         when(mockWebServerService.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("new httpd.conf context");
-        when(mockWebServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockWebServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString(), anyBoolean())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
 
         Response returnedResponse = groupServiceRest.generateAndDeployGroupWebServersFile("testGroup", "httpd.conf", mockAuthUser);
         assertEquals(200, returnedResponse.getStatusInfo().getStatusCode());
 
-        when(mockWebServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "NOT OK"));
+        when(mockWebServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString(), anyBoolean())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "NOT OK"));
         try {
             groupServiceRest.generateAndDeployGroupWebServersFile("testGroup", "httpd.conf", mockAuthUser);
         } catch (InternalErrorException ie) {
@@ -443,7 +443,7 @@ public class GroupServiceImplDeployTest {
         when(mockEntity.getTarget()).thenReturn("group-app");
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
         when(mockMetaData.isUnpack()).thenReturn(false);
-        when(mockMetaData.isOverwrite()).thenReturn(false);
+        when(mockMetaData.isOverwrite()).thenReturn(true);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn(metaData);
         when(mockResourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(),anyString())).thenReturn(mockMetaData);
         assertEquals(commandOutput, groupServiceImpl.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm));
@@ -474,7 +474,7 @@ public class GroupServiceImplDeployTest {
         when(mockWebServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(successCommandOutput);
         when(mockWebServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
         when(mockWebServerService.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("httpd.conf content");
-        when(mockWebServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
+        when(mockWebServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString(), anyBoolean())).thenReturn(successCommandOutput);
         when(mockWebServerService.generateInvokeWSBat(any(WebServer.class))).thenReturn("invokeWS.bat content");
         when(mockWebServerService.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
@@ -526,7 +526,7 @@ public class GroupServiceImplDeployTest {
         when(mockJvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(successCommandOutput);
         when(mockJvmControlService.executeCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
         when(mockJvmControlService.executeChangeFileModeCommand(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
-        when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
+        when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString(), anyBoolean())).thenReturn(successCommandOutput);
 
         Response response = groupServiceRest.generateGroupJvms(new Identifier<Group>(111L), mockAuthUser);
         assertNotNull(response);
