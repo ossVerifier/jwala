@@ -2,7 +2,7 @@ description "Common module used by other for jwala modules"
 apply plugin: 'groovy'
 
 ext {
-	localVersions = [jsch : "0.1.51", commonsPool : "2.4.2"]
+	localVersions = [jsch : "0.1.53", commonsPool : "2.4.2"]
 }
 
 configurations {
