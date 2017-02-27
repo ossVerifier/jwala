@@ -35,9 +35,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.io.File;
-import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -92,7 +91,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             final String event = controlOperation.getOperationState() == null ? controlOperation.name() : controlOperation.getOperationState().toStateLabel();
 
             historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION_INFO, aUser.getId());
-            RemoteCommandReturnInfo remoteCommandReturnInfo = jvmCommandFactory.executeCommand(jvm,controlJvmRequest.getControlOperation());
+            RemoteCommandReturnInfo remoteCommandReturnInfo = jvmCommandFactory.executeCommand(jvm, controlJvmRequest.getControlOperation());
             CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                     remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
 
@@ -253,7 +252,7 @@ public class JvmControlServiceImpl implements JvmControlService {
 
     @Override
     public CommandOutput secureCopyFile(final ControlJvmRequest secureCopyRequest, final String sourcePath,
-                                        final String destPath, String userId) throws CommandFailureException {
+                                        final String destPath, String userId, boolean overwrite) throws CommandFailureException {
         final Identifier<Jvm> jvmId = secureCopyRequest.getJvmId();
 
         final String event = secureCopyRequest.getControlOperation().name();
@@ -288,7 +287,8 @@ public class JvmControlServiceImpl implements JvmControlService {
         }
         commandOutput = executeCheckFileExistsCommand(jvm, destPath);
 
-        if (commandOutput.getReturnCode().wasSuccessful()) {
+        final boolean fileExists = commandOutput.getReturnCode().wasSuccessful();
+        if (fileExists && overwrite) {
             commandOutput = executeBackUpCommand(jvm, destPath);
 
             if (!commandOutput.getReturnCode().wasSuccessful()) {
@@ -299,6 +299,11 @@ public class JvmControlServiceImpl implements JvmControlService {
                 LOGGER.info("Successfully backed up " + destPath + " at " + hostName);
             }
 
+        } else if (fileExists) {
+            // exit without deploying since the file exists and overwrite is false
+            String message = MessageFormat.format("Skipping scp of file: {0} already exists and overwrite is set to false.", destPath);
+            LOGGER.info(message);
+            return new CommandOutput(new ExecReturnCode(0), message, "");
         }
 
         RemoteCommandReturnInfo remoteCommandReturnInfo = shellCommandFactory.executeRemoteCommand(jvm.getHostName(),
@@ -311,7 +316,7 @@ public class JvmControlServiceImpl implements JvmControlService {
     public CommandOutput executeChangeFileModeCommand(final Jvm jvm, final String modifiedPermissions, final String targetAbsoluteDir, final String targetFile)
             throws CommandFailureException {
         RemoteCommandReturnInfo remoteCommandReturnInfo = shellCommandFactory.executeRemoteCommand(jvm.getHostName(),
-                Command.CHANGE_FILE_MODE, modifiedPermissions, targetAbsoluteDir+"/"+targetFile);
+                Command.CHANGE_FILE_MODE, modifiedPermissions, targetAbsoluteDir + "/" + targetFile);
         return new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                 remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
     }
@@ -342,10 +347,9 @@ public class JvmControlServiceImpl implements JvmControlService {
     }
 
     /**
-     *
      * @param jvmCommandFactory
      */
-    public void setJvmCommandFactory(JvmCommandFactory jvmCommandFactory){
+    public void setJvmCommandFactory(JvmCommandFactory jvmCommandFactory) {
         this.jvmCommandFactory = jvmCommandFactory;
     }
 }

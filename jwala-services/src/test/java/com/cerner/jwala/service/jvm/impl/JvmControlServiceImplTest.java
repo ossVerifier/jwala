@@ -196,15 +196,17 @@ public class JvmControlServiceImplTest extends VerificationBehaviorSupport {
 
         final ControlJvmRequest mockControlJvmRequest = mock(ControlJvmRequest.class);
         when(mockControlJvmRequest.getControlOperation()).thenReturn(JvmControlOperation.SCP);
-        jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/filename", "./dest/filename", "user-id");
+        jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/filename", "./dest/filename", "user-id", true);
         verify(Config.mockShellCommandFactory).executeRemoteCommand("host", Command.CREATE_DIR, "./dest");
         verify(Config.mockShellCommandFactory).executeRemoteCommand("host", Command.SCP, "./source/filename", "./dest/filename");
     }
 
-    @Test (expected = InternalErrorException.class)
-    public void testSecureCopyConfFileFailsBackup() throws CommandFailureException {
-        final RemoteCommandReturnInfo remoteCommandReturnInfo = new RemoteCommandReturnInfo(36, "", "Service code does not exists!");
-        when(Config.mockShellCommandFactory.executeRemoteCommand(anyString(), eq(Command.CREATE_DIR), anyString())).thenReturn(remoteCommandReturnInfo);
+    @Test
+    public void testSecureCopyConfFileOverwriteFalseAndFileExists() throws CommandFailureException {
+        when(Config.mockShellCommandFactory.executeRemoteCommand(anyString(), eq(Command.CREATE_DIR), anyString())).thenReturn(mock(RemoteCommandReturnInfo.class));
+        when(Config.mockShellCommandFactory.executeRemoteCommand(anyString(), eq(Command.MOVE), anyString(), anyString())).thenReturn(mock(RemoteCommandReturnInfo.class));
+        when(Config.mockShellCommandFactory.executeRemoteCommand(anyString(), eq(Command.CHECK_FILE_EXISTS), anyString())).thenReturn(mock(RemoteCommandReturnInfo.class));
+        when(Config.mockShellCommandFactory.executeRemoteCommand(anyString(), eq(Command.CHANGE_FILE_MODE), any(String[].class))).thenReturn(mock(RemoteCommandReturnInfo.class));
 
         final Jvm mockJvm = mock(Jvm.class);
         when(mockJvm.getHostName()).thenReturn("host");
@@ -213,7 +215,40 @@ public class JvmControlServiceImplTest extends VerificationBehaviorSupport {
 
         final ControlJvmRequest mockControlJvmRequest = mock(ControlJvmRequest.class);
         when(mockControlJvmRequest.getControlOperation()).thenReturn(JvmControlOperation.SCP);
-        jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/path", "./dest/path", "user-id");
+        CommandOutput result = jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/filename", "./dest/filename", "user-id", false);
+        verify(Config.mockShellCommandFactory).executeRemoteCommand("host", Command.CREATE_DIR, "./dest");
+        verify(Config.mockShellCommandFactory, never()).executeRemoteCommand("host", Command.SCP, "./source/filename", "./dest/filename");
+        assertEquals("Skipping scp of file: ./dest/filename already exists and overwrite is set to false.", result.getStandardOutput());
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testSecureCopyConfFileFailsBackup() throws CommandFailureException {
+        when(Config.mockShellCommandFactory.executeRemoteCommand(anyString(), eq(Command.CREATE_DIR), anyString())).thenReturn(mock(RemoteCommandReturnInfo.class));
+        when(Config.mockShellCommandFactory.executeRemoteCommand(anyString(), eq(Command.CHECK_FILE_EXISTS), anyString())).thenReturn(mock(RemoteCommandReturnInfo.class));
+        when(Config.mockShellCommandFactory.executeRemoteCommand(anyString(), eq(Command.MOVE), anyString(), anyString())).thenReturn(new RemoteCommandReturnInfo(1, "", "FAILED BACK UP"));
+
+        final Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getHostName()).thenReturn("host");
+        when(Config.mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
+        when(Config.mockShellCommandFactory.executeRemoteCommand(eq("host"), eq(Command.SCP), anyString(), anyString())).thenReturn(mock(RemoteCommandReturnInfo.class));
+
+        final ControlJvmRequest mockControlJvmRequest = mock(ControlJvmRequest.class);
+        when(mockControlJvmRequest.getControlOperation()).thenReturn(JvmControlOperation.SCP);
+        jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/path", "./dest/path", "user-id", true);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testSecureCopyConfFileFailsCreateDirectory() throws CommandFailureException {
+        when(Config.mockShellCommandFactory.executeRemoteCommand(anyString(), eq(Command.CREATE_DIR), anyString())).thenReturn(new RemoteCommandReturnInfo(1, "", "FAILED BACK UP"));
+
+        final Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getHostName()).thenReturn("host");
+        when(Config.mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
+        when(Config.mockShellCommandFactory.executeRemoteCommand(eq("host"), eq(Command.SCP), anyString(), anyString())).thenReturn(mock(RemoteCommandReturnInfo.class));
+
+        final ControlJvmRequest mockControlJvmRequest = mock(ControlJvmRequest.class);
+        when(mockControlJvmRequest.getControlOperation()).thenReturn(JvmControlOperation.SCP);
+        jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/path", "./dest/path", "user-id", true);
     }
 
     @Test

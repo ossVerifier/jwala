@@ -21,7 +21,7 @@ public class ResourceTemplateMetaData {
     private final String deployPath;
     private final Entity entity;
     private boolean unpack = false;
-    private boolean overwrite = false;
+    private boolean overwrite = true;
 
     @JsonIgnore
     private String jsonData;
