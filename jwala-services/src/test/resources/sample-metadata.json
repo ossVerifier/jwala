@@ -3,7 +3,6 @@
   "templateName" : "ServerXMLTemplate.tpl",
   "deployFileName" : "server.xml",
   "contentType" : "application/xml",
-  "overwrite" : "true",
   "entity" : {
     "type" : "GROUPED_JVMS",
     "group" : "HEALTH CHECK 4.0",
