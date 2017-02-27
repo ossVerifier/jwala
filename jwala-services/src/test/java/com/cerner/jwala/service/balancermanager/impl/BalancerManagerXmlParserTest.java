@@ -33,9 +33,9 @@ public class BalancerManagerXmlParserTest {
             "      <httpd:scolonpathdelim>On</httpd:scolonpathdelim>\n" +
             "      <httpd:workers>\n" +
             "        <httpd:worker>\n" +
-            "          <httpd:name>https://usmlvv1cds0047:9121/hct</httpd:name>\n" +
+            "          <httpd:name>https://localhost:9121/hct</httpd:name>\n" +
             "          <httpd:scheme>https</httpd:scheme>\n" +
-            "          <httpd:hostname>usmlvv1cds0047</httpd:hostname>\n" +
+            "          <httpd:hostname>localhost</httpd:hostname>\n" +
             "          <httpd:loadfactor>1</httpd:loadfactor>\n" +
             "          <httpd:port>9121</httpd:port>\n" +
             "          <httpd:min>0</httpd:min>\n" +
@@ -50,7 +50,7 @@ public class BalancerManagerXmlParserTest {
             "          <httpd:transferred>0</httpd:transferred>\n" +
             "          <httpd:read>0</httpd:read>\n" +
             "          <httpd:elected>0</httpd:elected>\n" +
-            "          <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0047-3</httpd:route>\n" +
+            "          <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-localhost-3</httpd:route>\n" +
             "          <httpd:redirect></httpd:redirect>\n" +
             "          <httpd:busy>0</httpd:busy>\n" +
             "          <httpd:lbset>0</httpd:lbset>\n" +
@@ -92,27 +92,27 @@ public class BalancerManagerXmlParserTest {
         Map<String, String> workers = balancerManagerXmlParser.getWorkers(manager, balancerName);
         assertEquals(1, workers.size());
 
-        Map<String, String> jvmWorkers = balancerManagerXmlParser.getJvmWorker(manager, balancerName, "https://usmlvv1cds0047:9121/hct");
+        Map<String, String> jvmWorkers = balancerManagerXmlParser.getJvmWorker(manager, balancerName, "https://localhost:9121/hct");
         assertEquals(1, jvmWorkers.size());
     }
 
     @Test
     public void testGetJvmByWorker() {
         Jvm mockJvm = mock(Jvm.class);
-        when(mockJvm.getJvmName()).thenReturn("CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0047-3");
-        when(mockJvm.getHostName()).thenReturn("usmlvv1cds0047");
+        when(mockJvm.getJvmName()).thenReturn("CTO-N9SF-LTST-HEALTH-CHECK-4.0-localhost-3");
+        when(mockJvm.getHostName()).thenReturn("localhost");
         when(mockJvm.getHttpPort()).thenReturn(9120);
         when(mockJvm.getHttpsPort()).thenReturn(9121);
         when(mockJvm.getAjpPort()).thenReturn(9122);
         when(mockJvmService.getJvms()).thenReturn(Collections.singletonList(mockJvm));
 
-        String jvmName = balancerManagerXmlParser.findJvmNameByWorker("https://usmlvv1cds0047:9121/hct");
-        assertEquals("CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0047-3", jvmName);
+        String jvmName = balancerManagerXmlParser.findJvmNameByWorker("https://localhost:9121/hct");
+        assertEquals("CTO-N9SF-LTST-HEALTH-CHECK-4.0-localhost-3", jvmName);
 
-        jvmName = balancerManagerXmlParser.findJvmNameByWorker("http://usmlvv1cds0047:9120/hct");
-        assertEquals("CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0047-3", jvmName);
+        jvmName = balancerManagerXmlParser.findJvmNameByWorker("http://localhost:9120/hct");
+        assertEquals("CTO-N9SF-LTST-HEALTH-CHECK-4.0-localhost-3", jvmName);
 
-        jvmName = balancerManagerXmlParser.findJvmNameByWorker("ajp://usmlvv1cds0047:9122/hct");
-        assertEquals("CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0047-3", jvmName);
+        jvmName = balancerManagerXmlParser.findJvmNameByWorker("ajp://localhost:9122/hct");
+        assertEquals("CTO-N9SF-LTST-HEALTH-CHECK-4.0-localhost-3", jvmName);
     }
 }

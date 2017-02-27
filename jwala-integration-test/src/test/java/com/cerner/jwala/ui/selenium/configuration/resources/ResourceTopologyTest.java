@@ -31,8 +31,8 @@ public class ResourceTopologyTest extends SeleniumTestCase {
         Thread.sleep(1000);
         clickTreeItemExpandCollapseIcon("HEALTH CHECK 4.0", 1000);
         clickTreeItemExpandCollapseIcon("JVMs", 1000);
-        clickTreeItemExpandCollapseIcon("CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0049-3", 1000);
-        assertTrue(isElementPresent(By.xpath("//li[span[text()='CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0049-3']]//span[text()='HEALTH-CHECK-4.0']")));
+        clickTreeItemExpandCollapseIcon("CTO-N9SF-LTST-HEALTH-CHECK-4.0-SOMEHOST-3", 1000);
+        assertTrue(isElementPresent(By.xpath("//li[span[text()='CTO-N9SF-LTST-HEALTH-CHECK-4.0-SOMEHOST-3']]//span[text()='HEALTH-CHECK-4.0']")));
     }
 
     private void clickTreeItemExpandCollapseIcon(final String itemLabel, final long waitTimeAfterClick) throws InterruptedException {

@@ -99,7 +99,7 @@ public class BalanceManagerServiceImplTest {
         when(mockBalancerManagerHtmlParser.findBalancers(anyString())).thenReturn(balancerMap);
 
         final Map<String, String> workerMap = new HashMap<>();
-        workerMap.put("https://usmlvv1cds0049:9101/hct", "any");
+        workerMap.put("https://somehost:9101/hct", "any");
         final List<Application> appList = new ArrayList<>();
         final Application mockApp = mock(Application.class);
         final Set<Jvm> jvmSet = new HashSet<>();
@@ -124,7 +124,7 @@ public class BalanceManagerServiceImplTest {
         final BalancerManagerState balancerManagerState = balanceManagerService.drainUserGroup("group1", "webServer1", "user1");
         assertEquals("group1", balancerManagerState.getGroups().get(0).getGroupName());
         verify(mockBalancerManagerHtmlParser).getWorkerUrlPath(anyString(), anyString(), anyString(),
-                eq("https://usmlvv1cds0049:9101/hct"));
+                eq("https://somehost:9101/hct"));
     }
 
     @Test
@@ -152,7 +152,7 @@ public class BalanceManagerServiceImplTest {
         when(mockBalancerManagerHtmlParser.findBalancers(anyString())).thenReturn(balancerMap);
 
         final Map<String, String> workerMap = new HashMap<>();
-        workerMap.put("https://usmlvv1cds0049:9101/hct", "any");
+        workerMap.put("https://somehost:9101/hct", "any");
         final List<Application> appList = new ArrayList<>();
         final Application mockApp = mock(Application.class);
         final Set<Jvm> jvmSet = new HashSet<>();
@@ -177,7 +177,7 @@ public class BalanceManagerServiceImplTest {
         final BalancerManagerState balancerManagerState = balanceManagerService.drainUserGroup("group1", "", "user1");
         assertEquals("group1", balancerManagerState.getGroups().get(0).getGroupName());
         verify(mockBalancerManagerHtmlParser).getWorkerUrlPath(anyString(), anyString(), anyString(),
-                eq("https://usmlvv1cds0049:9101/hct"));
+                eq("https://somehost:9101/hct"));
     }
 
     @Test
@@ -196,7 +196,7 @@ public class BalanceManagerServiceImplTest {
         when(mockBalancerManagerHtmlParser.findBalancers(anyString())).thenReturn(balancerMap);
 
         final Map<String, String> workerMap = new HashMap<>();
-        workerMap.put("https://usmlvv1cds0049:9101/hct", "any");
+        workerMap.put("https://somehost:9101/hct", "any");
         final List<Application> appList = new ArrayList<>();
         final Application mockApp = mock(Application.class);
         final Group mockGroup = mock(Group.class);
@@ -222,7 +222,7 @@ public class BalanceManagerServiceImplTest {
         final BalancerManagerState balancerManagerState = balanceManagerService.drainUserWebServer("group1", "webServer1", "jvm1", "user1");
         assertEquals("group1", balancerManagerState.getGroups().get(0).getGroupName());
         verify(mockBalancerManagerHtmlParser).getWorkerUrlPath(anyString(), anyString(), anyString(),
-                eq("https://usmlvv1cds0049:9101/hct"));
+                eq("https://somehost:9101/hct"));
     }
 
     @Test
@@ -241,7 +241,7 @@ public class BalanceManagerServiceImplTest {
         when(mockBalancerManagerHtmlParser.findBalancers(anyString())).thenReturn(balancerMap);
 
         final Map<String, String> workerMap = new HashMap<>();
-        workerMap.put("http://usmlvv1cds0049:9101/hct", "any");
+        workerMap.put("http://somehost:9101/hct", "any");
         final List<Application> appList = new ArrayList<>();
         final Application mockApp = mock(Application.class);
         final Group mockGroup = mock(Group.class);
@@ -268,7 +268,7 @@ public class BalanceManagerServiceImplTest {
         System.out.println(balancerManagerState);
         assertEquals("group1", balancerManagerState.getGroups().get(0).getGroupName());
         verify(mockBalancerManagerHtmlParser).getWorkerUrlPath(anyString(), anyString(), anyString(),
-                eq("http://usmlvv1cds0049:9101/hct"));
+                eq("http://somehost:9101/hct"));
     }
 
     @Test(expected = InternalErrorException.class)
@@ -296,7 +296,7 @@ public class BalanceManagerServiceImplTest {
         when(mockBalancerManagerHtmlParser.findBalancers(anyString())).thenReturn(balancerMap);
 
         final Map<String, String> workerMap = new HashMap<>();
-        workerMap.put("https://usmlvv1cds0049:9101/hct", "any");
+        workerMap.put("https://somehost:9101/hct", "any");
         final List<Application> appList = new ArrayList<>();
         final Application mockApp = mock(Application.class);
         when(mockApp.getWebAppContext()).thenReturn("/hct");
@@ -313,7 +313,7 @@ public class BalanceManagerServiceImplTest {
         final BalancerManagerState balancerManagerState = balanceManagerService.drainUserWebServer("group1", "webServer1", "", "user1");
         assertEquals("group1", balancerManagerState.getGroups().get(0).getGroupName());
         verify(mockBalancerManagerHtmlParser).getWorkerUrlPath(anyString(), anyString(), anyString(),
-                eq("https://usmlvv1cds0049:9101/hct"));
+                eq("https://somehost:9101/hct"));
     }
 
     @Test
@@ -348,7 +348,7 @@ public class BalanceManagerServiceImplTest {
         when(mockBalancerManagerHtmlParser.findBalancers(anyString())).thenReturn(balancerMap);
 
         final Map<String, String> workerMap = new HashMap<>();
-        workerMap.put("https://usmlvv1cds0049:9101/hct", "any");
+        workerMap.put("https://somehost:9101/hct", "any");
         final List<Application> appList = new ArrayList<>();
         final Application mockApp = mock(Application.class);
         final Set<Jvm> jvmSet = new HashSet<>();
@@ -373,7 +373,7 @@ public class BalanceManagerServiceImplTest {
         System.out.println(balancerManagerState);
         assertEquals("webServer1", balancerManagerState.getGroups().get(0).getwebServers().get(0).getWebServerName());
         verify(mockBalancerManagerHtmlParser).getWorkerUrlPath(anyString(), anyString(), anyString(),
-                eq("https://usmlvv1cds0049:9101/hct"));
+                eq("https://somehost:9101/hct"));
     }
 
     @Test
@@ -408,7 +408,7 @@ public class BalanceManagerServiceImplTest {
         when(mockBalancerManagerHtmlParser.findBalancers(anyString())).thenReturn(balancerMap);
 
         final Map<String, String> workerMap = new HashMap<>();
-        workerMap.put("https://usmlvv1cds0049:9101/hct", "any");
+        workerMap.put("https://somehost:9101/hct", "any");
         final List<Application> appList = new ArrayList<>();
         final Application mockApp = mock(Application.class);
         when(mockJvm.getJvmName()).thenReturn("jvm1");
@@ -430,7 +430,7 @@ public class BalanceManagerServiceImplTest {
         final BalancerManagerState balancerManagerState = balanceManagerService.drainUserGroupJvm("group1", "jvm1", "user1");
         assertEquals("group1", balancerManagerState.getGroups().get(0).getGroupName());
         verify(mockBalancerManagerHtmlParser).getWorkerUrlPath(anyString(), anyString(), anyString(),
-                eq("https://usmlvv1cds0049:9101/hct"));
+                eq("https://somehost:9101/hct"));
     }
 
     @Test
@@ -469,7 +469,7 @@ public class BalanceManagerServiceImplTest {
         when(mockBalancerManagerHtmlParser.findBalancers(anyString())).thenReturn(balancerMap);
 
         final Map<String, String> workerMap = new HashMap<>();
-        workerMap.put("https://usmlvv1cds0049:9101/hct", "any");
+        workerMap.put("https://somehost:9101/hct", "any");
         final List<Application> appList = new ArrayList<>();
         final Application mockApp = mock(Application.class);
         final Set<Jvm> jvmSet = new HashSet<>();
@@ -494,6 +494,6 @@ public class BalanceManagerServiceImplTest {
         final BalancerManagerState balancerManagerState = balanceManagerService.getGroupDrainStatus("group1", "user1");
         assertEquals("group1", balancerManagerState.getGroups().get(0).getGroupName());
         verify(mockBalancerManagerHtmlParser).getWorkerUrlPath(anyString(), anyString(), anyString(),
-                eq("https://usmlvv1cds0049:9101/hct"));
+                eq("https://somehost:9101/hct"));
     }
 }
