@@ -1,8 +1,6 @@
 package com.cerner.jwala.service.resource;
 
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
-import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.group.History;
 import com.cerner.jwala.common.domain.model.id.Identifier;
@@ -20,14 +18,14 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
-import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.HistoryFacadeService;
-import com.cerner.jwala.service.app.ApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
+import com.cerner.jwala.service.binarydistribution.DistributionService;
 import com.cerner.jwala.service.exception.ResourceServiceException;
 import com.cerner.jwala.service.repository.RepositoryService;
 import com.cerner.jwala.service.repository.RepositoryServiceException;
@@ -43,11 +41,17 @@ import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
+import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.verification.Times;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -65,66 +69,28 @@ import static org.mockito.Mockito.*;
 /**
  * Unit tests for {@link ResourceService}.
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {ResourceServiceImplTest.Config.class})
 public class ResourceServiceImplTest {
 
-    @Mock
-    private ResourcePersistenceService mockResourcePersistenceService;
-
-    @Mock
-    private GroupPersistenceService mockGroupPesistenceService;
-
-    @Mock
-    private ApplicationPersistenceService mockAppPersistenceService;
-
-    @Mock
-    private JvmPersistenceService mockJvmPersistenceService;
-
-    @Mock
-    private WebServerPersistenceService mockWebServerPersistenceService;
-
-    @Mock
-    private ApplicationService mockAppService;
-
+    @Autowired
     private ResourceService resourceService;
-
-    @Mock
-    private ResourceDao mockResourceDao;
-
-    @Mock
-    private ResourceHandler mockResourceHandler;
-
-    @Mock
-    private RemoteCommandExecutorImpl mockRemoteCommandExecutor;
-
-    @Mock
-    private HistoryFacadeService mockHistoryFacadeService;
-
-    @Mock
-    private BinaryDistributionService mockBinaryDistributionService;
-
-    @Mock
-    private RepositoryService mockRepositoryService;
-
-    private Tika tika = new Tika();
 
     @Before
     public void setup() {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
+
         // It is good practice to start with a clean sheet of paper before each test that is why resourceService is
         // initialized here. This makes sure that unrelated tests don't affect each other.
         MockitoAnnotations.initMocks(this);
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
+        reset(Config.mockHistoryFacadeService);
+        reset(Config.mockJvmPersistenceService);
+        reset(Config.mockWebServerPersistenceService);
+        reset(Config.mockGroupPesistenceService);
+        reset(Config.mockAppPersistenceService);
 
-        ResourceContentGeneratorService resourceContentGeneratorService = new ResourceContentGeneratorServiceImpl(mockGroupPesistenceService,
-                mockWebServerPersistenceService, mockJvmPersistenceService, mockAppPersistenceService, mockHistoryFacadeService);
-
-        resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
-                mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
-                mockResourceDao, mockResourceHandler,
-                resourceContentGeneratorService, mockBinaryDistributionService, tika, mockRepositoryService);
-
-        when(mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));
-
-        when(mockRepositoryService.upload(anyString(), any(InputStream.class))).thenReturn("thePath");
+        when(Config.mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));
+        when(Config.mockRepositoryService.upload(anyString(), any(InputStream.class))).thenReturn("thePath");
     }
 
     @Test
@@ -183,13 +149,13 @@ public class ResourceServiceImplTest {
         when(mockJvm.getStatusPath()).thenReturn(null);
         when(mockJvm.getStatusUri()).thenReturn(null);
         when(mockJvm.getSystemProperties()).thenReturn(null);
-        when(mockGroupPesistenceService.getGroup(anyString())).thenReturn(mockGroup);
-        when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
+        when(Config.mockGroupPesistenceService.getGroup(anyString())).thenReturn(mockGroup);
+        when(Config.mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("user-id");
         resourceService.createTemplate(metaDataIn, templateIn, "some jvm", mockUser);
-        verify(mockJvmPersistenceService).findJvmByExactName("some jvm");
-        verify(mockJvmPersistenceService).uploadJvmConfigTemplate(any(UploadJvmConfigTemplateRequest.class));
+        verify(Config.mockJvmPersistenceService).findJvmByExactName("some jvm");
+        verify(Config.mockJvmPersistenceService).uploadJvmConfigTemplate(any(UploadJvmConfigTemplateRequest.class));
     }
 
     @Test
@@ -204,12 +170,12 @@ public class ResourceServiceImplTest {
         jvmSet.add(mock(Jvm.class));
         final Group mockGroup = mock(Group.class);
         when(mockGroup.getJvms()).thenReturn(jvmSet);
-        when(mockGroupPesistenceService.getGroup(eq("HEALTH CHECK 4.0"))).thenReturn(mockGroup);
+        when(Config.mockGroupPesistenceService.getGroup(eq("HEALTH CHECK 4.0"))).thenReturn(mockGroup);
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("user-id");
         resourceService.createTemplate(metaDataIn, templateIn, "test-app-name", mockUser);
-        verify(mockJvmPersistenceService, new Times(2)).uploadJvmConfigTemplate(any(UploadJvmConfigTemplateRequest.class));
-        verify(mockGroupPesistenceService).populateGroupJvmTemplates(eq("HEALTH CHECK 4.0"), any(List.class));
+        verify(Config.mockJvmPersistenceService, new Times(2)).uploadJvmConfigTemplate(any(UploadJvmConfigTemplateRequest.class));
+        verify(Config.mockGroupPesistenceService).populateGroupJvmTemplates(eq("HEALTH CHECK 4.0"), any(List.class));
     }
 
     @Test
@@ -221,8 +187,8 @@ public class ResourceServiceImplTest {
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("user-id");
         resourceService.createTemplate(metaDataIn, templateIn, "some webserver", mockUser);
-        verify(mockWebServerPersistenceService).findWebServerByName("some webserver");
-        verify(mockWebServerPersistenceService).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class), eq("/conf/httpd.conf"), eq("user-id"));
+        verify(Config.mockWebServerPersistenceService).findWebServerByName("some webserver");
+        verify(Config.mockWebServerPersistenceService).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class), eq("/conf/httpd.conf"), eq("user-id"));
     }
 
     @Test
@@ -238,12 +204,12 @@ public class ResourceServiceImplTest {
         final Group mockGroup = mock(Group.class);
         when(mockGroup.getWebServers()).thenReturn(webServerSet);
         when(mockGroup.getName()).thenReturn("HEALTH CHECK 4.0");
-        when(mockGroupPesistenceService.getGroupWithWebServers(eq("HEALTH CHECK 4.0"))).thenReturn(mockGroup);
+        when(Config.mockGroupPesistenceService.getGroupWithWebServers(eq("HEALTH CHECK 4.0"))).thenReturn(mockGroup);
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("user-id");
         resourceService.createTemplate(metaDataIn, templateIn, "test-app-name", mockUser);
-        verify(mockWebServerPersistenceService, new Times(2)).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class), eq("/conf/httpd.conf"), eq("user-id"));
-        verify(mockGroupPesistenceService).populateGroupWebServerTemplates(eq("HEALTH CHECK 4.0"), anyMap());
+        verify(Config.mockWebServerPersistenceService, new Times(2)).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class), eq("/conf/httpd.conf"), eq("user-id"));
+        verify(Config.mockGroupPesistenceService).populateGroupWebServerTemplates(eq("HEALTH CHECK 4.0"), anyMap());
     }
 
     @Test
@@ -254,14 +220,14 @@ public class ResourceServiceImplTest {
                 .getResourceAsStream("resource-service-test-files/app.xml.tpl");
         Jvm mockJvm = mock(Jvm.class);
         JpaJvm mockJpaJvm = mock(JpaJvm.class);
-        when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
-        when(mockJvmPersistenceService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
+        when(Config.mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
+        when(Config.mockJvmPersistenceService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("user-id");
         resourceService.createTemplate(metaDataIn, templateIn, "some application", mockUser);
-        verify(mockJvmPersistenceService).findJvmByExactName("some jvm name");
-        verify(mockAppPersistenceService).getApplication("some application");
-        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
+        verify(Config.mockJvmPersistenceService).findJvmByExactName("some jvm name");
+        verify(Config.mockAppPersistenceService).getApplication("some application");
+        verify(Config.mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
     }
 
     @Test
@@ -272,15 +238,15 @@ public class ResourceServiceImplTest {
                 .getResourceAsStream("resource-service-test-files/app.xml.tpl");
         Jvm mockJvm = mock(Jvm.class);
         JpaJvm mockJpaJvm = mock(JpaJvm.class);
-        when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
-        when(mockJvmPersistenceService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
-        when(mockRepositoryService.upload(anyString(), any(InputStream.class))).thenReturn("./anyPath");
+        when(Config.mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
+        when(Config.mockJvmPersistenceService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
+        when(Config.mockRepositoryService.upload(anyString(), any(InputStream.class))).thenReturn("./anyPath");
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("user-id");
         resourceService.createTemplate(metaDataIn, templateIn, "some application", mockUser);
-        verify(mockJvmPersistenceService).findJvmByExactName("some jvm name");
-        verify(mockAppPersistenceService).getApplication("some application");
-        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
+        verify(Config.mockJvmPersistenceService).findJvmByExactName("some jvm name");
+        verify(Config.mockAppPersistenceService).getApplication("some application");
+        verify(Config.mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
     }
 
     @Test
@@ -303,13 +269,13 @@ public class ResourceServiceImplTest {
         jvmSet.add(mockJvm);
         when(mockGroup.getJvms()).thenReturn(jvmSet);
         when(mockJvm.getJvmName()).thenReturn("test-jvm-name");
-        when(mockAppPersistenceService.findApplicationsBelongingTo(eq("HEALTH CHECK 4.0"))).thenReturn(appList);
-        when(mockGroupPesistenceService.getGroup(eq("HEALTH CHECK 4.0"))).thenReturn(mockGroup);
+        when(Config.mockAppPersistenceService.findApplicationsBelongingTo(eq("HEALTH CHECK 4.0"))).thenReturn(appList);
+        when(Config.mockGroupPesistenceService.getGroup(eq("HEALTH CHECK 4.0"))).thenReturn(mockGroup);
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("user-id");
         resourceService.createTemplate(metaDataIn, templateIn, "test-app-name", mockUser);
-        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
-        verify(mockGroupPesistenceService).populateGroupAppTemplate(anyString(), anyString(), anyString(), anyString(), anyString());
+        verify(Config.mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
+        verify(Config.mockGroupPesistenceService).populateGroupAppTemplate(anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -339,10 +305,10 @@ public class ResourceServiceImplTest {
             jvms.add(new Jvm(new Identifier<Jvm>(22L), "tc2", "someHostGenerateMe", new HashSet<>(groups), group, 11020, 11021, 11022, -1, 11023,
                     new com.cerner.jwala.common.domain.model.path.Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null, null, null, null));
 
-            when(mockGroupPesistenceService.getGroups()).thenReturn(groups);
-            when(mockAppPersistenceService.findApplicationsBelongingTo(anyString())).thenReturn(applications);
-            when(mockJvmPersistenceService.getJvmsAndWebAppsByGroupName(anyString())).thenReturn(jvms);
-            when(mockWebServerPersistenceService.getWebServersByGroupName(anyString())).thenReturn(webServers);
+            when(Config.mockGroupPesistenceService.getGroups()).thenReturn(groups);
+            when(Config.mockAppPersistenceService.findApplicationsBelongingTo(anyString())).thenReturn(applications);
+            when(Config.mockJvmPersistenceService.getJvmsAndWebAppsByGroupName(anyString())).thenReturn(jvms);
+            when(Config.mockWebServerPersistenceService.getWebServersByGroupName(anyString())).thenReturn(webServers);
 
             System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH,
                     this.getClass().getClassLoader().getResource("vars.properties").getPath().replace("vars.properties", ""));
@@ -389,43 +355,43 @@ public class ResourceServiceImplTest {
         expectedMap.put("exists", "false");
         assertEquals(expectedMap, result);
 
-        when(mockGroupPesistenceService.checkGroupJvmResourceFileName(testGroup, testFile)).thenReturn(false);
-        when(mockJvmPersistenceService.checkJvmResourceFileName(testGroup, testJvm, testFile)).thenReturn(true);
+        when(Config.mockGroupPesistenceService.checkGroupJvmResourceFileName(testGroup, testFile)).thenReturn(false);
+        when(Config.mockJvmPersistenceService.checkJvmResourceFileName(testGroup, testJvm, testFile)).thenReturn(true);
         result = resourceService.checkFileExists(testGroup, testJvm, null, null, testFile);
         expectedMap.put("fileName", testFile);
         expectedMap.put("exists", "true");
         assertEquals(expectedMap, result);
 
-        when(mockGroupPesistenceService.checkGroupJvmResourceFileName(testGroup, testFile)).thenReturn(false);
-        when(mockJvmPersistenceService.checkJvmResourceFileName(testGroup, testJvm, testFile)).thenReturn(false);
+        when(Config.mockGroupPesistenceService.checkGroupJvmResourceFileName(testGroup, testFile)).thenReturn(false);
+        when(Config.mockJvmPersistenceService.checkJvmResourceFileName(testGroup, testJvm, testFile)).thenReturn(false);
         result = resourceService.checkFileExists(testGroup, testJvm, null, null, testFile);
         expectedMap.put("fileName", testFile);
         expectedMap.put("exists", "false");
         assertEquals(expectedMap, result);
 
-        when(mockGroupPesistenceService.checkGroupAppResourceFileName(testGroup, testFile)).thenReturn(false);
-        when(mockAppPersistenceService.checkAppResourceFileName(testGroup, testApp, testFile)).thenReturn(false);
+        when(Config.mockGroupPesistenceService.checkGroupAppResourceFileName(testGroup, testFile)).thenReturn(false);
+        when(Config.mockAppPersistenceService.checkAppResourceFileName(testGroup, testApp, testFile)).thenReturn(false);
         result = resourceService.checkFileExists(testGroup, null, testApp, null, testFile);
         expectedMap.put("fileName", testFile);
         expectedMap.put("exists", "false");
         assertEquals(expectedMap, result);
 
-        when(mockGroupPesistenceService.checkGroupAppResourceFileName(testGroup, testFile)).thenReturn(false);
-        when(mockAppPersistenceService.checkAppResourceFileName(testGroup, testApp, testFile)).thenReturn(true);
+        when(Config.mockGroupPesistenceService.checkGroupAppResourceFileName(testGroup, testFile)).thenReturn(false);
+        when(Config.mockAppPersistenceService.checkAppResourceFileName(testGroup, testApp, testFile)).thenReturn(true);
         result = resourceService.checkFileExists(testGroup, null, testApp, null, testFile);
         expectedMap.put("fileName", testFile);
         expectedMap.put("exists", "true");
         assertEquals(expectedMap, result);
 
-        when(mockGroupPesistenceService.checkGroupWebServerResourceFileName(testGroup, testFile)).thenReturn(false);
-        when(mockWebServerPersistenceService.checkWebServerResourceFileName(testGroup, testWebServer, testFile)).thenReturn(false);
+        when(Config.mockGroupPesistenceService.checkGroupWebServerResourceFileName(testGroup, testFile)).thenReturn(false);
+        when(Config.mockWebServerPersistenceService.checkWebServerResourceFileName(testGroup, testWebServer, testFile)).thenReturn(false);
         result = resourceService.checkFileExists(testGroup, null, null, testWebServer, testFile);
         expectedMap.put("fileName", testFile);
         expectedMap.put("exists", "false");
         assertEquals(expectedMap, result);
 
-        when(mockGroupPesistenceService.checkGroupWebServerResourceFileName(testGroup, testFile)).thenReturn(false);
-        when(mockWebServerPersistenceService.checkWebServerResourceFileName(testGroup, testWebServer, testFile)).thenReturn(true);
+        when(Config.mockGroupPesistenceService.checkGroupWebServerResourceFileName(testGroup, testFile)).thenReturn(false);
+        when(Config.mockWebServerPersistenceService.checkWebServerResourceFileName(testGroup, testWebServer, testFile)).thenReturn(true);
         result = resourceService.checkFileExists(testGroup, null, null, testWebServer, testFile);
         expectedMap.put("fileName", testFile);
         expectedMap.put("exists", "true");
@@ -444,7 +410,7 @@ public class ResourceServiceImplTest {
         ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
         when(mockConfigTemplate.getMetaData()).thenReturn("{}");
         when(mockConfigTemplate.getTemplateContent()).thenReturn("key=value");
-        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+        when(Config.mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
 
         ResourceContent result = resourceService.getResourceContent(identifier);
         assertEquals("{}", result.getMetaData());
@@ -454,7 +420,7 @@ public class ResourceServiceImplTest {
     @Test
     public void testGetResourceContentWhenNull() {
         ResourceIdentifier identifier = mock(ResourceIdentifier.class);
-        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(null);
+        when(Config.mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(null);
 
         ResourceContent result = resourceService.getResourceContent(identifier);
         assertNull(result);
@@ -466,11 +432,11 @@ public class ResourceServiceImplTest {
         ResourceIdentifier identifier = idBuilder.setResourceName("external.properties").build();
         ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
         when(mockConfigTemplate.getTemplateContent()).thenReturn("newkey=newvalue");
-        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+        when(Config.mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
 
         String result = resourceService.updateResourceContent(identifier, "newkey=newvalue");
         assertEquals("newkey=newvalue", result);
-        verify(mockResourceDao).updateResource(eq(identifier), eq(EntityType.EXT_PROPERTIES), eq("newkey=newvalue"));
+        verify(Config.mockResourceDao).updateResource(eq(identifier), eq(EntityType.EXT_PROPERTIES), eq("newkey=newvalue"));
     }
 
     @Test
@@ -487,16 +453,16 @@ public class ResourceServiceImplTest {
         resultList.add("external.properties");
         ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder();
         ResourceIdentifier resourceId = idBuilder.setResourceName("external.properties").build();
-        when(mockResourceDao.getResourceNames(any(ResourceIdentifier.class), any(EntityType.class))).thenReturn(resultList);
+        when(Config.mockResourceDao.getResourceNames(any(ResourceIdentifier.class), any(EntityType.class))).thenReturn(resultList);
 
         List<String> result = resourceService.getResourceNames(resourceId);
-        verify(mockResourceDao).getResourceNames(eq(resourceId), eq(EntityType.EXT_PROPERTIES));
+        verify(Config.mockResourceDao).getResourceNames(eq(resourceId), eq(EntityType.EXT_PROPERTIES));
         assertEquals("external.properties", result.get(0));
     }
 
     @Test
     public void testUploadResource() {
-        when(mockRepositoryService.upload(anyString(), any(InputStream.class))).thenReturn("thePath");
+        when(Config.mockRepositoryService.upload(anyString(), any(InputStream.class))).thenReturn("thePath");
         assertEquals("thePath", resourceService.uploadResource(mock(ResourceTemplateMetaData.class), new ByteArrayInputStream("data".getBytes())));
     }
 
@@ -504,7 +470,7 @@ public class ResourceServiceImplTest {
     public void testGetExternalPropertiesAsFile() throws IOException {
 
         // test for an existing external properties file
-        when(mockResourceDao.getResourceNames(any(ResourceIdentifier.class), any(EntityType.class))).thenReturn(new ArrayList<String>());
+        when(Config.mockResourceDao.getResourceNames(any(ResourceIdentifier.class), any(EntityType.class))).thenReturn(new ArrayList<String>());
         boolean exceptionThrown = false;
         try {
             resourceService.getExternalPropertiesAsFile();
@@ -520,9 +486,9 @@ public class ResourceServiceImplTest {
         extPropertiesConfigTemplate.setMetaData("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"external.properties\"}");
         extPropertiesConfigTemplate.setTemplateContent("key=value");
 
-        when(mockResourceDao.getResourceNames(any(ResourceIdentifier.class), any(EntityType.class))).thenReturn(extPropertiesResourceNames);
-        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(extPropertiesConfigTemplate);
-        when(mockGroupPesistenceService.getGroups()).thenReturn(new ArrayList<Group>());
+        when(Config.mockResourceDao.getResourceNames(any(ResourceIdentifier.class), any(EntityType.class))).thenReturn(extPropertiesResourceNames);
+        when(Config.mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(extPropertiesConfigTemplate);
+        when(Config.mockGroupPesistenceService.getGroups()).thenReturn(new ArrayList<Group>());
 
         File result = resourceService.getExternalPropertiesAsFile();
         assertTrue(result.length() > 0);
@@ -543,11 +509,11 @@ public class ResourceServiceImplTest {
         Jvm mockJvm = mock(Jvm.class);
         jvms.add(mockJvm);
         Application mockApp = mock(Application.class);
-        when(mockResourceDao.deleteGroupLevelAppResources(anyString(), anyString(), anyList())).thenReturn(1);
-        when(mockJvmPersistenceService.getJvmsByGroupName(anyString())).thenReturn(jvms);
-        when(mockResourceDao.deleteAppResources(anyList(), anyString(), anyString())).thenReturn(1);
-        when(mockAppPersistenceService.getApplication(anyString())).thenReturn(mockApp);
-        when(mockAppPersistenceService.deleteWarInfo(anyString())).thenReturn(mockApp);
+        when(Config.mockResourceDao.deleteGroupLevelAppResources(anyString(), anyString(), anyList())).thenReturn(1);
+        when(Config.mockJvmPersistenceService.getJvmsByGroupName(anyString())).thenReturn(jvms);
+        when(Config.mockResourceDao.deleteAppResources(anyList(), anyString(), anyString())).thenReturn(1);
+        when(Config.mockAppPersistenceService.getApplication(anyString())).thenReturn(mockApp);
+        when(Config.mockAppPersistenceService.deleteWarInfo(anyString())).thenReturn(mockApp);
         assertEquals(1, resourceService.deleteGroupLevelAppResources("test-app", "test-group", templateList));
     }
 
@@ -559,12 +525,12 @@ public class ResourceServiceImplTest {
         Jvm mockJvm = mock(Jvm.class);
         jvms.add(mockJvm);
         Application mockApp = mock(Application.class);
-        when(mockResourceDao.deleteGroupLevelAppResources(anyString(), anyString(), anyList())).thenReturn(1);
-        when(mockJvmPersistenceService.getJvmsByGroupName(anyString())).thenReturn(jvms);
-        when(mockResourceDao.deleteAppResources(anyList(), anyString(), anyString())).thenReturn(1);
-        when(mockAppPersistenceService.getApplication(anyString())).thenReturn(mockApp);
-        when(mockAppPersistenceService.deleteWarInfo(anyString())).thenReturn(mockApp);
-        doThrow(RepositoryServiceException.class).when(mockRepositoryService).delete(anyString());
+        when(Config.mockResourceDao.deleteGroupLevelAppResources(anyString(), anyString(), anyList())).thenReturn(1);
+        when(Config.mockJvmPersistenceService.getJvmsByGroupName(anyString())).thenReturn(jvms);
+        when(Config.mockResourceDao.deleteAppResources(anyList(), anyString(), anyString())).thenReturn(1);
+        when(Config.mockAppPersistenceService.getApplication(anyString())).thenReturn(mockApp);
+        when(Config.mockAppPersistenceService.deleteWarInfo(anyString())).thenReturn(mockApp);
+        doThrow(RepositoryServiceException.class).when(Config.mockRepositoryService).delete(anyString());
         assertEquals(1, resourceService.deleteGroupLevelAppResources("test-app", "test-group", templateList));
     }
 
@@ -575,7 +541,7 @@ public class ResourceServiceImplTest {
         when(resourceTemplateMetaData.getContentType()).thenReturn(MediaType.TEXT_PLAIN);
         final InputStream inputStream = mock(InputStream.class);
         CreateResourceResponseWrapper createResourceResponseWrapper = mock(CreateResourceResponseWrapper.class);
-        when(mockResourceHandler.createResource(eq(resourceIdentifier), eq(resourceTemplateMetaData), anyString())).thenReturn(createResourceResponseWrapper);
+        when(Config.mockResourceHandler.createResource(eq(resourceIdentifier), eq(resourceTemplateMetaData), anyString())).thenReturn(createResourceResponseWrapper);
         assertEquals(createResourceResponseWrapper, resourceService.createResource(resourceIdentifier, resourceTemplateMetaData, inputStream));
     }
 
@@ -585,49 +551,49 @@ public class ResourceServiceImplTest {
         final ResourceTemplateMetaData resourceTemplateMetaData = mock(ResourceTemplateMetaData.class);
         when(resourceTemplateMetaData.getContentType()).thenReturn(MediaType.TEXT_PLAIN);
         final InputStream inputStream = mock(InputStream.class);
-        when(mockResourceHandler.createResource(eq(resourceIdentifier), eq(resourceTemplateMetaData), anyString())).thenThrow(ResourceServiceException.class);
+        when(Config.mockResourceHandler.createResource(eq(resourceIdentifier), eq(resourceTemplateMetaData), anyString())).thenThrow(ResourceServiceException.class);
         resourceService.createResource(resourceIdentifier, resourceTemplateMetaData, inputStream);
     }
 
     @Test
     public void testDeleteWebServerResource() {
-        when(mockResourceDao.deleteWebServerResource(anyString(), anyString())).thenReturn(1);
+        when(Config.mockResourceDao.deleteWebServerResource(anyString(), anyString())).thenReturn(1);
         assertEquals(1, resourceService.deleteWebServerResource("testFilename", "testWebServer"));
     }
 
     @Test
     public void testDeleteGroupLevelWebServerResource() {
-        when(mockResourceDao.deleteGroupLevelWebServerResource(anyString(), anyString())).thenReturn(1);
+        when(Config.mockResourceDao.deleteGroupLevelWebServerResource(anyString(), anyString())).thenReturn(1);
         assertEquals(1, resourceService.deleteGroupLevelWebServerResource("testFilename", "testGroupName"));
     }
 
     @Test
     public void testDeleteJvmResource() {
-        when(mockResourceDao.deleteJvmResource(anyString(), anyString())).thenReturn(1);
+        when(Config.mockResourceDao.deleteJvmResource(anyString(), anyString())).thenReturn(1);
         assertEquals(1, resourceService.deleteJvmResource("testFilename", "testJvm"));
     }
 
     @Test
     public void testDeleteGroupLevelJvmResource() {
-        when(mockResourceDao.deleteGroupLevelJvmResource(anyString(), anyString())).thenReturn(1);
+        when(Config.mockResourceDao.deleteGroupLevelJvmResource(anyString(), anyString())).thenReturn(1);
         assertEquals(1, resourceService.deleteGroupLevelJvmResource("testFilename", "testGroupName"));
     }
 
     @Test
     public void testDeleteAppResource() {
-        when(mockResourceDao.deleteAppResource(anyString(), anyString(), anyString())).thenReturn(1);
+        when(Config.mockResourceDao.deleteAppResource(anyString(), anyString(), anyString())).thenReturn(1);
         assertEquals(1, resourceService.deleteAppResource("testFilename", "testApp", "testJvm"));
     }
 
     @Test
     public void testDeleteGroupLevelAppResource() {
         Application application = mock(Application.class);
-        when(mockAppPersistenceService.getApplication(anyString())).thenReturn(application);
+        when(Config.mockAppPersistenceService.getApplication(anyString())).thenReturn(application);
         when(application.getName()).thenReturn("testApp");
         Group group = mock(Group.class);
         when(application.getGroup()).thenReturn(group);
         when(group.getName()).thenReturn("testGroup");
-        when(mockResourceDao.deleteGroupLevelAppResource(anyString(), anyString(), anyString())).thenReturn(1);
+        when(Config.mockResourceDao.deleteGroupLevelAppResource(anyString(), anyString(), anyString())).thenReturn(1);
         assertEquals(1, resourceService.deleteGroupLevelAppResource("testAppName", "testFilename"));
     }
 
@@ -636,7 +602,7 @@ public class ResourceServiceImplTest {
         List<String> strings = new ArrayList<>();
         final String groupName = "testGroupName";
         final String appName = "testAppName";
-        when(mockResourcePersistenceService.getApplicationResourceNames(eq(groupName), eq(appName))).thenReturn(strings);
+        when(Config.mockResourcePersistenceService.getApplicationResourceNames(eq(groupName), eq(appName))).thenReturn(strings);
         assertEquals(strings, resourceService.getApplicationResourceNames(groupName, appName));
     }
 
@@ -646,18 +612,18 @@ public class ResourceServiceImplTest {
         final String groupName = "testGroupName";
         final String appName = "testAppName";
         final String templateName = "testTemplate";
-        when(mockResourcePersistenceService.getAppTemplate(eq(groupName), eq(appName), eq(templateName))).thenReturn(result);
+        when(Config.mockResourcePersistenceService.getAppTemplate(eq(groupName), eq(appName), eq(templateName))).thenReturn(result);
         assertEquals(result, resourceService.getAppTemplate(groupName, appName, templateName));
     }
 
     @Test
     public void testUpdateResourceMetaData() {
         ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
-        when(mockResourceHandler.updateResourceMetaData(any(ResourceIdentifier.class), anyString(), anyString())).thenReturn("{}");
+        when(Config.mockResourceHandler.updateResourceMetaData(any(ResourceIdentifier.class), anyString(), anyString())).thenReturn("{}");
         final String resourceName = "test-resource-name";
         final String metaData = "{\"key\":\"value\"}";
         resourceService.updateResourceMetaData(mockResourceIdentifier, resourceName, metaData);
-        verify(mockResourceHandler).updateResourceMetaData(eq(mockResourceIdentifier), eq(resourceName), eq(metaData));
+        verify(Config.mockResourceHandler).updateResourceMetaData(eq(mockResourceIdentifier), eq(resourceName), eq(metaData));
     }
 
     @Test
@@ -780,14 +746,14 @@ public class ResourceServiceImplTest {
 
         Jvm mockJvm = mock(Jvm.class);
 
-        when(mockResourceHandler.getResourceNames(eq(resourceIdentifier))).thenReturn(resourcesNames);
-        when(mockResourceHandler.getSelectedValue(eq(resourceIdentifier))).thenReturn(mockJvm);
-        when(mockResourceHandler.fetchResource(eq(resourceIdentifierCatalinaProperties))).thenReturn(configTemplateCatalinaProps);
-        when(mockResourceHandler.fetchResource(eq(resourceIdentifierServerXml))).thenReturn(configTemplateServerXml);
-        when(mockResourceHandler.fetchResource(eq(resourceIdentifierSetenvBat))).thenReturn(configTemplateSetenvBat);
+        when(Config.mockResourceHandler.getResourceNames(eq(resourceIdentifier))).thenReturn(resourcesNames);
+        when(Config.mockResourceHandler.getSelectedValue(eq(resourceIdentifier))).thenReturn(mockJvm);
+        when(Config.mockResourceHandler.fetchResource(eq(resourceIdentifierCatalinaProperties))).thenReturn(configTemplateCatalinaProps);
+        when(Config.mockResourceHandler.fetchResource(eq(resourceIdentifierServerXml))).thenReturn(configTemplateServerXml);
+        when(Config.mockResourceHandler.fetchResource(eq(resourceIdentifierSetenvBat))).thenReturn(configTemplateSetenvBat);
 
         resourceService.validateAllResourcesForGeneration(resourceIdentifier);
-        verify(mockHistoryFacadeService, never()).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
+        verify(Config.mockHistoryFacadeService, never()).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
     }
 
     @Test
@@ -831,11 +797,11 @@ public class ResourceServiceImplTest {
         SecurityContextHolder.getContext().setAuthentication(mockAuthentication);
 
         when(mockAuthentication.getName()).thenReturn("test-user-name");
-        when(mockResourceHandler.getResourceNames(eq(resourceIdentifier))).thenReturn(resourcesNames);
-        when(mockResourceHandler.getSelectedValue(eq(resourceIdentifier))).thenReturn(mockJvm);
-        when(mockResourceHandler.fetchResource(eq(resourceIdentifierCatalinaProperties))).thenReturn(configTemplateCatalinaProps);
-        when(mockResourceHandler.fetchResource(eq(resourceIdentifierServerXml))).thenReturn(configTemplateServerXml);
-        when(mockResourceHandler.fetchResource(eq(resourceIdentifierSetenvBat))).thenReturn(configTemplateSetenvBat);
+        when(Config.mockResourceHandler.getResourceNames(eq(resourceIdentifier))).thenReturn(resourcesNames);
+        when(Config.mockResourceHandler.getSelectedValue(eq(resourceIdentifier))).thenReturn(mockJvm);
+        when(Config.mockResourceHandler.fetchResource(eq(resourceIdentifierCatalinaProperties))).thenReturn(configTemplateCatalinaProps);
+        when(Config.mockResourceHandler.fetchResource(eq(resourceIdentifierServerXml))).thenReturn(configTemplateServerXml);
+        when(Config.mockResourceHandler.fetchResource(eq(resourceIdentifierSetenvBat))).thenReturn(configTemplateSetenvBat);
 
         InternalErrorException iee = null;
         try {
@@ -845,7 +811,7 @@ public class ResourceServiceImplTest {
         }
         assertNotNull(iee);
         final Map<String, List<String>> errorDetails = iee.getErrorDetails();
-        verify(mockHistoryFacadeService, times(6)).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
+        verify(Config.mockHistoryFacadeService, times(6)).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
         assertEquals(1, errorDetails.size());
         final List<String> exceptionList = errorDetails.get("test-jvm-name");
         assertEquals(6, exceptionList.size());
@@ -870,13 +836,12 @@ public class ResourceServiceImplTest {
         when(mockConfigTemplate.getMetaData()).thenReturn("{\"deployFileName\":\"\test-deploy-name.xml\", \"deployPath\":\"./fake/test/path\"}");
         when(mockConfigTemplate.getTemplateContent()).thenReturn("template${nope}template");
 
-        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
-        when(mockResourceHandler.getSelectedValue(any(ResourceIdentifier.class))).thenReturn(mockJvm);
+        when(Config.mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+        when(Config.mockResourceHandler.getSelectedValue(any(ResourceIdentifier.class))).thenReturn(mockJvm);
 
         resourceService.validateSingleResourceForGeneration(resourceIdentifier);
 
-
-        verify(mockHistoryFacadeService, never()).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
+        verify(Config.mockHistoryFacadeService, never()).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
     }
 
     @Test
@@ -900,8 +865,8 @@ public class ResourceServiceImplTest {
         when(mockConfigTemplate.getMetaData()).thenReturn("{\"deployFileName\":\"${fail.fail}-test-deploy-name.xml\", \"deployPath\":\"./fake/test/path\"}");
         when(mockConfigTemplate.getTemplateContent()).thenReturn("template${nope.fail}template");
 
-        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
-        when(mockResourceHandler.getSelectedValue(any(ResourceIdentifier.class))).thenReturn(mockJvm);
+        when(Config.mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+        when(Config.mockResourceHandler.getSelectedValue(any(ResourceIdentifier.class))).thenReturn(mockJvm);
 
         InternalErrorException caughtException = null;
         try {
@@ -967,9 +932,9 @@ public class ResourceServiceImplTest {
 
     @Test
     public void testGetResourceMimeType() {
-       final String type = resourceService.getResourceMimeType(new BufferedInputStream(this.getClass().getClassLoader()
+        final String type = resourceService.getResourceMimeType(new BufferedInputStream(this.getClass().getClassLoader()
                 .getResourceAsStream("tika-test-file.xml")));
-       assertEquals("application/xml", type);
+        assertEquals("application/xml", type);
     }
 
     @Test(expected = ResourceServiceException.class)
@@ -979,34 +944,99 @@ public class ResourceServiceImplTest {
     }
 
     @Test
-    public void testGenerateConfigFile() throws IOException {
+    public void testGenerateAndDeployFile() throws IOException {
         final ResourceIdentifier.Builder builder = new ResourceIdentifier.Builder();
         final ResourceIdentifier resourceIdentifier = builder.setGroupName("group1").setResourceName("server.xml")
                 .setJvmName("jvm1").build();
         final ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
-        when(mockResourceHandler.fetchResource(resourceIdentifier)).thenReturn(mockConfigTemplate);
+        when(Config.mockResourceHandler.fetchResource(resourceIdentifier)).thenReturn(mockConfigTemplate);
         when(mockConfigTemplate.getMetaData()).thenReturn(IOUtils.toString(this.getClass().getClassLoader()
                 .getResourceAsStream("sample-metadata.json"), StandardCharsets.UTF_8));
         when(mockConfigTemplate.getTemplateContent()).thenReturn("<server/>");
-        when(mockResourceHandler.getSelectedValue(resourceIdentifier)).thenReturn(mock(Jvm.class));
+        when(Config.mockResourceHandler.getSelectedValue(resourceIdentifier)).thenReturn(mock(Jvm.class));
         final List<Group> groupList = new ArrayList<>();
         groupList.add(mock(Group.class));
-        when(mockGroupPesistenceService.getGroups()).thenReturn(groupList);
-        when(mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn("<server/>");
-/*        when(mockRemoteCommandExecutor.executeRemoteCommand(anyString(), anyString(),
-                any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class),
-                anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
-        when(mockRemoteCommandExecutor.executeRemoteCommand(anyString(), anyString(),
-                eq(ApplicationControlOperation.BACK_UP), any(WindowsApplicationPlatformCommandProvider.class),
-                anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
-        when(mockRemoteCommandExecutor.executeRemoteCommand(anyString(), anyString(),
-                eq(BinaryDistributionControlOperation.UNZIP_BINARY), any(WindowsApplicationPlatformCommandProvider.class),
-                anyString(), anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
-        resourceService.generateAndDeployFile(resourceIdentifier, "jvm1", "server.xml",
-                "localhost");
-        verify(mockRemoteCommandExecutor, times(2)).executeRemoteCommand(anyString(), anyString(),
-                eq(ApplicationControlOperation.BACK_UP), any(WindowsApplicationPlatformCommandProvider.class),
-                anyString(), anyString());*/
+        when(Config.mockGroupPesistenceService.getGroups()).thenReturn(groupList);
+        when(Config.mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn("<server/>");
+
+        when(Config.mockBinaryDistributionControlService.createDirectory(anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Created directory", ""));
+        when(Config.mockDistributionService.remoteFileCheck(anyString(), anyString())).thenReturn(true);
+        when(Config.mockBinaryDistributionControlService.backupFile(anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Backup succeeded", ""));
+        final CommandOutput scpResult = new CommandOutput(new ExecReturnCode(0), "SCP succeeded", "");
+        when(Config.mockBinaryDistributionControlService.secureCopyFile(anyString(), anyString(), anyString())).thenReturn(scpResult);
+
+        CommandOutput result = resourceService.generateAndDeployFile(resourceIdentifier, "jvm1", "server.xml", "localhost");
+        assertEquals(scpResult, result);
+    }
+
+    @Test (expected = ResourceServiceException.class)
+    public void testGenerateAndDeployFileFailsCreateDir() throws IOException {
+        final ResourceIdentifier.Builder builder = new ResourceIdentifier.Builder();
+        final ResourceIdentifier resourceIdentifier = builder.setGroupName("group1").setResourceName("server.xml")
+                .setJvmName("jvm1").build();
+        final ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+        when(Config.mockResourceHandler.fetchResource(resourceIdentifier)).thenReturn(mockConfigTemplate);
+        when(mockConfigTemplate.getMetaData()).thenReturn(IOUtils.toString(this.getClass().getClassLoader()
+                .getResourceAsStream("sample-metadata.json"), StandardCharsets.UTF_8));
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("<server/>");
+        when(Config.mockResourceHandler.getSelectedValue(resourceIdentifier)).thenReturn(mock(Jvm.class));
+        final List<Group> groupList = new ArrayList<>();
+        groupList.add(mock(Group.class));
+        when(Config.mockGroupPesistenceService.getGroups()).thenReturn(groupList);
+        when(Config.mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn("<server/>");
+
+        when(Config.mockBinaryDistributionControlService.createDirectory(anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED TO  CREATE THE DIRECTORY"));
+
+        resourceService.generateAndDeployFile(resourceIdentifier, "jvm1", "server.xml", "localhost");
+    }
+
+    @Test
+    public void testGenerateAndDeployFileOverwriteFalse() throws IOException {
+        final ResourceIdentifier.Builder builder = new ResourceIdentifier.Builder();
+        final ResourceIdentifier resourceIdentifier = builder.setGroupName("group1").setResourceName("server.xml")
+                .setJvmName("jvm1").build();
+        final ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+        when(Config.mockResourceHandler.fetchResource(resourceIdentifier)).thenReturn(mockConfigTemplate);
+        when(mockConfigTemplate.getMetaData()).thenReturn(IOUtils.toString(this.getClass().getClassLoader()
+                .getResourceAsStream("sample-metadata-overwrite-false.json"), StandardCharsets.UTF_8));
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("<server/>");
+        when(Config.mockResourceHandler.getSelectedValue(resourceIdentifier)).thenReturn(mock(Jvm.class));
+        final List<Group> groupList = new ArrayList<>();
+        groupList.add(mock(Group.class));
+        when(Config.mockGroupPesistenceService.getGroups()).thenReturn(groupList);
+        when(Config.mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn("<server/>");
+
+        when(Config.mockBinaryDistributionControlService.createDirectory(anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Created directory", ""));
+        when(Config.mockDistributionService.remoteFileCheck(anyString(), anyString())).thenReturn(true);
+
+        CommandOutput result = resourceService.generateAndDeployFile(resourceIdentifier, "jvm1", "server.xml", "localhost");
+        CommandOutput skipOverwriteResult = new CommandOutput(new ExecReturnCode(0), "Skipping scp of file: c://server.xml already exists and overwrite is set to false.", "");
+        assertEquals(skipOverwriteResult, result);
+    }
+
+    @Test (expected = ResourceServiceException.class)
+    public void testGenerateAndDeployFileFailsBackup() throws IOException {
+        final ResourceIdentifier.Builder builder = new ResourceIdentifier.Builder();
+        final ResourceIdentifier resourceIdentifier = builder.setGroupName("group1").setResourceName("server.xml")
+                .setJvmName("jvm1").build();
+        final ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+        when(Config.mockResourceHandler.fetchResource(resourceIdentifier)).thenReturn(mockConfigTemplate);
+        when(mockConfigTemplate.getMetaData()).thenReturn(IOUtils.toString(this.getClass().getClassLoader()
+                .getResourceAsStream("sample-metadata.json"), StandardCharsets.UTF_8));
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("<server/>");
+        when(Config.mockResourceHandler.getSelectedValue(resourceIdentifier)).thenReturn(mock(Jvm.class));
+        final List<Group> groupList = new ArrayList<>();
+        groupList.add(mock(Group.class));
+        when(Config.mockGroupPesistenceService.getGroups()).thenReturn(groupList);
+        when(Config.mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn("<server/>");
+
+        when(Config.mockBinaryDistributionControlService.createDirectory(anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Created directory", ""));
+        when(Config.mockDistributionService.remoteFileCheck(anyString(), anyString())).thenReturn(true);
+        when(Config.mockBinaryDistributionControlService.backupFile(anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "BACK UP FAILED"));
+        final CommandOutput scpResult = new CommandOutput(new ExecReturnCode(0), "SCP succeeded", "");
+        when(Config.mockBinaryDistributionControlService.secureCopyFile(anyString(), anyString(), anyString())).thenReturn(scpResult);
+
+        resourceService.generateAndDeployFile(resourceIdentifier, "jvm1", "server.xml", "localhost");
     }
 
     static class IoExIns extends InputStream {
@@ -1018,4 +1048,47 @@ public class ResourceServiceImplTest {
 
     }
 
+    @Configuration
+    static class Config {
+        private static final DistributionService mockDistributionService = mock(DistributionService.class);
+        private static final BinaryDistributionControlService mockBinaryDistributionControlService = mock(BinaryDistributionControlService.class);
+        private static final ResourcePersistenceService mockResourcePersistenceService = mock(ResourcePersistenceService.class);
+        private static final GroupPersistenceService mockGroupPesistenceService = mock(GroupPersistenceService.class);
+        private static final ApplicationPersistenceService mockAppPersistenceService = mock(ApplicationPersistenceService.class);
+        private static final JvmPersistenceService mockJvmPersistenceService = mock(JvmPersistenceService.class);
+        private static final WebServerPersistenceService mockWebServerPersistenceService = mock(WebServerPersistenceService.class);
+        private static final ResourceDao mockResourceDao = mock(ResourceDao.class);
+        private static final ResourceHandler mockResourceHandler = mock(ResourceHandler.class);
+        private static final RepositoryService mockRepositoryService = mock(RepositoryService.class);
+        private static final HistoryFacadeService mockHistoryFacadeService = mock(HistoryFacadeService.class);
+
+        @Bean
+        public DistributionService getMockDistributionService() {
+            return mockDistributionService;
+        }
+
+        @Bean
+        public BinaryDistributionControlService getMockBinaryDistributionControlService() {
+            return mockBinaryDistributionControlService;
+        }
+
+        @Bean
+        public ResourceService getResourceService() {
+            ResourceContentGeneratorService resourceContentGeneratorService = new ResourceContentGeneratorServiceImpl(mockGroupPesistenceService,
+                    mockWebServerPersistenceService, mockJvmPersistenceService, mockAppPersistenceService, mockHistoryFacadeService);
+            Tika tika = new Tika();
+            BinaryDistributionService mockBinaryDistributionService = mock(BinaryDistributionService.class);
+
+            return new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
+                    mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
+                    mockResourceDao, mockResourceHandler,
+                    resourceContentGeneratorService, mockBinaryDistributionService, tika, mockRepositoryService);
+        }
+
+        @Bean
+        public HistoryFacadeService getMockHistoryFacadeService(){
+            return mockHistoryFacadeService;
+        }
+
+    }
 }

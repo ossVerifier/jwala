@@ -1,8 +1,6 @@
 package com.cerner.jwala.service.resource.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
-import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -20,16 +18,13 @@ import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
-import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
-import com.cerner.jwala.control.command.common.Command;
-import com.cerner.jwala.control.command.common.ShellCommandFactory;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
+import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
-import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.binarydistribution.DistributionService;
 import com.cerner.jwala.service.exception.ResourceServiceException;
@@ -44,7 +39,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.regexp.RE;
 import org.apache.tika.Tika;
 import org.apache.tika.mime.MediaType;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -54,12 +48,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ResourceServiceImpl implements ResourceService {
@@ -71,10 +67,12 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Autowired
     private DistributionService distributionService;
+
     @Autowired
     private BinaryDistributionControlService distributionControlService;
 
-    private final Expression encryptExpression;
+    @Autowired
+    private HistoryFacadeService historyFacadeService;
 
     private final ResourcePersistenceService resourcePersistenceService;
 
@@ -111,9 +109,6 @@ public class ResourceServiceImpl implements ResourceService {
                                final RepositoryService repositoryService) {
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
-        SpelExpressionParser expressionParser = new SpelExpressionParser();
-        String encryptExpressionString = ApplicationProperties.get("encryptExpression");
-        encryptExpression = expressionParser.parseExpression(encryptExpressionString);
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.webServerPersistenceService = webServerPersistenceService;
@@ -127,6 +122,10 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public String encryptUsingPlatformBean(String cleartext) {
+        SpelExpressionParser expressionParser = new SpelExpressionParser();
+        String encryptExpressionString = ApplicationProperties.get("encryptExpression");
+        Expression encryptExpression = expressionParser.parseExpression(encryptExpressionString);
+
         StandardEvaluationContext context = new StandardEvaluationContext();
         context.setVariable("stringToEncrypt", cleartext);
         return encryptExpression.getValue(context, String.class);
@@ -711,7 +710,7 @@ public class ResourceServiceImpl implements ResourceService {
         return resourceHandler.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
     }
 
-    protected void checkResourceExternalProperties(ResourceIdentifier resourceIdentifier, String templateContent) {
+    private void checkResourceExternalProperties(ResourceIdentifier resourceIdentifier, String templateContent) {
         if (StringUtils.isNotEmpty(resourceIdentifier.resourceName) &&
                 StringUtils.isEmpty(resourceIdentifier.webAppName) &&
                 StringUtils.isEmpty(resourceIdentifier.jvmName) &&
@@ -727,15 +726,56 @@ public class ResourceServiceImpl implements ResourceService {
         return generateResourceFile(resourceIdentifier.resourceName, content, generateResourceGroup(), resourceHandler.getSelectedValue(resourceIdentifier), ResourceGeneratorType.PREVIEW);
     }
 
-    public CommandOutput secureCopyFile(final String hostName, final String sourcePath, final String destPath) throws CommandFailureException {
-        if(distributionService.remoteFileCheck(hostName,destPath)){
+    private CommandOutput secureCopyFile(final String hostName, final String sourcePath, final String destPath, boolean overwrite, Object selectedValue) throws CommandFailureException {
+        final boolean fileExists = distributionService.remoteFileCheck(hostName, destPath);
+        if (fileExists && overwrite) {
             LOGGER.info("Found the file {}", destPath);
-            distributionControlService.backupFile(hostName,destPath);
+            final CommandOutput commandOutput = distributionControlService.backupFile(hostName, destPath);
+            if (!commandOutput.getReturnCode().wasSuccessful()) {
+                String message = MessageFormat.format("Failed to backup source file {0} at destination {1} on host {2}", sourcePath, destPath, hostName);
+                LOGGER.error(message);
+                throw new ResourceServiceException(message);
+            }
+        } else if (fileExists) {
+            String message = MessageFormat.format("Skipping scp of file: {0} already exists and overwrite is set to false.", destPath);
+            LOGGER.info(message);
+            historyFacadeService.write(hostName, getGroupsFromSelectedResource(selectedValue), message, EventType.SYSTEM_INFO, getUserFromSecurityContext());
+            return new CommandOutput(new ExecReturnCode(0), message, "");
         }
-        return distributionControlService.secureCopyFile(hostName, sourcePath,destPath);
+        return distributionControlService.secureCopyFile(hostName, sourcePath, destPath);
     }
 
-    protected void createConfigFile(String path, String configFileName, String templateContent) throws IOException {
+    private String getUserFromSecurityContext() {
+        final SecurityContext context = SecurityContextHolder.getContext();
+        if (context == null) {
+            return "";
+        }
+
+        final Authentication authentication = context.getAuthentication();
+        if (authentication == null) {
+            return "";
+        }
+
+        return authentication.getName();
+    }
+
+    private Collection<Group> getGroupsFromSelectedResource(Object selectedValue) {
+        if (selectedValue instanceof Jvm) {
+            return ((Jvm) selectedValue).getGroups();
+        }
+
+        if (selectedValue instanceof WebServer) {
+            return ((WebServer) selectedValue).getGroups();
+        }
+
+        if (selectedValue instanceof Application){
+            return Collections.singleton(((Application) selectedValue).getGroup());
+        }
+
+        return new HashSet<>();
+    }
+
+    private void createConfigFile(String path, String configFileName, String templateContent) throws IOException {
         File configFile = new File(path + configFileName);
         if (configFileName.endsWith(".bat")) {
             templateContent = templateContent.replaceAll("\n", "\r\n");
@@ -837,25 +877,32 @@ public class ResourceServiceImpl implements ResourceService {
             validateSingleResourceForGeneration(resourceIdentifier);
             ConfigTemplate configTemplate = resourceHandler.fetchResource(resourceIdentifier);
             metaDataStr = configTemplate.getMetaData();
-            resourceTemplateMetaData = getTokenizedMetaData(fileName, resourceHandler.getSelectedValue(resourceIdentifier), metaDataStr);
+            final Object selectedValue = resourceHandler.getSelectedValue(resourceIdentifier);
+            resourceTemplateMetaData = getTokenizedMetaData(fileName, selectedValue, metaDataStr);
             String resourceSourceCopy;
             final String deployFileName = resourceTemplateMetaData.getDeployFileName();
-            String resourceDestPath = resourceTemplateMetaData.getDeployPath() + "/" + deployFileName;
+            final String deployPath = resourceTemplateMetaData.getDeployPath();
+            String resourceDestPath = deployPath + "/" + deployFileName;
 
             if (MEDIA_TYPE_TEXT.equalsIgnoreCase(resourceTemplateMetaData.getContentType().getType()) ||
                     MediaType.APPLICATION_XML.equals(resourceTemplateMetaData.getContentType())) {
-                String fileContent = generateConfigFile(resourceHandler.getSelectedValue(resourceIdentifier), fileName);
+                String fileContent = generateConfigFile(selectedValue, fileName);
                 String resourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/" + entity;
                 resourceSourceCopy = resourcesNameDir + "/" + deployFileName;
                 createConfigFile(resourcesNameDir + "/", deployFileName, fileContent);
             } else {
-                resourceSourceCopy = generateTemplateForNotText(resourceHandler.getSelectedValue(resourceIdentifier), fileName);
+                resourceSourceCopy = generateTemplateForNotText(selectedValue, fileName);
             }
             //Create resource dir
-            commandOutput = distributionControlService.createDirectory(hostName,resourceTemplateMetaData.getDeployPath());
-            commandOutput = secureCopyFile(hostName, resourceSourceCopy, resourceDestPath);
+            commandOutput = distributionControlService.createDirectory(hostName, deployPath);
+            if (!commandOutput.getReturnCode().wasSuccessful()) {
+                String errorMessage = MessageFormat.format("Failed to create directory {0} while deploying {1} to host {2}", deployPath, fileName, hostName);
+                LOGGER.error(errorMessage);
+                throw new ResourceServiceException(errorMessage);
+            }
+            commandOutput = secureCopyFile(hostName, resourceSourceCopy, resourceDestPath, resourceTemplateMetaData.isOverwrite(), selectedValue);
             if (resourceTemplateMetaData.isUnpack()) {
-                doUnpack(entity, hostName, resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
+                doUnpack(entity, hostName, deployPath + "/" + resourceTemplateMetaData.getDeployFileName());
             }
         } catch (IOException e) {
             String message = "Failed to write file " + fileName + ". " + e.toString();
@@ -869,7 +916,7 @@ public class ResourceServiceImpl implements ResourceService {
         return commandOutput;
     }
 
-    public void doUnpack(final String entity, final String hostName, final String destPath) {
+    private void doUnpack(final String entity, final String hostName, final String destPath) {
         CommandOutput commandOutput;
         try {
             String standardError;
@@ -885,7 +932,7 @@ public class ResourceServiceImpl implements ResourceService {
         }
     }
 
-    public <T> String generateTemplateForNotText(final T entity, final String fileName) {
+    private <T> String generateTemplateForNotText(final T entity, final String fileName) {
         String template = "";
         if (entity instanceof Jvm) {
             template = jvmPersistenceService.getResourceTemplate(((Jvm) entity).getJvmName(), fileName);
@@ -901,7 +948,7 @@ public class ResourceServiceImpl implements ResourceService {
         return template;
     }
 
-    public <T> String generateConfigFile(final T entity, final String fileName) {
+    private <T> String generateConfigFile(final T entity, final String fileName) {
         String resourceFileString = "";
         final String failMessage = "Failed to find the template in the database or on the file system";
         if (entity instanceof Jvm) {

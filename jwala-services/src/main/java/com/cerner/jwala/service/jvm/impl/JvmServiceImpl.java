@@ -16,7 +16,9 @@ import com.cerner.jwala.common.domain.model.state.StateType;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.InternalErrorException;
-import com.cerner.jwala.common.exec.*;
+import com.cerner.jwala.common.exec.CommandOutput;
+import com.cerner.jwala.common.exec.CommandOutputReturnCode;
+import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.common.request.group.AddJvmToGroupRequest;
@@ -61,8 +63,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -472,7 +472,8 @@ public class JvmServiceImpl implements JvmService {
         final String failedToCopyMessage = "Failed to secure copy ";
         final String duringCreationMessage = " during the creation of ";
         final String destinationDeployJarPath = stagingArea + '/' + AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue();
-        if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, destinationDeployJarPath, userId).getReturnCode().wasSuccessful()) {
+        final boolean alwaysOverwriteScripts = true;
+        if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, destinationDeployJarPath, userId, alwaysOverwriteScripts).getReturnCode().wasSuccessful()) {
             String message = failedToCopyMessage + deployConfigJarPath + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
@@ -481,7 +482,7 @@ public class JvmServiceImpl implements JvmService {
         final String installServicePath = commandsScriptsPath + '/' + AemControl.Properties.INSTALL_SERVICE_SCRIPT_NAME.getValue();
         final String destinationInstallServicePath = stagingArea + '/' + AemControl.Properties.INSTALL_SERVICE_SCRIPT_NAME.getValue();
 
-        if (!jvmControlService.secureCopyFile(secureCopyRequest, installServicePath, destinationInstallServicePath, userId).getReturnCode().wasSuccessful()) {
+        if (!jvmControlService.secureCopyFile(secureCopyRequest, installServicePath, destinationInstallServicePath, userId, alwaysOverwriteScripts).getReturnCode().wasSuccessful()) {
             String message = failedToCopyMessage + installServicePath + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
@@ -489,7 +490,7 @@ public class JvmServiceImpl implements JvmService {
         final String deleteServicePath = commandsScriptsPath + "/" + AemControl.Properties.DELETE_SERVICE_SCRIPT_NAME.getValue();
         final String destinationDeleteServicePath = stagingArea + "/" + AemControl.Properties.DELETE_SERVICE_SCRIPT_NAME.getValue();
 
-        if (!jvmControlService.secureCopyFile(secureCopyRequest, deleteServicePath, destinationDeleteServicePath, userId).getReturnCode().wasSuccessful()) {
+        if (!jvmControlService.secureCopyFile(secureCopyRequest, deleteServicePath, destinationDeleteServicePath, userId, alwaysOverwriteScripts).getReturnCode().wasSuccessful()) {
             String message = failedToCopyMessage + installServicePath + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
@@ -505,7 +506,7 @@ public class JvmServiceImpl implements JvmService {
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
         }
 
-        if (!jvmControlService.secureCopyFile(secureCopyRequest, commandsScriptsPath + linuxJvmService, stagingArea + linuxJvmService, userId).getReturnCode().wasSuccessful()) {
+        if (!jvmControlService.secureCopyFile(secureCopyRequest, commandsScriptsPath + linuxJvmService, stagingArea + linuxJvmService, userId, alwaysOverwriteScripts).getReturnCode().wasSuccessful()) {
             String message = failedToCopyMessage + commandsScriptsPath +linuxJvmService +  duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
@@ -556,7 +557,8 @@ public class JvmServiceImpl implements JvmService {
         String jvmJarFile  = ApplicationProperties.get("paths.generated.resource.dir") + File.separator + jvm.getJvmName() + File.separator + configTarName;
         String destination = scriptsDir + "/" + configTarName;
         LOGGER.info("Copy config jar {} to {} ", jvmJarFile, destination);
-        secureCopyFileToJvm(jvm, jvmJarFile, destination , user);
+        final boolean alwaysOverwriteJvmConfigJar = true;
+        secureCopyFileToJvm(jvm, jvmJarFile, destination , user, alwaysOverwriteJvmConfigJar);
         LOGGER.info("Copy of config jar successful: {} in {}ms ", jvmConfigJar, System.currentTimeMillis() - startTime);
     }
 
@@ -601,10 +603,11 @@ public class JvmServiceImpl implements JvmService {
     }
 
     private void deployJvmResourceFiles(Jvm jvm, User user) throws IOException, CommandFailureException {
-        final Map<String, String> generatedFiles = generateResourceFiles(jvm.getJvmName());
+        final Map<String, ScpDestination> generatedFiles = generateResourceFiles(jvm.getJvmName());
         if (generatedFiles != null) {
-            for (Map.Entry<String, String> entry : generatedFiles.entrySet()) {
-                secureCopyFileToJvm(jvm, entry.getKey(), entry.getValue(), user);
+            for (Map.Entry<String, ScpDestination> entry : generatedFiles.entrySet()) {
+                final ScpDestination scpDestination = entry.getValue();
+                secureCopyFileToJvm(jvm, entry.getKey(), scpDestination.destPath, user, scpDestination.overwrite);
             }
         }
     }
@@ -632,7 +635,7 @@ public class JvmServiceImpl implements JvmService {
      * @param user
      * @throws CommandFailureException If the command fails, this exception contains the details of the failure.
      */
-    private void secureCopyFileToJvm(final Jvm jvm, final String sourceFile, final String destinationFile, User user) throws CommandFailureException {
+    private void secureCopyFileToJvm(final Jvm jvm, final String sourceFile, final String destinationFile, User user, boolean overwrite) throws CommandFailureException {
         final String parentDir;
         if (destinationFile.startsWith("~")) {
             parentDir = destinationFile.substring(0, destinationFile.lastIndexOf('/'));
@@ -641,7 +644,7 @@ public class JvmServiceImpl implements JvmService {
         }
         createParentDir(jvm, parentDir);
         final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SCP);
-        final CommandOutput commandOutput = jvmControlService.secureCopyFile(controlJvmRequest, sourceFile, destinationFile, user.getId());
+        final CommandOutput commandOutput = jvmControlService.secureCopyFile(controlJvmRequest, sourceFile, destinationFile, user.getId(), overwrite);
         if (commandOutput.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully copied {} to destination location {} on {}", sourceFile, destinationFile, jvm.getHostName());
         } else {
@@ -838,9 +841,8 @@ public class JvmServiceImpl implements JvmService {
         return jvmPersistenceService.getJvmForciblyStoppedCount(groupName);
     }
 
-    @Override
-    public Map<String, String> generateResourceFiles(final String jvmName) throws IOException {
-        Map<String, String> generatedFiles = new HashMap<>();
+    private Map<String, ScpDestination> generateResourceFiles(final String jvmName) throws IOException {
+        Map<String, ScpDestination> generatedFiles = new HashMap<>();
         final List<JpaJvmConfigTemplate> jpaJvmConfigTemplateList = jvmPersistenceService.getConfigTemplates(jvmName);
         for (final JpaJvmConfigTemplate jpaJvmConfigTemplate : jpaJvmConfigTemplateList) {
             final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
@@ -858,10 +860,10 @@ public class JvmServiceImpl implements JvmService {
                 final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getTemplateContent(),
                         resourceGroup, jvm, ResourceGeneratorType.TEMPLATE);
                 generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + '/' + jvmName, deployFileName, generatedResourceStr),
-                        resourceTemplateMetaData.getDeployPath() + '/' + deployFileName);
+                        new ScpDestination(resourceTemplateMetaData.getDeployPath() + '/' + deployFileName, resourceTemplateMetaData.isOverwrite()));
             } else {
                 generatedFiles.put(jpaJvmConfigTemplate.getTemplateContent(),
-                        resourceTemplateMetaData.getDeployPath() + '/' + deployFileName);
+                        new ScpDestination(resourceTemplateMetaData.getDeployPath() + '/' + deployFileName, resourceTemplateMetaData.isOverwrite()));
             }
         }
         return generatedFiles;
@@ -899,6 +901,16 @@ public class JvmServiceImpl implements JvmService {
         } else {
             LOGGER.error("The target JVM {} must be stopped before attempting to delete it", jvm.getJvmName());
             throw new JvmServiceException("The target JVM must be stopped before attempting to delete it");
+        }
+    }
+
+    private class ScpDestination {
+        private final boolean overwrite;
+        private final String destPath;
+
+        ScpDestination(String destPath, boolean overwrite) {
+            this.destPath = destPath;
+            this.overwrite = overwrite;
         }
     }
 }
