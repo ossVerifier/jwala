@@ -1085,5 +1085,10 @@ public class ResourceServiceImplTest {
                     resourceContentGeneratorService, mockBinaryDistributionService, tika, mockRepositoryService);
         }
 
+        @Bean
+        public HistoryFacadeService getMockHistoryFacadeService(){
+            return mockHistoryFacadeService;
+        }
+
     }
 }

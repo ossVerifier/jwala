@@ -21,7 +21,9 @@ import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
+import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.*;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.binarydistribution.DistributionService;
@@ -46,6 +48,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
@@ -62,8 +67,12 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Autowired
     private DistributionService distributionService;
+
     @Autowired
     private BinaryDistributionControlService distributionControlService;
+
+    @Autowired
+    private HistoryFacadeService historyFacadeService;
 
     private final ResourcePersistenceService resourcePersistenceService;
 
@@ -717,7 +726,7 @@ public class ResourceServiceImpl implements ResourceService {
         return generateResourceFile(resourceIdentifier.resourceName, content, generateResourceGroup(), resourceHandler.getSelectedValue(resourceIdentifier), ResourceGeneratorType.PREVIEW);
     }
 
-    private CommandOutput secureCopyFile(final String hostName, final String sourcePath, final String destPath, boolean overwrite) throws CommandFailureException {
+    private CommandOutput secureCopyFile(final String hostName, final String sourcePath, final String destPath, boolean overwrite, Object selectedValue) throws CommandFailureException {
         final boolean fileExists = distributionService.remoteFileCheck(hostName, destPath);
         if (fileExists && overwrite) {
             LOGGER.info("Found the file {}", destPath);
@@ -727,12 +736,43 @@ public class ResourceServiceImpl implements ResourceService {
                 LOGGER.error(message);
                 throw new ResourceServiceException(message);
             }
-        } else if (fileExists){
+        } else if (fileExists) {
             String message = MessageFormat.format("Skipping scp of file: {0} already exists and overwrite is set to false.", destPath);
             LOGGER.info(message);
+            historyFacadeService.write(hostName, getGroupsFromSelectedResource(selectedValue), message, EventType.SYSTEM_INFO, getUserFromSecurityContext());
             return new CommandOutput(new ExecReturnCode(0), message, "");
         }
         return distributionControlService.secureCopyFile(hostName, sourcePath, destPath);
+    }
+
+    private String getUserFromSecurityContext() {
+        final SecurityContext context = SecurityContextHolder.getContext();
+        if (context == null) {
+            return "";
+        }
+
+        final Authentication authentication = context.getAuthentication();
+        if (authentication == null) {
+            return "";
+        }
+
+        return authentication.getName();
+    }
+
+    private Collection<Group> getGroupsFromSelectedResource(Object selectedValue) {
+        if (selectedValue instanceof Jvm) {
+            return ((Jvm) selectedValue).getGroups();
+        }
+
+        if (selectedValue instanceof WebServer) {
+            return ((WebServer) selectedValue).getGroups();
+        }
+
+        if (selectedValue instanceof Application){
+            return Collections.singleton(((Application) selectedValue).getGroup());
+        }
+
+        return new HashSet<>();
     }
 
     private void createConfigFile(String path, String configFileName, String templateContent) throws IOException {
@@ -837,7 +877,8 @@ public class ResourceServiceImpl implements ResourceService {
             validateSingleResourceForGeneration(resourceIdentifier);
             ConfigTemplate configTemplate = resourceHandler.fetchResource(resourceIdentifier);
             metaDataStr = configTemplate.getMetaData();
-            resourceTemplateMetaData = getTokenizedMetaData(fileName, resourceHandler.getSelectedValue(resourceIdentifier), metaDataStr);
+            final Object selectedValue = resourceHandler.getSelectedValue(resourceIdentifier);
+            resourceTemplateMetaData = getTokenizedMetaData(fileName, selectedValue, metaDataStr);
             String resourceSourceCopy;
             final String deployFileName = resourceTemplateMetaData.getDeployFileName();
             final String deployPath = resourceTemplateMetaData.getDeployPath();
@@ -845,12 +886,12 @@ public class ResourceServiceImpl implements ResourceService {
 
             if (MEDIA_TYPE_TEXT.equalsIgnoreCase(resourceTemplateMetaData.getContentType().getType()) ||
                     MediaType.APPLICATION_XML.equals(resourceTemplateMetaData.getContentType())) {
-                String fileContent = generateConfigFile(resourceHandler.getSelectedValue(resourceIdentifier), fileName);
+                String fileContent = generateConfigFile(selectedValue, fileName);
                 String resourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/" + entity;
                 resourceSourceCopy = resourcesNameDir + "/" + deployFileName;
                 createConfigFile(resourcesNameDir + "/", deployFileName, fileContent);
             } else {
-                resourceSourceCopy = generateTemplateForNotText(resourceHandler.getSelectedValue(resourceIdentifier), fileName);
+                resourceSourceCopy = generateTemplateForNotText(selectedValue, fileName);
             }
             //Create resource dir
             commandOutput = distributionControlService.createDirectory(hostName, deployPath);
@@ -859,7 +900,7 @@ public class ResourceServiceImpl implements ResourceService {
                 LOGGER.error(errorMessage);
                 throw new ResourceServiceException(errorMessage);
             }
-            commandOutput = secureCopyFile(hostName, resourceSourceCopy, resourceDestPath, resourceTemplateMetaData.isOverwrite());
+            commandOutput = secureCopyFile(hostName, resourceSourceCopy, resourceDestPath, resourceTemplateMetaData.isOverwrite(), selectedValue);
             if (resourceTemplateMetaData.isUnpack()) {
                 doUnpack(entity, hostName, deployPath + "/" + resourceTemplateMetaData.getDeployFileName());
             }

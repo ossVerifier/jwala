@@ -303,6 +303,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             // exit without deploying since the file exists and overwrite is false
             String message = MessageFormat.format("Skipping scp of file: {0} already exists and overwrite is set to false.", destPath);
             LOGGER.info(message);
+            historyFacadeService.write(hostName, jvm.getGroups(), message, EventType.SYSTEM_INFO, userId);
             return new CommandOutput(new ExecReturnCode(0), message, "");
         }
 
