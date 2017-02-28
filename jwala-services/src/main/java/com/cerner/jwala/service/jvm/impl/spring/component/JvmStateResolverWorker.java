@@ -106,6 +106,8 @@ public class JvmStateResolverWorker {
                 jvmStateService.updateNotInMemOrStaleState(jvm, JvmState.JVM_STOPPED, StringUtils.EMPTY);
                 return new CurrentState<>(jvm.getId(), JvmState.JVM_STOPPED, DateTime.now(), StateType.JVM);
             }
+            LOGGER.error("Did not get a '0' return code and-or find the expected keyword \"STOPPED\"! RemoteCommandReturnInfo = {}",
+                    remoteCommandReturnInfo);
         } catch (final RemoteCommandExecutorServiceException rcese) {
             LOGGER.error("State verification of {}@{} via SSH failed! Please note that this has nothing to do with the " +
                     "JVM not receiving any state. This is just a redundancy check after an unsuccessful URL ping. " +

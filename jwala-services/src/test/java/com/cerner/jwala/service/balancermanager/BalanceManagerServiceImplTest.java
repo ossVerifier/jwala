@@ -212,7 +212,7 @@ public class BalanceManagerServiceImplTest {
         appList.add(mockApp);
         when(mockApplicationService.getApplications()).thenReturn(appList);
 
-        when(mockBalancerManagerXmlParser.getJvmWorker(any(Manager.class), anyString(), anyString())).thenReturn(workerMap);
+        when(mockBalancerManagerXmlParser.getJvmWorkerByName(any(Manager.class), anyString(), anyString())).thenReturn(workerMap);
 
         final CloseableHttpResponse mockCloseableHttpResponse = mock(CloseableHttpResponse.class);
         when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mock(StatusLine.class));
@@ -257,7 +257,7 @@ public class BalanceManagerServiceImplTest {
         appList.add(mockApp);
         when(mockApplicationService.getApplications()).thenReturn(appList);
 
-        when(mockBalancerManagerXmlParser.getJvmWorker(any(Manager.class), anyString(), anyString())).thenReturn(workerMap);
+        when(mockBalancerManagerXmlParser.getJvmWorkerByName(any(Manager.class), anyString(), anyString())).thenReturn(workerMap);
 
         final CloseableHttpResponse mockCloseableHttpResponse = mock(CloseableHttpResponse.class);
         when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mock(StatusLine.class));
@@ -362,7 +362,7 @@ public class BalanceManagerServiceImplTest {
         appList.add(mockApp);
         when(mockApplicationService.getApplications()).thenReturn(appList);
 
-        when(mockBalancerManagerXmlParser.getJvmWorker(any(Manager.class), anyString(), anyString())).thenReturn(workerMap);
+        when(mockBalancerManagerXmlParser.getJvmWorkerByName(any(Manager.class), anyString(), anyString())).thenReturn(workerMap);
 
         final CloseableHttpResponse mockCloseableHttpResponse = mock(CloseableHttpResponse.class);
         when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mock(StatusLine.class));
@@ -420,7 +420,7 @@ public class BalanceManagerServiceImplTest {
         when(mockApp.isSecure()).thenReturn(true); // https
         appList.add(mockApp);
         when(mockApplicationService.getApplications()).thenReturn(appList);
-        when(mockBalancerManagerXmlParser.getJvmWorker(any(Manager.class), anyString(), anyString())).thenReturn(workerMap);
+        when(mockBalancerManagerXmlParser.getJvmWorkerByName(any(Manager.class), anyString(), anyString())).thenReturn(workerMap);
 
         final CloseableHttpResponse mockCloseableHttpResponse = mock(CloseableHttpResponse.class);
         when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mock(StatusLine.class));
@@ -495,5 +495,11 @@ public class BalanceManagerServiceImplTest {
         assertEquals("group1", balancerManagerState.getGroups().get(0).getGroupName());
         verify(mockBalancerManagerHtmlParser).getWorkerUrlPath(anyString(), anyString(), anyString(),
                 eq("https://somehost:9101/hct"));
+    }
+
+    @Test
+    public void testDrainUserJvmMultiApp() throws Exception {
+
+
     }
 }

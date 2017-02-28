@@ -282,7 +282,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
             if ("".equals(jvmName)) {
                 workers = balancerManagerXmlParser.getWorkers(manager, balancerName);
             } else {
-                workers = balancerManagerXmlParser.getJvmWorker(manager, balancerName, findJvmUrl(jvmName));
+                workers = balancerManagerXmlParser.getJvmWorkerByName(manager, balancerName, jvmName);
             }
             if (post) {
                 doDrain(workers, balancerManagerHtmlUrl, webServer, balancerName, nonce, user);
@@ -304,31 +304,6 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         return jvmDrainStatusList;
     }
 
-    private String findJvmUrl(final String jvmName) {
-        String jvmUrl = "";
-        if ("".equals(jvmName)) return jvmUrl;
-        List<Application> applications = applicationService.getApplications();
-        search: {
-            for (Application application : applications) {
-                boolean isSecure = application.isSecure();
-                Group group = application.getGroup();
-                Set<Jvm> jvms = group.getJvms();
-                for (Jvm groupJvm : jvms) {
-                    if (groupJvm.getJvmName().equalsIgnoreCase(jvmName)) {
-                        final String jvmUrlAddress = groupJvm.getHostName() + ":" + groupJvm.getHttpsPort() + application.getWebAppContext();
-                        if (isSecure) {
-                            jvmUrl = "https://" + jvmUrlAddress;
-                        } else {
-                            jvmUrl = "http://" + jvmUrlAddress;
-                        }
-                        break search;
-                    }
-                }
-            }
-        }
-        LOGGER.info("jvmUrl: " + jvmUrl);
-        return jvmUrl;
-    }
 
     public String findApplicationNameByWorker(final String worker) {
         LOGGER.info("Entering findApplicationNameByWorker");
@@ -366,7 +341,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
                          final String balancerName,
                          final String nonce,
                          final String user) {
-        LOGGER.info("Entering doDrain");
+        LOGGER.info("Entering doDrain for worker size " + workers.size());
         for (String workerUrl : workers.keySet()) {
             final String message = "Drain request for " + workerUrl;
             sendMessage(webServer, message, user);

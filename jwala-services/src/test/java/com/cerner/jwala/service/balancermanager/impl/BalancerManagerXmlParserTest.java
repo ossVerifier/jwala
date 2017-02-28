@@ -92,7 +92,7 @@ public class BalancerManagerXmlParserTest {
         Map<String, String> workers = balancerManagerXmlParser.getWorkers(manager, balancerName);
         assertEquals(1, workers.size());
 
-        Map<String, String> jvmWorkers = balancerManagerXmlParser.getJvmWorker(manager, balancerName, "https://localhost:9121/hct");
+        Map<String, String> jvmWorkers = balancerManagerXmlParser.getJvmWorkerByName(manager, balancerName, "CTO-N9SF-LTST-HEALTH-CHECK-4.0-localhost-3");
         assertEquals(1, jvmWorkers.size());
     }
 
@@ -115,4 +115,6 @@ public class BalancerManagerXmlParserTest {
         jvmName = balancerManagerXmlParser.findJvmNameByWorker("ajp://localhost:9122/hct");
         assertEquals("CTO-N9SF-LTST-HEALTH-CHECK-4.0-localhost-3", jvmName);
     }
+
+
 }
