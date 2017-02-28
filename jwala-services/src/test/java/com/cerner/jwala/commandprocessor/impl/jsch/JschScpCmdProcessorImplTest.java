@@ -45,7 +45,7 @@ public class JschScpCmdProcessorImplTest {
     public void setup() {
         System.setProperty(PROPERTIES_ROOT_PATH, resourceDir);
         initMocks(this);
-        jschScpCommandProcessor = new JschScpCommandProcessorImpl(mockJsch, mockRemoteExecCommand);
+        jschScpCommandProcessor = new JschScpCmdProcessorImpl(mockJsch, mockRemoteExecCommand);
     }
 
     @After

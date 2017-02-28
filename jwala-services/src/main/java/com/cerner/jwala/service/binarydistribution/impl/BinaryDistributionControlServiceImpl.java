@@ -1,6 +1,6 @@
 package com.cerner.jwala.service.binarydistribution.impl;
 
-import com.cerner.jwala.commandprocessor.impl.jsch.JschScpCommandProcessorImpl;
+import com.cerner.jwala.commandprocessor.impl.jsch.JschScpCmdProcessorImpl;
 import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exception.ApplicationException;
@@ -51,7 +51,7 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
 //TODO: refactor scp
         RemoteExecCommand command = new RemoteExecCommand(getConnection(hostname),  new ExecCommand(SECURE_COPY, source, destination));
         try {
-            final JschScpCommandProcessorImpl jschScpCommandProcessor = new JschScpCommandProcessorImpl(aemSshConfig.getJschBuilder().build(), command);
+            final JschScpCmdProcessorImpl jschScpCommandProcessor = new JschScpCmdProcessorImpl(aemSshConfig.getJschBuilder().build(), command);
             jschScpCommandProcessor.processCommand();
             jschScpCommandProcessor.close();
             return  new CommandOutput(new ExecReturnCode(jschScpCommandProcessor.getExecutionReturnCode().getReturnCode()),
