@@ -156,3 +156,10 @@ task zipJwalaTomcat(dependsOn: createJwalaDb, type: Zip) {
     into "$tomcatDir"// note that this specifies path *in* the archive
     destinationDir file("$buildDir") // directory that you want your archive to be placed in
 }
+
+task zipJwalaTomcatForLinux(dependsOn: createJwalaDb, type: Zip) {
+    from "$buildDir/$tomcatDir"
+    baseName = 'jwala-tomcat-linux'
+    into "$tomcatDir"// note that this specifies path *in* the archive
+    destinationDir file("$buildDir") // directory that you want your archive to be placed in
+}
