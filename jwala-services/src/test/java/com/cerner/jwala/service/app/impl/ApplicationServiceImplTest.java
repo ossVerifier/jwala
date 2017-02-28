@@ -1,8 +1,6 @@
 package com.cerner.jwala.service.app.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
-import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -16,15 +14,11 @@ import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
-import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.app.CreateApplicationRequest;
 import com.cerner.jwala.common.request.app.UpdateApplicationRequest;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
-import com.cerner.jwala.control.command.PlatformCommandProvider;
-import com.cerner.jwala.control.command.RemoteCommandExecutor;
-import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
@@ -33,7 +27,6 @@ import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.service.HistoryFacadeService;
-import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionLockManagerImpl;
@@ -43,7 +36,6 @@ import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import org.apache.tika.mime.MediaType;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -74,9 +66,6 @@ public class ApplicationServiceImplTest {
     private JvmPersistenceService jvmPersistenceService;
 
     @Mock
-    private RemoteCommandExecutor<ApplicationControlOperation> remoteCommandExecutor;
-
-    @Mock
     private AemSshConfig aemSshConfig;
 
     @Mock
@@ -97,9 +86,6 @@ public class ApplicationServiceImplTest {
 
     @Mock
     private ResourceService mockResourceService;
-
-    @Mock
-    private RemoteCommandExecutorImpl remoteCommandExecutorImpl;
 
     @Mock
     private BinaryDistributionLockManager lockManager;
@@ -161,9 +147,14 @@ public class ApplicationServiceImplTest {
         mockGroupPersistenceService = mock(GroupPersistenceService.class);
         when(mockGroupPersistenceService.getGroup(any(Identifier.class))).thenReturn(group);
 
-        applicationService = new ApplicationServiceImpl(applicationPersistenceService,
-                jvmPersistenceService, mockGroupPersistenceService,
-                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService,new BinaryDistributionLockManagerImpl() );
+        applicationService = new ApplicationServiceImpl(
+                applicationPersistenceService,
+                jvmPersistenceService,
+                mockGroupPersistenceService,
+                mockResourceService,
+                binaryDistributionService,
+                mockHistoryFacadeService,
+                new BinaryDistributionLockManagerImpl() );
     }
 
     @SuppressWarnings("unchecked")
@@ -404,116 +395,6 @@ public class ApplicationServiceImplTest {
     }
 
 
-    @Test
-    @Ignore
-    public void testCopyApplicationToGroupHosts() throws IOException {
-        final HashSet<Jvm> jvmSet = new HashSet<>();
-        Jvm mockJvm = mock(Jvm.class);
-        Jvm mockJvm2 = mock(Jvm.class);
-        jvmSet.add(mockJvm);
-        jvmSet.add(mockJvm2);
-        Group mockGroup = mock(Group.class);
-        GroupPersistenceService mockGroupService = mock(GroupPersistenceService.class);
-        final Identifier<Group> mockGroupId = new Identifier<>(999L);
-        when(mockGroup.getId()).thenReturn(mockGroupId);
-        when(mockGroup.getJvms()).thenReturn(jvmSet);
-        when(mockApplication.getWarPath()).thenReturn("./src/test/resources/archive/test_archive.war");
-        when(mockApplication.getWarName()).thenReturn("test.war");
-        when(mockApplication.getGroup()).thenReturn(mockGroup);
-        when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
-        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
-        when(mockJvm.getHostName()).thenReturn("localhost");
-        when(mockJvm2.getHostName()).thenReturn("localhost");
-
-        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
-                jvmPersistenceService, mockGroupService,
-                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService, new BinaryDistributionLockManagerImpl());
-
-        try {
-            CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
-            when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString())).thenReturn(successCommandOutput);
-            when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(successCommandOutput);
-            mockApplicationService.copyApplicationWarToGroupHosts(mockApplication);
-        } catch (CommandFailureException e) {
-            assertTrue("should not fail " + e.getMessage(), false);
-        }
-        new File("./src/test/resources/webapps/test.war").delete();
-
-        try {
-            CommandOutput failedCommandOutput = new CommandOutput(new ExecReturnCode(1), "FAILED", "");
-            when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(failedCommandOutput);
-            mockApplicationService.copyApplicationWarToGroupHosts(mockApplication);
-        } catch (CommandFailureException e) {
-            assertTrue("should not fail " + e.getMessage(), false);
-        } catch (InternalErrorException ie) {
-            assertEquals(FaultType.REMOTE_COMMAND_FAILURE, ie.getMessageResponseStatus());
-        }
-        new File("./src/test/resources/webapps/test.war").delete();
-
-        boolean exceptionThrown = false;
-        try {
-            when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("FAILED"), new Throwable("Expected to fail test")));
-            mockApplicationService.copyApplicationWarToGroupHosts(mockApplication);
-        } catch (Exception e) {
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
-        new File("./src/test/resources/webapps/test.war").delete();
-
-        when(mockApplication.getWarPath()).thenReturn("./src/test/resources/archive/test_archive_FAIL_COPY.war");
-        exceptionThrown = false;
-        try {
-            mockApplicationService.copyApplicationWarToGroupHosts(mockApplication);
-        } catch (Exception e) {
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
-
-    }
-
-    @Test
-    @Ignore
-    public void testCopyApplicationWarToHost() {
-        when(mockApplication.getWarPath()).thenReturn("./src/test/resources/archive/test_archive.war");
-        when(mockApplication.getWarName()).thenReturn("test.war");
-        CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
-
-        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
-                jvmPersistenceService, null,
-                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService, new BinaryDistributionLockManagerImpl());
-
-        try {
-            when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString())).thenReturn(successCommandOutput);
-            when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(successCommandOutput);
-            when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString())).thenReturn(successCommandOutput);
-            when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(successCommandOutput);
-            when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
-            when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), any(BinaryDistributionControlService.class), any(PlatformCommandProvider.class), anyString(), anyString(),anyString())).thenReturn(successCommandOutput);
-            mockApplicationService.copyApplicationWarToHost(mockApplication, "localhost");
-        } catch (CommandFailureException e) {
-            assertTrue("should not fail " + e.getMessage(), false);
-        }
-        new File("./src/test/resources/webapps/test.war").delete();
-
-        boolean exceptionThrown = false;
-        try {
-            when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("FAILED"), new Throwable("Expected to fail test")));
-            mockApplicationService.copyApplicationWarToHost(mockApplication, "localhost");
-        } catch (Exception e) {
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
-        new File("./src/test/resources/webapps/test.war").delete();
-
-        when(mockApplication.getWarPath()).thenReturn("./src/test/resources/archive/test_archive_FAIL_COPY.war");
-        exceptionThrown = false;
-        try {
-            mockApplicationService.copyApplicationWarToGroupHosts(mockApplication);
-        } catch (Exception e) {
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
-    }
 
     @Test
     public void testAppDeployConf() throws IOException {

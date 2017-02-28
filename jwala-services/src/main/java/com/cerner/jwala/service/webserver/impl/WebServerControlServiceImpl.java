@@ -7,15 +7,16 @@ import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.exception.InternalErrorException;
-import com.cerner.jwala.common.exec.*;
+import com.cerner.jwala.common.exec.CommandOutput;
+import com.cerner.jwala.common.exec.CommandOutputReturnCode;
+import com.cerner.jwala.common.exec.ExecReturnCode;
+import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
-import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.webserver.command.WebServerCommandFactory;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
-import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.binarydistribution.DistributionService;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
 import com.cerner.jwala.service.webserver.WebServerControlService;
@@ -53,9 +54,6 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
     @Autowired
     private WebServerService webServerService;
-
-    @Autowired
-    private RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
 
     @Autowired
     private RemoteCommandExecutorService remoteCommandExecutorService;

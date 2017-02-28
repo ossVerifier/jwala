@@ -16,8 +16,6 @@ import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
-import com.cerner.jwala.control.command.PlatformCommandProvider;
-import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.webserver.command.WebServerCommandFactory;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
@@ -195,15 +193,6 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         WebServer webserver = new WebServer(webServerIdentifier, new HashSet<Group>(), WEB_SERVER_NAME);
         when(Config.mockWebServerService.getWebServer(anyString())).thenReturn(webserver);
 
-        CommandOutput successReturnOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
-        when(Config.mockCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(WebServerControlOperation.class)
-                , any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(successReturnOutput);
-        when(Config.mockCommandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CHECK_FILE_EXISTS)
-                , any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1),
-                "File does not exist", ""));
-        when(Config.mockCommandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CREATE_DIRECTORY)
-                , any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0),
-                "Directory Created", ""));
         webServerControlService.secureCopyFile(WEB_SERVER_NAME, SOURCE_DIR, UNIX_HOME_DEST_PATH, USER_ID);
     }
 
@@ -287,9 +276,6 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         static WebServerService mockWebServerService;
 
         @Mock
-        static RemoteCommandExecutor<WebServerControlOperation> mockCommandExecutor;
-
-        @Mock
         static MessagingService mockMessagingService;
 
         @Mock
@@ -326,11 +312,6 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         }
 
         @Bean
-        public RemoteCommandExecutor<WebServerControlOperation> getMockCommandExecutor() {
-            return mockCommandExecutor;
-        }
-
-        @Bean
         public MessagingService getMockMessagingService() {
             return mockMessagingService;
         }
@@ -354,7 +335,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         @Scope("prototype")
         public WebServerControlService getWebServerControlService() {
             reset(mockWebServerCommandFactory, mockDistributionService, mockHostService, mockWebServerService,
-                  mockCommandExecutor, mockMessagingService, mockHistoryFacadeService, mockRemoteCommandExecutorService,
+                  mockMessagingService, mockHistoryFacadeService, mockRemoteCommandExecutorService,
                   mockSshConfig);
             return new WebServerControlServiceImpl();
         }

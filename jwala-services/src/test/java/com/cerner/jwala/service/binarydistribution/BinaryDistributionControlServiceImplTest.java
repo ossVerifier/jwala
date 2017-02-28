@@ -1,12 +1,10 @@
 package com.cerner.jwala.service.binarydistribution;
 
 import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
-import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionControlServiceImpl;
@@ -59,7 +57,6 @@ public class BinaryDistributionControlServiceImplTest {
     public void tearDown() {
         reset(Config.mockSshConfig);
         reset(Config.mockAemSshConfig);
-        reset(Config.mockRemoteCommandExecutor);
         reset(Config.mockRemoteCommandExecutorService);
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
@@ -117,9 +114,6 @@ public class BinaryDistributionControlServiceImplTest {
     static class Config {
 
         @Mock
-        static RemoteCommandExecutor<BinaryDistributionControlOperation> mockRemoteCommandExecutor;
-
-        @Mock
         static SshConfiguration mockSshConfig;
 
         @Mock
@@ -140,11 +134,6 @@ public class BinaryDistributionControlServiceImplTest {
         @Bean
         public AemSshConfig getAemSshConfig() {
             return mockAemSshConfig;
-        }
-
-        @Bean
-        public RemoteCommandExecutor<BinaryDistributionControlOperation> getRemoteCommandExecutor() {
-            return mockRemoteCommandExecutor;
         }
 
         @Bean

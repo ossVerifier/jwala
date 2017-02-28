@@ -15,7 +15,6 @@ import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
-import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.command.common.Command;
 import com.cerner.jwala.control.command.common.ShellCommandFactory;
 import com.cerner.jwala.control.configuration.AemSshConfig;
@@ -345,13 +344,6 @@ public class JvmControlServiceImplTest extends VerificationBehaviorSupport {
         static SshConfiguration mockSshConfig;
 
         @Mock
-        static RemoteCommandExecutor mockCommandExecutor;
-
-        @Mock
-        static RemoteCommandExecutor<JvmControlOperation> mockRemoteCommandExecutor;
-
-
-        @Mock
         static JvmPersistenceService mockJvmPersistenceService;
 
         public Config() {
@@ -404,23 +396,16 @@ public class JvmControlServiceImplTest extends VerificationBehaviorSupport {
         }
 
         @Bean
-        public RemoteCommandExecutor getCommandExecutor() {
-            return mockCommandExecutor;
-        }
-
-        @Bean
-        public static RemoteCommandExecutor<JvmControlOperation> getRemoteCommandExecutor() {
-            return mockRemoteCommandExecutor;
-        }
-
-        @Bean
         @Scope("prototype")
         public JvmControlService getJvmControlService() {
             reset(mockJvmCommandFactory, mockAemSshConfig, mockShellCommandFactory, mockHostService, mockHistoryFacadeService,
-                    mockJvmStateService, mockRemoteCommandExecutorService, mockSshConfig, mockCommandExecutor,
-                    mockRemoteCommandExecutor, mockJvmPersistenceService);
-            return new JvmControlServiceImpl(mockJvmPersistenceService, mockRemoteCommandExecutor, mockJvmStateService,
-                    mockRemoteCommandExecutorService, mockSshConfig, mockHistoryFacadeService);
+                    mockJvmStateService, mockRemoteCommandExecutorService, mockSshConfig,
+                    mockJvmPersistenceService);
+
+            return new JvmControlServiceImpl(
+                    mockJvmPersistenceService,
+                    mockJvmStateService,
+                    mockHistoryFacadeService);
         }
 
     }

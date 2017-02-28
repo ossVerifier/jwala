@@ -83,4 +83,11 @@ public class CommandOutputTest {
         commandOutput.cleanHeapDumpStandardOutput();
         assertEquals("Dumping heap to d:/test/location/for/heap/dump \r\nHeap dump file created", commandOutput.getStandardOutput());
     }
+
+    @Test
+    public void testCleanStandardOutForHeapDumpNoEnd() {
+        CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(0), "SHOULD NOT SHOW UP IN STANDARD OUT***heapdump-start***Dumping heap to d:/test/location/for/heap/dump \r\nHeap dump file created", "");
+        commandOutput.cleanHeapDumpStandardOutput();
+        assertEquals("Dumping heap to d:/test/location/for/heap/dump \r\nHeap dump file created", commandOutput.getStandardOutput());
+    }
 }

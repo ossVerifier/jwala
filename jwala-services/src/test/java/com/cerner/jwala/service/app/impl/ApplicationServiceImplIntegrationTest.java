@@ -3,14 +3,11 @@ package com.cerner.jwala.service.app.impl;
 import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
 import com.cerner.jwala.common.configuration.TestExecutionProfile;
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exception.NotFoundException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.control.command.RemoteCommandExecutor;
-import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.dao.MediaDao;
 import com.cerner.jwala.dao.impl.MediaDaoImpl;
@@ -134,7 +131,9 @@ public class ApplicationServiceImplIntegrationTest {
         }
 
         @Bean
-        public MediaDao getMediaDao() { return new MediaDaoImpl(); }
+        public MediaDao getMediaDao() {
+            return new MediaDaoImpl();
+        }
 
     }
 
@@ -150,9 +149,6 @@ public class ApplicationServiceImplIntegrationTest {
     @Autowired
     private ClientFactoryHelper clientFactoryHelper;
 
-    private RemoteCommandExecutor<ApplicationControlOperation> remoteCommandExecutor;
-
-    private RemoteCommandExecutorImpl remoteCommandExecutorImpl;
     private BinaryDistributionService binaryDistributionService;
 
     @Before
@@ -161,7 +157,6 @@ public class ApplicationServiceImplIntegrationTest {
         SshConfiguration mockSshConfig = mock(SshConfiguration.class);
         aemSshConfig = mock(AemSshConfig.class);
         mockGroupPersistenceService = mock(GroupPersistenceService.class);
-        remoteCommandExecutorImpl = mock(RemoteCommandExecutorImpl.class);
         binaryDistributionService = mock(BinaryDistributionService.class);
         when(mockSshConfig.getUserName()).thenReturn("mockUser");
         when(aemSshConfig.getSshConfiguration()).thenReturn(mockSshConfig);
@@ -171,12 +166,14 @@ public class ApplicationServiceImplIntegrationTest {
                 jvmPersistenceService,
                 mockGroupPersistenceService,
                 mockResourceService,
-                remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService, binaryDistributionLockManager
-                );
+                binaryDistributionService,
+                mockHistoryFacadeService,
+                binaryDistributionLockManager
+        );
     }
 
     @After
-    public void tearDown(){
+    public void tearDown() {
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 

@@ -13,7 +13,6 @@ import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.group.*;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
-import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.MessagingService;
@@ -69,9 +68,6 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     @Mock
     private ResourceHandler mockResourceHandler;
-
-    @Mock
-    private RemoteCommandExecutorImpl mockRemoteCommandExector;
 
     @Mock
     private MessagingService mockMessagingService;

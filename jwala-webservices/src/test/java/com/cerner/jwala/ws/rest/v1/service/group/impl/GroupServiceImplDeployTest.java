@@ -8,7 +8,6 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.resource.Entity;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
-import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
@@ -19,12 +18,8 @@ import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.group.CreateGroupRequest;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
-import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
-import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
-import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
-import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
@@ -35,11 +30,9 @@ import com.cerner.jwala.service.group.GroupControlService;
 import com.cerner.jwala.service.group.GroupJvmControlService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.group.GroupWebServerControlService;
-import com.cerner.jwala.service.group.impl.GroupServiceImpl;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.resource.ResourceService;
-import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
@@ -53,13 +46,11 @@ import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import org.apache.commons.io.FileUtils;
-import org.apache.tika.mime.MediaType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -78,7 +69,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-//@IfProfileValue(name = TestExecutionProfile.RUN_TEST_TYPES, value = TestExecutionProfile.INTEGRATION)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class,
         classes = {GroupServiceImplDeployTest.Config.class
         })
@@ -342,114 +332,6 @@ public class GroupServiceImplDeployTest {
         when(mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
 
         groupServiceRest.generateAndDeployGroupAppFile("test-group-name", "test.properties", "test-app-name", mockAuthUser, "test-host-name");
-    }
-
-    @Ignore
-    @Test
-    public void testDeployGroupAppTemplateWar() throws CommandFailureException, IOException {
-        String groupName = "testGroup";
-        String fileName = "testFile";
-        Group group = mock(Group.class);
-        List<Group> groups = new ArrayList<>();
-        groups.add(group);
-        ResourceGroup resourceGroup = mock(ResourceGroup.class);
-        Application application = mock(Application.class);
-        Set<Application> applications = new HashSet<>();
-        applications.add(application);
-        Jvm jvm = mock(Jvm.class);
-        Set<Jvm> jvms = new HashSet<>();
-        jvms.add(jvm);
-
-        GroupPersistenceService groupPersistenceService = mock(GroupPersistenceService.class);
-        ApplicationPersistenceService applicationPersistenceService = mock(ApplicationPersistenceService.class);
-        RemoteCommandExecutorImpl remoteCommandExecutorImpl = mock(RemoteCommandExecutorImpl.class);
-        GroupServiceImpl groupServiceImpl = new GroupServiceImpl(groupPersistenceService, applicationPersistenceService, mockResourceService);
-        CommandOutput commandOutput = mock(CommandOutput.class);
-
-        String metaData = "{\"templateName\":\"someTemplateName\",\"contentType\":\"application/binary\",\"deployPath\":" +
-                "\"testLocation\",\"deployFileName\":\"someTemplateName\",\"overwrite\": true,\"unpack\": true,\"entity\":{\"type\":" +
-                "\"GROUPED_WEBSERVERS\",\"group\":\"testGroup\",\"target\":\"testApp\",\"deployToJvms\": false}}";
-        String jvmName = "testJvm";
-        String appName = "testApp";
-        String hostName = "testHost";
-        ExecReturnCode execReturnCode = mock(ExecReturnCode.class);
-
-        when(groupPersistenceService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn(metaData);
-        when(groupPersistenceService.getGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenReturn("");
-        when(applicationPersistenceService.getApplication(anyString())).thenReturn(application);
-        when(application.getName()).thenReturn(appName);
-        when(jvm.getJvmName()).thenReturn(jvmName);
-        when(jvm.getHostName()).thenReturn(hostName);
-        when(group.getName()).thenReturn(groupName);
-        when(application.getParentJvm()).thenReturn(jvm);
-        when(application.getGroup()).thenReturn(group);
-        when(group.getWebServers()).thenReturn(null);
-        when(group.getApplications()).thenReturn(applications);
-        when(group.getJvms()).thenReturn(jvms);
-        when(resourceGroup.getGroups()).thenReturn(groups);
-/*
-        when(remoteCommandExecutorImpl.executeRemoteCommand(eq(jvmName), eq(hostName), eq(ApplicationControlOperation.CHECK_FILE_EXISTS),
-                any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(commandOutput);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(eq(jvmName), eq(hostName), eq(ApplicationControlOperation.BACK_UP),
-                any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(commandOutput);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(eq(jvmName), eq(hostName), eq(ApplicationControlOperation.SCP),
-                any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(commandOutput);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), eq(hostName), eq(ApplicationControlOperation.CREATE_DIRECTORY),
-                any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(commandOutput);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), eq(hostName), eq(ApplicationControlOperation.SCP),
-                any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(commandOutput);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), eq(hostName), eq(ApplicationControlOperation.CHANGE_FILE_MODE),
-                any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString(), anyString())).thenReturn(commandOutput);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), eq(BinaryDistributionControlOperation.UNZIP_BINARY),
-                any(WindowsBinaryDistributionPlatformCommandProvider.class), anyString(), anyString(), anyString(), anyString())).thenReturn(commandOutput);
-        when(commandOutput.getReturnCode()).thenReturn(execReturnCode);
-        when(execReturnCode.wasSuccessful()).thenReturn(true);
-
-*/
-        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
-        when(mockMetaData.getDeployFileName()).thenReturn("group-app-resource.war");
-        when(mockMetaData.getDeployPath()).thenReturn("./group/app/resource/deploy/path");
-        when(mockMetaData.getContentType()).thenReturn(MediaType.APPLICATION_ZIP);
-        Entity mockEntity = mock(Entity.class);
-        when(mockEntity.getTarget()).thenReturn("group-app");
-        when(mockMetaData.getEntity()).thenReturn(mockEntity);
-        when(mockMetaData.isUnpack()).thenReturn(false);
-        when(mockMetaData.isOverwrite()).thenReturn(false);
-        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn(metaData);
-        when(mockResourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(),anyString())).thenReturn(mockMetaData);
-        when(mockResourceService.generateAndDeployFile(any(ResourceIdentifier.class), anyString(), anyString(), anyString())).thenReturn(commandOutput);
-        assertEquals(commandOutput, groupServiceImpl.deployGroupAppTemplate(groupName, fileName, application, jvm));
-    }
-
-    @Test
-    @Ignore
-    // TODO: Fix this.
-    public void testGenerateAndDeployWebServers() throws CommandFailureException, IOException {
-        Set<WebServer> mockWSList = new HashSet<>();
-        Group mockGroup = mock(Group.class);
-        WebServer mockWebServer = mock(WebServer.class);
-        mockWSList.add(mockWebServer);
-        CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
-        List<String> resourceTemplateNames = new ArrayList<>();
-        resourceTemplateNames.add("httpd.conf");
-    when(binaryDistributionControlService.secureCopyFile(anyString(), anyString(),anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
-        when(mockWebServer.getName()).thenReturn("webServerName");
-        when(mockGroup.getId()).thenReturn(new Identifier<Group>(111L));
-        when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_UNREACHABLE);
-        when(mockGroup.getWebServers()).thenReturn(mockWSList);
-        when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
-        when(mockWebServerService.isStarted(any(WebServer.class))).thenReturn(false);
-        when(mockWebServerService.getWebServer(anyString())).thenReturn(mockWebServer);
-        when(mockWebServerService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":./anyPath}");
-        when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
-        when(mockWebServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(successCommandOutput);
-/*        when(mockWebServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(successCommandOutput);
-        when(mockWebServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
-        when(mockWebServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);*/
-        when(mockWebServerService.generateInstallServiceScript(any(WebServer.class))).thenReturn("install_ServiceWS.bat content");
-        when(mockWebServerService.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
-        Response response = groupServiceRest.generateGroupWebservers(mockGroup.getId(), mockAuthUser);
-        assertNotNull(response);
     }
 
     @Test (expected = InternalErrorException.class)

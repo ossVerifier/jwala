@@ -1,6 +1,5 @@
 package com.cerner.jwala.service.configuration.service;
 
-import com.cerner.jwala.commandprocessor.CommandExecutor;
 import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.commandprocessor.jsch.impl.KeyedPooledJschChannelFactory;
@@ -11,10 +10,8 @@ import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.domain.model.state.CurrentState;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
-import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.configuration.AemCommandExecutorConfig;
 import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.persistence.configuration.AemPersistenceServiceConfiguration;
@@ -25,7 +22,6 @@ import com.cerner.jwala.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import com.cerner.jwala.persistence.service.impl.ResourceDaoImpl;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.HistoryService;
-import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.app.ApplicationCommandService;
 import com.cerner.jwala.service.app.ApplicationService;
@@ -94,11 +90,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Configuration
 @EnableAsync
@@ -128,9 +121,6 @@ public class AemServiceConfiguration {
 
     @Autowired
     private AemCommandExecutorConfig aemCommandExecutorConfig;
-
-    @Autowired
-    private CommandExecutor commandExecutor;
 
     @Autowired
     private AemSshConfig aemSshConfig;
@@ -233,23 +223,21 @@ public class AemServiceConfiguration {
 
     @Bean
     public ApplicationService getApplicationService(final JvmPersistenceService jvmPersistenceService, final GroupPersistenceService groupPersistenceService,
-                                                    final HistoryCrudService historyCrudService, final MessagingService messagingService,
                                                     final ResourceService resourceService, final HistoryFacadeService historyFacadeService, BinaryDistributionLockManager lockManager) {
         return new ApplicationServiceImpl(aemPersistenceServiceConfiguration.getApplicationPersistenceService(),
                 jvmPersistenceService, groupPersistenceService,
-                resourceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryDistributionService, historyFacadeService, lockManager);
+                resourceService,
+                binaryDistributionService, historyFacadeService, lockManager);
     }
 
     @Bean(name = "jvmControlService")
-    public JvmControlService getJvmControlService(final HistoryCrudService historyCrudService,
-                                                  final MessagingService messagingService,
+    public JvmControlService getJvmControlService(
                                                   final JvmStateService jvmStateService,
-                                                  final RemoteCommandExecutorService remoteCommandExecutorService,
-                                                  final SshConfiguration sshConfig,
                                                   final HistoryFacadeService historyFacadeService) {
-        return new JvmControlServiceImpl(aemPersistenceServiceConfiguration.getJvmPersistenceService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                jvmStateService, remoteCommandExecutorService,
-                sshConfig, historyFacadeService);
+        return new JvmControlServiceImpl(
+                aemPersistenceServiceConfiguration.getJvmPersistenceService(),
+                jvmStateService,
+                historyFacadeService);
     }
 
     @Bean(name = "groupControlService")

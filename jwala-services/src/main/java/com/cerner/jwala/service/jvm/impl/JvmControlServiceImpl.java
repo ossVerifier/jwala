@@ -5,7 +5,6 @@ import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
-import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
@@ -14,7 +13,6 @@ import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
-import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.command.common.Command;
 import com.cerner.jwala.control.command.common.ShellCommandFactory;
 import com.cerner.jwala.control.jvm.command.JvmCommandFactory;
@@ -23,7 +21,6 @@ import com.cerner.jwala.persistence.jpa.domain.JpaHistory;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.HistoryFacadeService;
-import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmStateService;
@@ -57,10 +54,7 @@ public class JvmControlServiceImpl implements JvmControlService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmControlServiceImpl.class);
     private static final String FORCED_STOPPED = "FORCED STOPPED";
     private static final String JVM = "JVM ";
-    private final RemoteCommandExecutor<JvmControlOperation> remoteCommandExecutor;
     private final HistoryFacadeService historyFacadeService;
-    private final RemoteCommandExecutorService remoteCommandExecutorService;
-    private final SshConfiguration sshConfig;
     private final JvmStateService jvmStateService;
 
     private static final int THREAD_SLEEP_DURATION = 1000;
@@ -69,16 +63,10 @@ public class JvmControlServiceImpl implements JvmControlService {
     private static final String MSG_SERVICE_ALREADY_STOPPED = "Service already stopped";
 
     public JvmControlServiceImpl(final JvmPersistenceService jvmPersistenceService,
-                                 final RemoteCommandExecutor<JvmControlOperation> theExecutor,
                                  final JvmStateService jvmStateService,
-                                 final RemoteCommandExecutorService remoteCommandExecutorService,
-                                 final SshConfiguration sshConfig,
                                  final HistoryFacadeService historyFacadeService) {
         this.jvmPersistenceService = jvmPersistenceService;
-        remoteCommandExecutor = theExecutor;
         this.jvmStateService = jvmStateService;
-        this.remoteCommandExecutorService = remoteCommandExecutorService;
-        this.sshConfig = sshConfig;
         this.historyFacadeService = historyFacadeService;
     }
 
