@@ -3,7 +3,7 @@ package com.cerner.jwala.control.command;
 import com.cerner.jwala.commandprocessor.CommandProcessor;
 import com.cerner.jwala.commandprocessor.CommandProcessorBuilder;
 import com.cerner.jwala.commandprocessor.impl.jsch.JschCommandProcessorImpl;
-import com.cerner.jwala.commandprocessor.impl.jsch.JschScpCommandProcessorImpl;
+import com.cerner.jwala.commandprocessor.impl.jsch.JschScpCmdProcessorImpl;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exec.ExecCommand;
@@ -63,7 +63,7 @@ public class RemoteCommandProcessorBuilder implements CommandProcessorBuilder {
     public CommandProcessor build() throws CommandFailureException {
         final RemoteExecCommand remoteCommand = new RemoteExecCommand(getRemoteSystemConnection(), command);
         if (command.getCommandFragments().get(0).contains(AemControl.Properties.SCP_SCRIPT_NAME.getValue())) {
-            return new JschScpCommandProcessorImpl(jsch, remoteCommand);
+            return new JschScpCmdProcessorImpl(jsch, remoteCommand);
         } else {
             return new JschCommandProcessorImpl(remoteCommand, jschService);
         }
