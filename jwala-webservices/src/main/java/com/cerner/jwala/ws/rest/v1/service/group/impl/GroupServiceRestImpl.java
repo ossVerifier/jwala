@@ -40,10 +40,8 @@ import com.cerner.jwala.ws.rest.v1.service.group.GroupServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.group.MembershipDetails;
 import com.cerner.jwala.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JsonControlJvm;
-import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
-import org.apache.cxf.common.util.CollectionUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -335,17 +333,16 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response generateAndDeployGroupWebServersFile(final String groupName, final String resourceFileName, final AuthenticatedUser aUser) {
         LOGGER.info("generate and deploy the web server file {} to group {} by user", resourceFileName, groupName, aUser.getUser().getId());
-        //TODO: why is group getting populated twice
-        Group group = groupService.getGroup(groupName);
-        group = groupService.getGroupWithWebServers(group.getId());
+        final Group group = groupService.getGroup(groupName);
+        final Group groupWithWebServers = groupService.getGroupWithWebServers(group.getId());
         final String httpdTemplateContent = groupService.getGroupWebServerResourceTemplate(groupName, resourceFileName, false, resourceService.generateResourceGroup());
         final String resourceMetaData = groupService.getGroupWebServerResourceTemplateMetaData(groupName, resourceFileName);
-        final Set<WebServer> webServers = group.getWebServers();
+        final Set<WebServer> webServers = groupWithWebServers.getWebServers();
         if (null != webServers && !webServers.isEmpty()) {
             for (WebServer webServer : webServers) {
                 if (webServerService.isStarted(webServer)) {
                     LOGGER.info("Failed to deploy {} for group {}: not all web servers were stopped - {} was started",
-                            resourceFileName, group.getName(), webServer.getName());
+                            resourceFileName, groupWithWebServers.getName(), webServer.getName());
                     throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE,
                             "All web servers in the group must be stopped before continuing. Operation stopped for web server "
                                     + webServer.getName());
