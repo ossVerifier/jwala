@@ -67,9 +67,11 @@ public class BalancerManagerXmlParser {
         LOGGER.info("Entering getJvmWorkerByName for jvmName: " + jvmName + " for balancerName: " + balancerName);
         Map<String, String> workers = new HashMap<>();
         for (Manager.Balancer balancers : manager.getBalancers()) {
-            for (Manager.Balancer.Worker worker : balancers.getWorkers()) {
-                if (worker.getRoute().equalsIgnoreCase(jvmName)) {
-                    workers.put(worker.getName(), worker.getRoute());
+            if (balancers.getName().equalsIgnoreCase("balancer://" + balancerName)){
+                for (Manager.Balancer.Worker worker : balancers.getWorkers()) {
+                    if (worker.getRoute().equalsIgnoreCase(jvmName)) {
+                        workers.put(worker.getName(), worker.getRoute());
+                    }
                 }
             }
         }

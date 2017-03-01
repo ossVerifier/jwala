@@ -735,12 +735,7 @@ public class BalancemanagerServiceImplTest {
         when(mockResponseHtml.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager"))).thenReturn(mockResponseHtml);
         when(mockResponseHtml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtmlMultiApp().getBytes()));
-
-        //ClientHttpResponse mockResponseHtml2 = mock(ClientHttpResponse.class);
-        //when(mockResponseHtml2.getStatusCode()).thenReturn(HttpStatus.OK);
-        //when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager"))).thenReturn(mockResponseHtml2);
-        //when(mockResponseHtml2.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
-
+        
         ClientHttpResponse mockResponseXmlProd = mock(ClientHttpResponse.class);
         when(mockResponseXmlProd.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0-prod&xml=1&nonce=caa8cc9f-7bcc-504b-a0f8-88329d746091"))).thenReturn(mockResponseXmlProd);
@@ -789,12 +784,7 @@ public class BalancemanagerServiceImplTest {
             assertEquals(1, groupDrainStatus.getwebServers().size());
             for (BalancerManagerState.GroupDrainStatus.WebServerDrainStatus webServerDrainStatus : groupDrainStatus.getwebServers()) {
                 System.out.println("groupDrainStatus.getwebServers().toString(): " + groupDrainStatus.getwebServers().toString());
-                assertEquals(4, webServerDrainStatus.getjvms().size());
-                //for(BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus jvmDrainStatus : webServerDrainStatus.getjvms()){
-                //    assertEquals("JvmDrainStatus{jvmName='jvmname', ignoreError='Off', drainingMode='Off', disabled='Off', hotStandby='Off', appName='HEALTH-CHECK-4.0-PROD', workerUrl='https://win-9npduhc7ccp:9101/hct'}",
-                //            jvmDrainStatus.toString());
-                //}
-
+                assertEquals(2, webServerDrainStatus.getjvms().size());
             }
         }
     }

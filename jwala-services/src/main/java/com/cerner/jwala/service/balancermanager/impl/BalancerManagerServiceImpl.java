@@ -294,10 +294,9 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
             balancerManagerResponseXml = getBalancerManagerResponse(balancerManagerXmlUrl);
             Manager manager = balancerManagerXmlParser.getWorkerXml(balancerManagerResponseXml);
             Map<String, String> workers;
-            if (jvmName == "") {
+            if ("".equals(jvmName)) {
                 workers = balancerManagerXmlParser.getWorkers(manager, balancerName);
             } else {
-                //workers = balancerManagerXmlParser.getJvmWorker(manager, balancerName, findJvmUrl(jvmName));
                 workers = balancerManagerXmlParser.getJvmWorkerByName(manager, balancerName, jvmName);
             }
             if (post) {
