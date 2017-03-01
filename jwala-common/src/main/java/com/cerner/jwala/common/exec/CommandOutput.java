@@ -102,6 +102,11 @@ public class CommandOutput implements Serializable {
         final String outputStartStr = "***heapdump-start***";
         int startIndex = standardOutput.lastIndexOf(outputStartStr);
         int endIndex = standardOutput.lastIndexOf("***heapdump-end***");
-        standardOutput = standardOutput.substring(startIndex + outputStartStr.length(), endIndex);
+        if (endIndex > -1) {
+            standardOutput = standardOutput.substring(startIndex + outputStartStr.length(), endIndex);
+        } else {
+            // for cases when heapdump-end is missing
+            standardOutput = standardOutput.substring(startIndex + outputStartStr.length(), standardOutput.length());
+        }
     }
 }

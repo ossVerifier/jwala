@@ -1,14 +1,12 @@
 package com.cerner.jwala.service.binarydistribution.impl;
 
 import com.cerner.jwala.commandprocessor.impl.jsch.JschScpCmdProcessorImpl;
-import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exec.*;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.properties.PropertyKeys;
-import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
@@ -35,9 +33,6 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
 
     @Autowired
     private RemoteCommandExecutorService remoteCommandExecutorService;
-
-    @Autowired
-    private RemoteCommandExecutor<BinaryDistributionControlOperation> remoteCommandExecutor;
 
     static String CREATE_DIR="if [ ! -e \"%s\" ]; then mkdir -p %s; fi;";
     static String REMOVE="rm";

@@ -1,8 +1,6 @@
 package com.cerner.jwala.service.app.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
-import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
@@ -19,8 +17,6 @@ import com.cerner.jwala.common.request.app.CreateApplicationRequest;
 import com.cerner.jwala.common.request.app.UpdateApplicationRequest;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
 import com.cerner.jwala.control.AemControl;
-import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
-import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.type.EventType;
@@ -49,16 +45,12 @@ import org.springframework.util.FileCopyUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
 
 public class ApplicationServiceImpl implements ApplicationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
-
-    private static final String UNZIP_EXE = "unzip.exe";
 
     private final ExecutorService executorService;
 
@@ -70,13 +62,11 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Autowired
     private BinaryDistributionLockManager binaryDistributionLockManager;
+
     @Autowired
     BinaryDistributionControlService distributionControlService;
 
     private final ResourceService resourceService;
-
-
-    private final RemoteCommandExecutorImpl remoteCommandExecutor;
 
     private final BinaryDistributionService binaryDistributionService;
 
@@ -89,7 +79,6 @@ public class ApplicationServiceImpl implements ApplicationService {
                                   final JvmPersistenceService jvmPersistenceService,
                                   final GroupPersistenceService groupPersistenceService,
                                   final ResourceService resourceService,
-                                  final RemoteCommandExecutorImpl remoteCommandExecutor,
                                   final BinaryDistributionService binaryDistributionService,
                                   final HistoryFacadeService historyFacadeService,
                                   final BinaryDistributionLockManager binaryDistributionLockManager) {
@@ -98,7 +87,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         this.groupPersistenceService = groupPersistenceService;
         this.historyFacadeService = historyFacadeService;
         this.resourceService = resourceService;
-        this.remoteCommandExecutor = remoteCommandExecutor;
         this.binaryDistributionService = binaryDistributionService;
         this.binaryDistributionLockManager = binaryDistributionLockManager;
         executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));

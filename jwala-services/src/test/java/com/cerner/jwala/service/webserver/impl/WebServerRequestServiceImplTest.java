@@ -1,26 +1,21 @@
 package com.cerner.jwala.service.webserver.impl;
 
-import com.cerner.jwala.commandprocessor.CommandExecutor;
-import com.cerner.jwala.commandprocessor.CommandProcessorBuilder;
 import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
-import com.cerner.jwala.common.exec.CommandOutput;
-import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
+import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
-import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
-
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -44,10 +39,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
@@ -61,9 +54,6 @@ public class WebServerRequestServiceImplTest {
 
     @Mock
     private WebServerService webServerService;
-
-    @Mock
-    private CommandExecutor executor;
 
     @Mock
     private JschBuilder jschBuilder;
@@ -111,10 +101,6 @@ public class WebServerRequestServiceImplTest {
         when(webServerService.getWebServer(eq(id))).thenReturn(aWebServer);
         when(jschBuilder.build()).thenReturn(jSch);
 
-        when(executor.execute(any(CommandProcessorBuilder.class)))
-                .thenReturn(new CommandOutput(new ExecReturnCode(1), "The content of httpd.conf", ""));
-
-
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class)))
                 .thenReturn(new RemoteCommandReturnInfo(0, "The content of httpd.conf", null));
 
@@ -122,12 +108,6 @@ public class WebServerRequestServiceImplTest {
         impl = new WebServerCommandServiceImpl(webServerService, sshConfig,
                 mockRemoteCommandExecutorService);
     }
-
-/*    @Test
-    public void testGetHttpdConf() throws CommandFailureException {
-        final CommandOutput execData = impl.getHttpdConf(id);
-        assertEquals("The content of httpd.conf", execData.getStandardOutput());
-    }*/
 
     @Test
     @Ignore

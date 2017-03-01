@@ -1,6 +1,5 @@
 package com.cerner.jwala.service.binarydistribution;
 
-import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
@@ -9,7 +8,6 @@ import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.HistoryFacadeService;
@@ -281,9 +279,6 @@ public class BinaryDistributionServiceImplTest {
     static class Config {
 
         @Mock
-        static RemoteCommandExecutor<BinaryDistributionControlOperation> mockRemoteCommandExecutor;
-
-        @Mock
         static BinaryDistributionControlService mockBinaryDistributionControlService;
 
         @Mock
@@ -304,11 +299,6 @@ public class BinaryDistributionServiceImplTest {
 
         public Config() {
             initMocks(this);
-        }
-
-        @Bean
-        public RemoteCommandExecutor<BinaryDistributionControlOperation> getMockRemoteCommandExecutor() {
-            return mockRemoteCommandExecutor;
         }
 
         @Bean
@@ -334,7 +324,7 @@ public class BinaryDistributionServiceImplTest {
         @Bean
         @Scope("prototype")
         public BinaryDistributionService getBinaryDistributionService() {
-            reset(mockRemoteCommandExecutor, mockBinaryDistributionControlService, mockBinaryDistributionLockManager,
+            reset(mockBinaryDistributionControlService, mockBinaryDistributionLockManager,
                     historyFacadeService, mockAemSshConfig, mockSshConfiguration, mockRemoteCommandExecutorService);
             return new BinaryDistributionServiceImpl();
         }
