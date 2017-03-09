@@ -58,7 +58,7 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
         final RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
 
         return new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode), remoteCommandReturnInfo.standardOuput,
-                remoteCommandReturnInfo.errorOupout);
+                remoteCommandReturnInfo.errorOutput);
     }
 
     private ExecCommand createExecCommand(final WebServer webServer, final WebServerControlOperation wsControlOp, final String... params) {

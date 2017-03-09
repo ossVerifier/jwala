@@ -4,12 +4,14 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.state.CurrentState;
 import com.cerner.jwala.common.domain.model.state.StateType;
+import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,9 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Future;
 
 /**
@@ -38,6 +43,10 @@ public class JvmStateResolverWorker {
     private static final String NOT_RECEIVING_JVM_STATE_ERR_MSG = "The JVM state listener is not receiving any state. " +
             "Possible causes are messaging settings are wrong, messaging server is down, JVM is not functioning correctly " +
             "(configuration error(s) etc) even though the service is running.";
+    private static final String VERIFY_JVM_SERVICE_STOPPED_RETRIES = "verify.jvm.service.stopped.retries";
+    private static final String VERIFY_JVM_SERVICE_STOPPED_RETRY_INTERVAL = "verify.jvm.service.stopped.retry.interval";
+    private static final String VERIFY_JVM_SERVICE_STOPPED_RETRIES_DEFAULT_VALUE = "3";
+    private static final String VERIFY_JVM_SERVICE_STOPPED_RETRY_INTERVAL_DEFAULT_VALUE = "2000";
 
     private final ClientFactoryHelper clientFactoryHelper;
 
@@ -99,29 +108,44 @@ public class JvmStateResolverWorker {
      * @return {@link CurrentState}
      */
     private CurrentState<Jvm, JvmState> verifyIfJvmWinServiceIsStoppedAndDoAnUpdate(final Jvm jvm, final JvmStateService jvmStateService) {
+        String errMsg;
+        RemoteCommandReturnInfo remoteCommandReturnInfo;
+        final int retries = Integer.parseInt(ApplicationProperties.get(VERIFY_JVM_SERVICE_STOPPED_RETRIES,
+                                                                       VERIFY_JVM_SERVICE_STOPPED_RETRIES_DEFAULT_VALUE));
+        final long interval = Long.parseLong(ApplicationProperties.get(VERIFY_JVM_SERVICE_STOPPED_RETRY_INTERVAL,
+                                                                       VERIFY_JVM_SERVICE_STOPPED_RETRY_INTERVAL_DEFAULT_VALUE));
         try {
-            final RemoteCommandReturnInfo remoteCommandReturnInfo = jvmStateService.getServiceStatus(jvm);
-            LOGGER.debug("RemoteCommandReturnInfo = {}", remoteCommandReturnInfo);
-            if (remoteCommandReturnInfo.retCode == 0 && remoteCommandReturnInfo.standardOuput.contains(STOPPED)) {
-                jvmStateService.updateNotInMemOrStaleState(jvm, JvmState.JVM_STOPPED, StringUtils.EMPTY);
-                return new CurrentState<>(jvm.getId(), JvmState.JVM_STOPPED, DateTime.now(), StateType.JVM);
+            final List<RemoteCommandReturnInfo> returnInfoList = new ArrayList<>();
+            for (int i = 0; i < retries; i++) {
+                remoteCommandReturnInfo = jvmStateService.getServiceStatus(jvm);
+                LOGGER.debug("RemoteCommandReturnInfo = {}", remoteCommandReturnInfo);
+                if (remoteCommandReturnInfo.retCode == 0 && remoteCommandReturnInfo.standardOuput.contains(STOPPED)) {
+                    jvmStateService.updateNotInMemOrStaleState(jvm, JvmState.JVM_STOPPED, StringUtils.EMPTY);
+                    return new CurrentState<>(jvm.getId(), JvmState.JVM_STOPPED, DateTime.now(), StateType.JVM);
+                }
+
+                LOGGER.error("JVM {} is stopped verification failed! Service query result = {}", jvm, remoteCommandReturnInfo);
+                returnInfoList.add(remoteCommandReturnInfo);
+
+                try {
+                    Thread.sleep(interval);
+                } catch (final InterruptedException e) {
+                    LOGGER.error("Sleep interrupted!", e);
+                }
             }
-            LOGGER.error("Did not get a '0' return code and-or find the expected keyword \"STOPPED\"! RemoteCommandReturnInfo = {}",
-                    remoteCommandReturnInfo);
+
+            errMsg = MessageFormat.format("{0} Service status inquiry for JVM {1} = {2}", NOT_RECEIVING_JVM_STATE_ERR_MSG,
+                    jvm, returnInfoList);
+
         } catch (final RemoteCommandExecutorServiceException rcese) {
-            LOGGER.error("State verification of {}@{} via SSH failed! Please note that this has nothing to do with the " +
-                    "JVM not receiving any state. This is just a redundancy check after an unsuccessful URL ping. " +
-                    "Please check the next error message (JVM state listener is not receiving any state...) for possible " +
-                    "causes.", jvm.getJvmName(), jvm.getHostName(), rcese);
+            errMsg = MessageFormat.format("{0} RemoteCommandExecutorServiceException thrown = {1}", NOT_RECEIVING_JVM_STATE_ERR_MSG,
+                                           ExceptionUtils.getStackTrace(rcese));
+            LOGGER.error(errMsg, rcese);
         }
 
-        LOGGER.error(NOT_RECEIVING_JVM_STATE_ERR_MSG);
-
-        // The state should be unknown if we can't verify the JVM's state.
-        // In addition, if we just leave the state as is and just report an error, if that state is in started,
-        // the state resolver (reverse heartbeat) will always end up trying to ping it which will eat CPU resources.
+        // The state should be unknown if we can't really verify the JVM's state.
         final JvmState state = JvmState.JVM_UNKNOWN;
-        jvmStateService.updateNotInMemOrStaleState(jvm, state, NOT_RECEIVING_JVM_STATE_ERR_MSG);
+        jvmStateService.updateNotInMemOrStaleState(jvm, state, errMsg);
         return new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM);
     }
 

@@ -110,7 +110,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
 
             CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
-                    remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
+                    remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOutput);
 
             final String standardOutput = commandOutput.getStandardOutput();
             final ExecReturnCode returnCode = commandOutput.getReturnCode();

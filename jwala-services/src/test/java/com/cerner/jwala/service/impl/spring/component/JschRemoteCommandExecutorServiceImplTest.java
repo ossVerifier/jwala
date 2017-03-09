@@ -104,7 +104,7 @@ public class JschRemoteCommandExecutorServiceImplTest {
         final RemoteCommandReturnInfo returnInfo = this.jschRemoteCommandExecutorService.executeCommand(mockRemoteExecCommand);
 
         assertEquals("some output", returnInfo.standardOuput);
-        assertEquals("some err output", returnInfo.errorOupout);
+        assertEquals("some err output", returnInfo.errorOutput);
     }
 
     @Test
@@ -128,7 +128,7 @@ public class JschRemoteCommandExecutorServiceImplTest {
         final RemoteCommandReturnInfo returnInfo = this.jschRemoteCommandExecutorService.executeCommand(mockRemoteExecCommand);
 
         assertEquals("some output", returnInfo.standardOuput);
-        assertEquals("some err output", returnInfo.errorOupout);
+        assertEquals("some err output", returnInfo.errorOutput);
     }
 
     @Test (expected = InternalErrorException.class)

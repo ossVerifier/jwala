@@ -104,7 +104,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
 
             CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
-                    remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
+                    remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOutput);
 
             final String standardOutput = commandOutput.getStandardOutput();
             if (StringUtils.isNotEmpty(standardOutput) && (START.equals(controlOperation) ||

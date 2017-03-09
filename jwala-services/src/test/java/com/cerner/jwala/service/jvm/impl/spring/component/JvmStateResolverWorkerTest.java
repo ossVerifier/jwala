@@ -4,15 +4,17 @@ import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.state.CurrentState;
+import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.jvm.JvmStateService;
-import com.cerner.jwala.service.jvm.impl.spring.component.JvmStateResolverWorker;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
-
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.internal.verification.Times;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 
@@ -25,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -47,6 +50,18 @@ public class JvmStateResolverWorkerTest {
 
     @Mock
     private ClientHttpResponse mockResponse;
+
+    @BeforeClass
+    public static void init() {
+        // Prevents Failed to load properties file null/vars.properties
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH,
+                JvmStateResolverWorkerTest.class.getClassLoader().getResource("vars.properties").getPath().replace("vars.properties", ""));
+    }
+
+    @AfterClass
+    public static void destroy() {
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+    }
 
     @Before
     public void setup() {
@@ -93,6 +108,7 @@ public class JvmStateResolverWorkerTest {
         when(mockJvmStateService.getServiceStatus(eq(mockJvm))).thenReturn(remoteCommandReturnInfo);
         Future<CurrentState<Jvm, JvmState>> future = jvmStateResolverWorker.pingAndUpdateJvmState(mockJvm, mockJvmStateService);
         assertEquals(JvmState.JVM_UNKNOWN, future.get().getState());
+        verify(mockJvmStateService, new Times(3)).getServiceStatus(mockJvm);
     }
 
     @Test
@@ -103,6 +119,7 @@ public class JvmStateResolverWorkerTest {
         when(mockJvmStateService.getServiceStatus(eq(mockJvm))).thenReturn(remoteCommandReturnInfo);
         Future<CurrentState<Jvm, JvmState>> future = jvmStateResolverWorker.pingAndUpdateJvmState(mockJvm, mockJvmStateService);
         assertEquals(JvmState.JVM_UNKNOWN, future.get().getState());
+        verify(mockJvmStateService, new Times(3)).getServiceStatus(mockJvm);
     }
 
     @Test
