@@ -41,11 +41,12 @@ public class JvmStateResolverWorker {
     private static final String STOPPED = "STOPPED";
     private static final String NOT_RECEIVING_JVM_STATE_ERR_MSG = "The JVM state listener is not receiving any state. " +
             "Possible causes are messaging settings are wrong, messaging server is down, JVM is not functioning correctly " +
-            "(configuration error(s) etc) even though the service is running.";
+            "(configuration error(s) etc) even though the service is running. Please see logs for details.";
     private static final String VERIFY_JVM_SERVICE_STOPPED_RETRIES = "verify.jvm.service.stopped.retries";
     private static final String VERIFY_JVM_SERVICE_STOPPED_RETRY_INTERVAL = "verify.jvm.service.stopped.retry.interval";
     private static final String VERIFY_JVM_SERVICE_STOPPED_RETRIES_DEFAULT_VALUE = "3";
     private static final String VERIFY_JVM_SERVICE_STOPPED_RETRY_INTERVAL_DEFAULT_VALUE = "2000";
+    private static final String RUNNING = "RUNNING";
 
     private final ClientFactoryHelper clientFactoryHelper;
 
@@ -124,7 +125,14 @@ public class JvmStateResolverWorker {
                     return new CurrentState<>(jvm.getId(), JvmState.JVM_STOPPED, DateTime.now(), StateType.JVM);
                 }
 
-                LOGGER.error("JVM {} is stopped verification failed! Service query result = {}", jvm, remoteCommandReturnInfo);
+                if (remoteCommandReturnInfo.standardOuput.contains(RUNNING)) {
+                    LOGGER.error("Can't ping JVM {} and yet its service is running. We can't be certain what state it's in hence the state is UNKNOWN! Service query result = {}", jvm.getJvmName(),
+                            remoteCommandReturnInfo);
+                } else {
+                    LOGGER.error("Failed to verify the state of JVM {}! Service query result = {}", jvm.getJvmName(),
+                            remoteCommandReturnInfo);
+                }
+
                 returnInfoList.add(remoteCommandReturnInfo);
 
                 try {
@@ -135,7 +143,7 @@ public class JvmStateResolverWorker {
             }
 
             errMsg = MessageFormat.format("{0} Service status inquiry for JVM {1} = {2}", NOT_RECEIVING_JVM_STATE_ERR_MSG,
-                    jvm, returnInfoList);
+                    jvm.getJvmName(), returnInfoList.get(returnInfoList.size() - 1)); // just give the client the last retry result since all the results are in the logs anyways
 
         } catch (final RemoteCommandExecutorServiceException rcese) {
             errMsg = MessageFormat.format("{0} RemoteCommandExecutorServiceException thrown = {1}", NOT_RECEIVING_JVM_STATE_ERR_MSG,
