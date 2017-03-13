@@ -44,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 public class JvmStateServiceImpl implements JvmStateService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmStateServiceImpl.class);
+    private static final int GET_SVC_STS_TIMEOUT = 60000;
 
     private final JvmPersistenceService jvmPersistenceService;
     private final InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> inMemoryStateManagerService;
@@ -162,7 +163,7 @@ public class JvmStateServiceImpl implements JvmStateService {
         final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
                 sshConfig.getPassword(), jvm.getHostName(), sshConfig.getPort()) , new ExecCommand("sc query '" +
                 jvm.getJvmName() + "'"));
-        return remoteCommandExecutorService.executeCommand(remoteExecCommand);
+        return remoteCommandExecutorService.executeCommand(remoteExecCommand, GET_SVC_STS_TIMEOUT);
     }
 
     @Override

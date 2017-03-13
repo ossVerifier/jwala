@@ -18,7 +18,6 @@ import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.ssl.hc.HttpClientRequestFactory;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
-import com.cerner.jwala.service.webserver.impl.WebServerCommandServiceImpl;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -116,7 +115,7 @@ public class WebServerRequestServiceImplTest {
                 .thenReturn(new CommandOutput(new ExecReturnCode(1), "The content of httpd.conf", ""));
 
 
-        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class)))
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class), anyLong()))
                 .thenReturn(new RemoteCommandReturnInfo(0, "The content of httpd.conf", null));
 
         assertNotNull(factoryHelper);

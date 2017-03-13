@@ -13,8 +13,6 @@ import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.jvm.JvmStateService;
-import com.cerner.jwala.service.jvm.impl.spring.component.JvmStateResolverWorker;
-import com.cerner.jwala.service.jvm.impl.spring.component.JvmStateServiceImpl;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
 
 import org.apache.commons.lang.StringUtils;
@@ -27,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -104,7 +103,7 @@ public class JvmStateServiceImplTest {
     public void testGetServiceStatus() {
         final Jvm jvm = new Jvm(new Identifier<Jvm>(1L), "some-jvm", new HashSet<Group>());
         jvmStateService.getServiceStatus(jvm);
-        verify(mockRemoteCommandExecutorService).executeCommand(any(RemoteExecCommand.class));
+        verify(mockRemoteCommandExecutorService).executeCommand(any(RemoteExecCommand.class), anyLong());
     }
 
     @Test

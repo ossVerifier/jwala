@@ -11,7 +11,9 @@ import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.jcraft.jsch.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -34,6 +36,7 @@ public class JschRemoteCommandExecutorServiceImplTest {
 
     private static final String SOME_OUTPUT = "some output";
     private static final String SOME_ERR_OUTPUT = "some err output";
+    private static final String PROPERTIES_ROOT_PATH = "PROPERTIES_ROOT_PATH";
 
     private JschRemoteCommandExecutorServiceImpl jschRemoteCommandExecutorService;
 
@@ -60,6 +63,17 @@ public class JschRemoteCommandExecutorServiceImplTest {
 
     final RemoteSystemConnection remoteSystemConnection = new RemoteSystemConnection("theUser", "thePassword", "theHost", 999);
 
+    @BeforeClass
+    public static void init() {
+        System.setProperty(PROPERTIES_ROOT_PATH, JschRemoteCommandExecutorServiceImplTest.class.getClassLoader()
+                .getResource("vars.properties").getPath().replace("/vars.properties", ""));
+    }
+
+    @AfterClass
+    public static void destroy() {
+        System.clearProperty(PROPERTIES_ROOT_PATH);
+    }
+
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
@@ -80,7 +94,7 @@ public class JschRemoteCommandExecutorServiceImplTest {
         when(mockExecCommand.toCommandString()).thenReturn("some-command.sh");
         when(mockExecCommand.getRunInShell()).thenReturn(true);
         when(mockRemoteExecCommand.getCommand()).thenReturn(mockExecCommand);
-        final RemoteCommandReturnInfo remoteCommandReturnInfo = jschRemoteCommandExecutorService.executeCommand(mockRemoteExecCommand);
+        final RemoteCommandReturnInfo remoteCommandReturnInfo = jschRemoteCommandExecutorService.executeCommand(mockRemoteExecCommand, 500);
         assertEquals(0, remoteCommandReturnInfo.retCode);
     }
 
@@ -101,7 +115,7 @@ public class JschRemoteCommandExecutorServiceImplTest {
         when(mockChannelExec.getExitStatus()).thenReturn(1);
         when(mockRemoteExecCommand.getCommand()).thenReturn(mockExecCommand);
         when(mockExecCommand.toCommandString()).thenReturn("sc query something");
-        final RemoteCommandReturnInfo returnInfo = this.jschRemoteCommandExecutorService.executeCommand(mockRemoteExecCommand);
+        final RemoteCommandReturnInfo returnInfo = this.jschRemoteCommandExecutorService.executeCommand(mockRemoteExecCommand, 500);
 
         assertEquals("some output", returnInfo.standardOuput);
         assertEquals("some err output", returnInfo.errorOutput);
@@ -125,7 +139,7 @@ public class JschRemoteCommandExecutorServiceImplTest {
         when(mockChannelExec.getExitStatus()).thenReturn(1);
         when(mockRemoteExecCommand.getCommand()).thenReturn(mockExecCommand);
         when(mockExecCommand.toCommandString()).thenReturn("sc query something");
-        final RemoteCommandReturnInfo returnInfo = this.jschRemoteCommandExecutorService.executeCommand(mockRemoteExecCommand);
+        final RemoteCommandReturnInfo returnInfo = this.jschRemoteCommandExecutorService.executeCommand(mockRemoteExecCommand, 500);
 
         assertEquals("some output", returnInfo.standardOuput);
         assertEquals("some err output", returnInfo.errorOutput);

@@ -42,6 +42,8 @@ import java.util.Date;
 
 public class JvmControlServiceImpl implements JvmControlService {
 
+    private static final int CTRL_JVM_TIMEOUT = 60000;
+
     @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
     protected String topicServerStates;
 
@@ -107,7 +109,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
                     sshConfig.getPassword(), jvm.getHostName(), sshConfig.getPort()), execCommand);
 
-            RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
+            RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand, CTRL_JVM_TIMEOUT);
 
             CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                     remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOutput);

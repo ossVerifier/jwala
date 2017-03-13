@@ -43,6 +43,7 @@ import static com.cerner.jwala.common.domain.model.webserver.WebServerControlOpe
 
 public class WebServerControlServiceImpl implements WebServerControlService {
 
+    private static final int CTRL_WS_TIMEOUT = 60000;
     @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
     protected String topicServerStates;
 
@@ -101,7 +102,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
                     sshConfig.getPassword(), webServer.getHost(), sshConfig.getPort()), execCommand);
 
-            RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
+            RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand, CTRL_WS_TIMEOUT);
 
             CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                     remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOutput);

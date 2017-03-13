@@ -97,11 +97,11 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         when(controlWebServerRequest.getWebServerId()).thenReturn(webServerId);
         when(controlWebServerRequest.getControlOperation()).thenReturn(controlOperation);
         when(mockClientHttpResponse.getStatusCode()).thenReturn(HttpStatus.REQUEST_TIMEOUT);
-        when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(0, "Start succeeded", ""));
+        when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class), anyLong())).thenReturn(new RemoteCommandReturnInfo(0, "Start succeeded", ""));
 
         webServerControlService.controlWebServer(controlWebServerRequest, user);
 
-        verify(remoteCommandExecutorService, times(1)).executeCommand(any(RemoteExecCommand.class));
+        verify(remoteCommandExecutorService, times(1)).executeCommand(any(RemoteExecCommand.class), anyLong());
     }
 
     @Test
@@ -109,30 +109,30 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         final Identifier<WebServer> webServerIdentifier = new Identifier<>(12L);
         WebServer webserver = new WebServer(webServerIdentifier, new HashSet<Group>(), "testWebServer");
         when(webServerService.getWebServer(any(Identifier.class))).thenReturn(webserver);
-        when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(0, "SUCCEEDED", ""));
+        when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class), anyLong())).thenReturn(new RemoteCommandReturnInfo(0, "SUCCEEDED", ""));
         ControlWebServerRequest controlWSRequest = new ControlWebServerRequest(webServerIdentifier, WebServerControlOperation.START);
         webServerControlService.controlWebServer(controlWSRequest, user);
         verify(mockMessagingService).send(any(CurrentState.class));
 
-        when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_PROCESS_KILLED, "", "PROCESS KILLED"));
+        when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class), anyLong())).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_PROCESS_KILLED, "", "PROCESS KILLED"));
         CommandOutput returnOutput = webServerControlService.controlWebServer(controlWSRequest, user);
         assertEquals("FORCED STOPPED", returnOutput.getStandardOutput());
         verify(webServerService).updateState(any(Identifier.class), eq(WebServerReachableState.FORCED_STOPPED), eq(""));
         verify(mockMessagingService, times(2)).send(any(CurrentState.class));
         reset(mockMessagingService);
 
-        when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS, "", "ABNORMAL SUCCESS"));
+        when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class), anyLong())).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS, "", "ABNORMAL SUCCESS"));
         webServerControlService.controlWebServer(controlWSRequest, user);
         verify(mockMessagingService, times(2)).send(any(CurrentState.class));
         reset(mockMessagingService);
 
-        when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(1, "", "ABNORMAL SUCCESS"));
+        when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class), anyLong())).thenReturn(new RemoteCommandReturnInfo(1, "", "ABNORMAL SUCCESS"));
         webServerControlService.controlWebServer(controlWSRequest, user);
         verify(mockHistoryService, times(2)).createHistory(anyString(), anyList(), anyString(), eq(EventType.APPLICATION_EVENT), anyString());
         verify(mockMessagingService, times(2)).send(any(CurrentState.class));
         reset(mockMessagingService);
 
-        when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(0, "Delete service succeeded", ""));
+        when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class), anyLong())).thenReturn(new RemoteCommandReturnInfo(0, "Delete service succeeded", ""));
         webServerControlService.controlWebServer(new ControlWebServerRequest(webServerIdentifier, WebServerControlOperation.DELETE_SERVICE), user);
         verify(mockMessagingService).send(any(CurrentState.class));
     }

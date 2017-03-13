@@ -7,6 +7,7 @@ import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
+import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.exception.ExitCodeNotAvailableException;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
@@ -40,6 +41,7 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
     private static final int REMOTE_OUTPUT_STREAM_MAX_WAIT_TIME = 180000;
     private static final String EXIT_CODE_START_MARKER = "EXIT_CODE";
     private static final String EXIT_CODE_END_MARKER = "***";
+    private static final int BYTE_CHUNK_SIZE = 1024;
 
     private final JSch jSch;
     private final GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
@@ -52,11 +54,11 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
     }
 
     @Override
-    public RemoteCommandReturnInfo executeCommand(final RemoteExecCommand remoteExecCommand) {
+    public RemoteCommandReturnInfo executeCommand(final RemoteExecCommand remoteExecCommand, final long timeout) {
         if (remoteExecCommand.getCommand().getRunInShell()) {
             return executeShellCommand(remoteExecCommand);
         }
-        return executeExecCommand(remoteExecCommand);
+        return executeExecCommand(remoteExecCommand, timeout);
     }
 
     /**
@@ -130,9 +132,10 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
      * Execute a command directly (do not open a shell) then exit immediately.
      *
      * @param remoteExecCommand wrapper that contains command details
+     * @param timeout the time in ms for the exec command to complete before issuing a timeout
      * @return {@link RemoteCommandReturnInfo}
      */
-    protected RemoteCommandReturnInfo executeExecCommand(final RemoteExecCommand remoteExecCommand) {
+    protected RemoteCommandReturnInfo executeExecCommand(final RemoteExecCommand remoteExecCommand, final long timeout) {
         Session session = null;
         ChannelExec channel = null;
         ExecReturnCode retCode;
@@ -148,45 +151,23 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
             channel = (ChannelExec) session.openChannel(ChannelType.EXEC.getChannelType());
             channel.setCommand(remoteExecCommand.getCommand().toCommandString().getBytes(StandardCharsets.UTF_8));
 
-            final InputStream remoteOutput = channel.getInputStream();
-            final InputStream remoteError = channel.getErrStream();
-
             LOGGER.debug("channel {} connecting...", channel.getId());
             channel.connect(CHANNEL_CONNECT_TIMEOUT);
             LOGGER.debug("channel {} connected!", channel.getId());
 
             LOGGER.debug("reading remote output...");
-            final StringBuilder remoteOutputStringBuilder = new StringBuilder();
-            final StringBuilder remoteErrorStringBuilder = new StringBuilder();
 
-            int readByte;
-
-            // read output
-            do {
-                readByte = remoteOutput.read();
-                if (readByte != -1) {
-                    remoteOutputStringBuilder.append((char) readByte);
-                }
-            } while (!channel.isClosed() && readByte != -1);
+            commandOutputStr = readExecRemoteOutput(channel, timeout, false);
+            LOGGER.debug("remote output = {}", commandOutputStr);
 
             // read error
             if (channel.getExitStatus() != 0) {
-                readByte = remoteError.read();
-                while (readByte != -1) {
-                    remoteErrorStringBuilder.append((char) readByte);
-                    readByte = remoteError.read();
-                }
+                errorOutputStr = readExecRemoteOutput(channel, timeout, true);
+                LOGGER.debug("remote error = {}", errorOutputStr);
             }
 
             retCode = new ExecReturnCode(channel.getExitStatus());
             LOGGER.debug("exit code = {}", retCode.getReturnCode());
-
-            commandOutputStr = remoteOutputStringBuilder.toString();
-            LOGGER.debug("remote output = {}", commandOutputStr);
-
-            errorOutputStr = remoteErrorStringBuilder.toString();
-            LOGGER.debug("remote error = {}", errorOutputStr);
-
         } catch (final JSchException | IOException e) {
             LOGGER.error("Error processing exec command!", e);
             retCode = new ExecReturnCode(-1);
@@ -308,4 +289,70 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
         }
         return session;
     }
+
+    /**
+     * Read the remote output for the exec channel. This is the code provided on the jcraft site with a timeout added.
+     *
+     * @param channelExec the exec channel
+     * @param timeout     the maximum period of time for reading the channel output
+     * @param readErrorOutput reads the error output stream if true
+     * @return the output from the channel
+     * @throws IOException for any issues encoutered when retrieving the input stream from the channel
+     */
+    private String readExecRemoteOutput(ChannelExec channelExec, long timeout, boolean readErrorOutput) throws IOException {
+        final InputStream in = readErrorOutput ? channelExec.getErrStream() : channelExec.getInputStream();
+        StringBuilder outputBuilder = new StringBuilder();
+
+        byte[] tmp = new byte[BYTE_CHUNK_SIZE];
+        long startTime = System.currentTimeMillis();
+        final long readWaitTime = Long.parseLong(ApplicationProperties.get("jwala.read.channel.wait.for.close", "250"));
+
+        while (true) {
+            // read the stream
+            while (in.available() > 0) {
+                int i = in.read(tmp, 0, BYTE_CHUNK_SIZE);
+                if (i < 0) {
+                    break;
+                }
+                outputBuilder.append(new String(tmp, 0, i, StandardCharsets.UTF_8));
+            }
+
+            // check if the channel is closed
+            if (channelExec.isClosed()) {
+                // check for any more bytes on the input stream
+                sleep(readWaitTime);
+
+                if (in.available() > 0) {
+                    continue;
+                }
+
+                LOGGER.debug("exit-status: {}", channelExec.getExitStatus());
+                break;
+            }
+
+            // check timeout
+            if ((System.currentTimeMillis() - startTime) > timeout) {
+                LOGGER.error("Remote exec output reading timeout!");
+                break;
+            }
+
+            // If for some reason the channel is not getting closed, we should not hog CPU time with this loop hence
+            // we sleep for a while
+            sleep(readWaitTime);
+        }
+        return outputBuilder.toString();
+    }
+
+    /**
+     * Puts the current thread to sleep. If the sleep is interrupted, the error is caught and logged.
+     * @param val the period of time in ms for the thread to sleep
+     */
+    private void sleep(final long val) {
+        try {
+            Thread.sleep(val);
+        } catch (final InterruptedException ie) {
+            LOGGER.error("Interrupted sleep while reading jsch exec remote output", ie);
+        }
+    }
+
 }

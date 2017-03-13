@@ -27,6 +27,7 @@ import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
  */
 public class WebServerCommandServiceImpl implements WebServerCommandService {
 
+    private static final int GET_HTTPD_CONF_TIMEOUT = 60000;
     private final WebServerService webServerService;
     private final CommandExecutor executor;
     private final JschBuilder jschBuilder;
@@ -55,7 +56,7 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
                 httpdPath + "/httpd.conf");
         final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
                 sshConfig.getPassword(), webServer.getHost(), sshConfig.getPort()), execCommand);
-        final RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
+        final RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand, GET_HTTPD_CONF_TIMEOUT);
 
         return new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode), remoteCommandReturnInfo.standardOuput,
                 remoteCommandReturnInfo.errorOutput);

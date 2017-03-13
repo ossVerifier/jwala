@@ -9,6 +9,6 @@ import com.cerner.jwala.common.exec.RemoteExecCommand;
  */
 public interface RemoteCommandExecutorService {
 
-    RemoteCommandReturnInfo executeCommand(RemoteExecCommand remoteExecCommand);
+    RemoteCommandReturnInfo executeCommand(RemoteExecCommand remoteExecCommand, long timeout);
 
 }
