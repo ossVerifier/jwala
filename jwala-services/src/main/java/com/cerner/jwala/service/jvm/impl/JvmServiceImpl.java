@@ -40,6 +40,7 @@ import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmService;
+import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.jvm.exception.JvmServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
@@ -53,6 +54,7 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -60,6 +62,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,6 +93,9 @@ public class JvmServiceImpl implements JvmService {
     private static final String TEMPLATE_DIR = ApplicationProperties.get("paths.tomcat.instance.template");
     public static final String CONFIG_FILENAME_INVOKE_BAT = "invoke.bat";
     public static final String CONFIG_JAR = "_config.jar";
+
+    @Autowired
+    private JvmStateService jvmStateService;
 
     public JvmServiceImpl(final JvmPersistenceService jvmPersistenceService,
                           final GroupService groupService,
@@ -828,15 +834,14 @@ public class JvmServiceImpl implements JvmService {
             response = clientFactoryHelper.requestGet(jvm.getStatusUri());
             LOGGER.info(">>> Response = {} from jvm {}", response.getStatusCode(), jvm.getId().getId());
             if (response.getStatusCode() == HttpStatus.OK) {
-                setState(jvm, JvmState.JVM_STARTED, StringUtils.EMPTY);
+                jvmStateService.updateState(jvm.getId(), JvmState.JVM_STARTED, StringUtils.EMPTY);
             } else {
-                setState(jvm, JvmState.JVM_STOPPED,
-                        "Request for '" + jvm.getStatusUri() + "' failed with a response code of '" +
-                                response.getStatusCode() + "'");
+                jvmStateService.updateState(jvm.getId(), JvmState.JVM_STOPPED, MessageFormat.format(
+                        "Request for {0} failed with a response code of {1}", jvm.getStatusUri(), response.getRawStatusCode()));
             }
         } catch (IOException ioe) {
             LOGGER.info(ioe.getMessage(), ioe);
-            setState(jvm, JvmState.JVM_STOPPED, StringUtils.EMPTY);
+            jvmStateService.updateState(jvm.getId(), JvmState.JVM_STOPPED, StringUtils.EMPTY);
         } catch (RuntimeException rte) {
             LOGGER.error(rte.getMessage(), rte);
         } finally {
@@ -972,4 +977,9 @@ public class JvmServiceImpl implements JvmService {
             this.overwrite = overwrite;
         }
     }
+
+    public void setJvmStateService(JvmStateService jvmStateService) {
+        this.jvmStateService = jvmStateService;
+    }
+
 }

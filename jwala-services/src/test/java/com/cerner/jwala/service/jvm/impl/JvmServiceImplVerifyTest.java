@@ -35,6 +35,7 @@ import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmService;
+import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
@@ -102,9 +103,10 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Mock
     private BinaryDistributionLockManager mockBinaryDistributionLockManager;
 
-    private JvmService jvmService;
+    @Mock
+    private JvmStateService mockJvmStateService;
 
-    private JvmServiceImpl jvmServiceImpl;
+    private JvmService jvmService;
 
     private final Map<String, ReentrantReadWriteLock> lockMap = new HashMap<>();
 
@@ -113,9 +115,11 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         initMocks(this);
-        jvmServiceImpl = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService, mockFileManager,
-                mockMessagingTemplate, mockGroupStateNotificationService, mockResourceService, mockClientFactoryHelper,
-                 "/topic/server-states", mockJvmControlService, mockBinaryDistributionService, mockBinaryDistributionLockManager);
+        final JvmServiceImpl jvmServiceImpl = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService,
+                mockApplicationService, mockFileManager, mockMessagingTemplate, mockGroupStateNotificationService,
+                mockResourceService, mockClientFactoryHelper, "/topic/server-states", mockJvmControlService,
+                mockBinaryDistributionService, mockBinaryDistributionLockManager);
+        jvmServiceImpl.setJvmStateService(mockJvmStateService);
         jvmService = jvmServiceImpl;
     }
 
