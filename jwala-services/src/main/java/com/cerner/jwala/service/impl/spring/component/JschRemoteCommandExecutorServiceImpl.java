@@ -21,10 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -300,17 +297,18 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
      * @throws IOException for any issues encoutered when retrieving the input stream from the channel
      */
     private String readExecRemoteOutput(ChannelExec channelExec, long timeout, boolean readErrorOutput) throws IOException {
-        final InputStream in = readErrorOutput ? channelExec.getErrStream() : channelExec.getInputStream();
+        final BufferedInputStream bufIn =
+                new BufferedInputStream(readErrorOutput ? channelExec.getErrStream() : channelExec.getInputStream());
         StringBuilder outputBuilder = new StringBuilder();
 
         byte[] tmp = new byte[BYTE_CHUNK_SIZE];
         long startTime = System.currentTimeMillis();
-        final long readWaitTime = Long.parseLong(ApplicationProperties.get("jwala.read.channel.wait.for.close", "250"));
+        final long readLoopSleepTime = Long.parseLong(ApplicationProperties.get("jsch.exec.read.remote.output.loop.sleep.time", "100"));
 
         while (true) {
             // read the stream
-            while (in.available() > 0) {
-                int i = in.read(tmp, 0, BYTE_CHUNK_SIZE);
+            while (bufIn.available() > 0) {
+                int i = bufIn.read(tmp, 0, BYTE_CHUNK_SIZE);
                 if (i < 0) {
                     break;
                 }
@@ -320,9 +318,9 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
             // check if the channel is closed
             if (channelExec.isClosed()) {
                 // check for any more bytes on the input stream
-                sleep(readWaitTime);
+                sleep(readLoopSleepTime);
 
-                if (in.available() > 0) {
+                if (bufIn.available() > 0) {
                     continue;
                 }
 
@@ -338,7 +336,7 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
 
             // If for some reason the channel is not getting closed, we should not hog CPU time with this loop hence
             // we sleep for a while
-            sleep(readWaitTime);
+            sleep(readLoopSleepTime);
         }
         return outputBuilder.toString();
     }
