@@ -978,8 +978,4 @@ public class JvmServiceImpl implements JvmService {
         }
     }
 
-    public void setJvmStateService(JvmStateService jvmStateService) {
-        this.jvmStateService = jvmStateService;
-    }
-
 }
