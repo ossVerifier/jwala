@@ -609,6 +609,8 @@ public class JvmServiceImpl implements JvmService {
         if (generatedFiles != null) {
             for (Map.Entry<String, ScpDestination> entry : generatedFiles.entrySet()) {
                 final ScpDestination scpDestination = entry.getValue();
+                historyFacadeService.write(jvm.getHostName(), jvm.getGroups(), "Starting to deploy JVM resource" +
+                        jvm.getJvmName(), EventType.USER_ACTION_INFO, user.getId());
                 secureCopyFileToJvm(jvm, entry.getKey(), scpDestination.destPath, user, scpDestination.overwrite);
             }
         }
