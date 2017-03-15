@@ -28,6 +28,7 @@ import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.HistoryFacadeService;
@@ -51,6 +52,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -886,4 +888,45 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
             LOGGER.error("Failed to generate remote jar.", e);
         }
     }
+
+    @Test
+    public void testHistoryLoggingInJVMResources() {
+        CommandOutput commandOutput = mock(CommandOutput.class);
+        Jvm mockJvm = mock(Jvm.class);
+        ResourceGroup mockResourceGroup = mock(ResourceGroup.class);
+
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
+        when(mockJvm.getJvmName()).thenReturn("test-jvm-deploy-config");
+        when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(111L));
+        when(mockJvm.getJdkMedia()).thenReturn(new Media(1, "test media", "x:/test/archive/path.zip", "JDK", "x:/test-destination", "root-dir-destination"));
+        when(commandOutput.getReturnCode()).thenReturn(new ExecReturnCode(0));
+        when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString(), anyBoolean())).thenReturn(commandOutput);
+        when(mockJvmControlService.executeCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(commandOutput);
+        when(mockJvmControlService.executeChangeFileModeCommand(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(commandOutput);
+
+        when(mockJvmControlService.controlJvm(eq(new ControlJvmRequest(mockJvm.getId(), JvmControlOperation.DELETE_SERVICE)), any(User.class))).thenReturn(commandOutput);
+        when(mockJvmControlService.controlJvm(eq(new ControlJvmRequest(mockJvm.getId(), JvmControlOperation.DEPLOY_CONFIG_ARCHIVE)), any(User.class))).thenReturn(commandOutput);
+        when(mockJvmControlService.controlJvm(eq(new ControlJvmRequest(mockJvm.getId(), JvmControlOperation.INSTALL_SERVICE)), any(User.class))).thenReturn(commandOutput);
+
+        when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
+        when(mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn("<server>some xml</server>");
+
+        when(mockResourceService.generateResourceGroup()).thenReturn(mockResourceGroup);
+        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), anyObject(), any(ResourceGeneratorType.class))).thenReturn("<server>some xml</server>");
+        when(mockJvmControlService.executeCheckFileExistsCommand(any(Jvm.class), anyString())).thenReturn(commandOutput);
+
+        final List<String> templateNames = new ArrayList<>();
+        templateNames.add("setenv.bat");
+        when(mockJvmPersistenceService.getResourceTemplateNames(anyString())).thenReturn(templateNames);
+
+        Jvm response = jvmService.generateAndDeployJvm(mockJvm.getJvmName(), mockUser);
+        Mockito.verify(mockHistoryFacadeService, times(1)).write(mockJvm.getHostName(), mockJvm.getGroups(), "Starting to generate remote JVM " +
+                mockJvm.getJvmName(), EventType.USER_ACTION_INFO, mockUser.getId());
+
+        Mockito.verify(mockHistoryFacadeService, times(1)).write(mockJvm.getHostName(), mockJvm.getGroups(), "Starting to deploy JVM resources " +
+                mockJvm.getJvmName(), EventType.USER_ACTION_INFO, mockUser.getId());
+
+
+    }
+
 }
