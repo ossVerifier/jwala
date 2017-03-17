@@ -727,14 +727,16 @@ public class JvmServiceImpl implements JvmService {
     @Transactional
     public void performDiagnosis(final Identifier<Jvm> jvmId, final String userId) {
         final Jvm jvm = jvmPersistenceService.getJvm(jvmId);
-        messagingService.send(new JvmHistoryEvent(jvm.getId(), "Diagnose and resolve state", userId, DateTime.now(),
-                JvmControlOperation.DIAGNOSE_JVM));
+        messagingService.send(new JvmHistoryEvent(jvm.getId(), "", userId, DateTime.now(), JvmControlOperation.DIAGNOSE_JVM));
         historyService.createHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), "Diagnose and resolve state", EventType.USER_ACTION_INFO, "");
         final JvmHttpRequestResult jvmHttpRequestResult = pingAndUpdateJvmState(jvm);
-        updateHistory(jvm, jvmHttpRequestResult.details, jvmHttpRequestResult.details.isEmpty() ||
-                jvmHttpRequestResult.jvmState.equals(JvmState.JVM_STOPPED) ||
-                jvmHttpRequestResult.jvmState.equals(JvmState.FORCED_STOPPED)  ? jvmHttpRequestResult.jvmState :
-                JvmState.JVM_FAILED);
+
+        if (StringUtils.isNotEmpty(jvmHttpRequestResult.details)) {
+            updateHistory(jvm, jvmHttpRequestResult.details, jvmHttpRequestResult.details.isEmpty() ||
+                    jvmHttpRequestResult.jvmState.equals(JvmState.JVM_STOPPED) ||
+                    jvmHttpRequestResult.jvmState.equals(JvmState.FORCED_STOPPED) ? jvmHttpRequestResult.jvmState :
+                    JvmState.JVM_FAILED);
+        }
     }
 
     @Override
@@ -860,8 +862,10 @@ public class JvmServiceImpl implements JvmService {
      */
     private void updateHistory(final Jvm jvm, final String event, final JvmState jvmState) {
         historyService.createHistory(jvm.getJvmName(), new ArrayList<Group>(jvm.getGroups()), event, EventType.SYSTEM_INFO, "");
-        final CurrentState currentState = new CurrentState<>(jvm.getId(), jvmState, DateTime.now(), StateType.JVM, event);
+        final CurrentState currentState = new CurrentState<>(jvm.getId(), jvmState, DateTime.now(), StateType.JVM);
         messagingService.send(currentState);
+        messagingService.send(new JvmHistoryEvent(jvm.getId(), event, "", DateTime.now(),
+                JvmControlOperation.DIAGNOSE_JVM));
     }
 
     @Override

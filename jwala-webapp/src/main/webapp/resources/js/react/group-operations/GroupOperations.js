@@ -352,8 +352,7 @@ var GroupOperations = React.createClass({
                             }
 
                         } else if (newJvmState.stateString === GroupOperations.DIAGNOSE_JVM || newJvmState.stateString === GroupOperations.SECURE_COPY ||
-                                   newJvmState.stateString === GroupOperations.INVOKE_SERVICE || newJvmState.stateString === GroupOperations.DELETE_SERVICE ||
-                                   newJvmState.stateString === GroupOperations.STOPPED){
+                                   newJvmState.stateString === GroupOperations.INVOKE_SERVICE || newJvmState.stateString === GroupOperations.DELETE_SERVICE){
                             var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
                             if (commandStatusWidget !== undefined) {
                                 commandStatusWidget.push({stateString: newJvmState.stateString,
@@ -363,8 +362,7 @@ var GroupOperations = React.createClass({
                                                           userId: newJvmState.userId},
                                                           "action-status-font");
                             }
-                        }
-                        else {
+                        } else {
                             var stateDetails = groupOperationsHelper.extractStateDetails(newJvmState);
                             jvmStatusWidget.setStatus(stateDetails.state, stateDetails.asOf.millis, stateDetails.msg);
 
@@ -444,6 +442,6 @@ var GroupOperations = React.createClass({
         POLL_ERR_STATE: "POLLING ERROR!",
         STATE_POLLER_INTERVAL: 1,
         STOPPED: "STOPPED",
-        DIAGNOSE_JVM: "diagnoseJvm",
+        DIAGNOSE_JVM: "Diagnose and resolve state",
     }
 });
