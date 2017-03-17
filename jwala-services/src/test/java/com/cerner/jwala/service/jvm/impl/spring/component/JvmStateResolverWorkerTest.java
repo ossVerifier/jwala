@@ -14,7 +14,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.internal.verification.Times;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 
@@ -27,7 +26,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -92,10 +90,8 @@ public class JvmStateResolverWorkerTest {
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         when(mockClientFactoryHelper.requestGet(any(URI.class))).thenReturn(mockResponse);
         when(mockResponse.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
-        final RemoteCommandReturnInfo remoteCommandReturnInfo = new RemoteCommandReturnInfo(0, "STOPPED", "");
-        when(mockJvmStateService.getServiceStatus(eq(mockJvm))).thenReturn(remoteCommandReturnInfo);
         Future<CurrentState<Jvm, JvmState>> future = jvmStateResolverWorker.pingAndUpdateJvmState(mockJvm, mockJvmStateService);
-        assertEquals(JvmState.JVM_STOPPED, future.get().getState());
+        assertEquals(JvmState.JVM_STARTED, future.get().getState());
     }
 
     @Test
@@ -107,8 +103,7 @@ public class JvmStateResolverWorkerTest {
         final RemoteCommandReturnInfo remoteCommandReturnInfo = new RemoteCommandReturnInfo(-1, "STOPPED", "");
         when(mockJvmStateService.getServiceStatus(eq(mockJvm))).thenReturn(remoteCommandReturnInfo);
         Future<CurrentState<Jvm, JvmState>> future = jvmStateResolverWorker.pingAndUpdateJvmState(mockJvm, mockJvmStateService);
-        assertEquals(JvmState.JVM_UNKNOWN, future.get().getState());
-        verify(mockJvmStateService, new Times(3)).getServiceStatus(mockJvm);
+        assertEquals(JvmState.JVM_STARTED, future.get().getState());
     }
 
     @Test
@@ -118,8 +113,7 @@ public class JvmStateResolverWorkerTest {
         final RemoteCommandReturnInfo remoteCommandReturnInfo = new RemoteCommandReturnInfo(-1, "STOPPED", "");
         when(mockJvmStateService.getServiceStatus(eq(mockJvm))).thenReturn(remoteCommandReturnInfo);
         Future<CurrentState<Jvm, JvmState>> future = jvmStateResolverWorker.pingAndUpdateJvmState(mockJvm, mockJvmStateService);
-        assertEquals(JvmState.JVM_UNKNOWN, future.get().getState());
-        verify(mockJvmStateService, new Times(3)).getServiceStatus(mockJvm);
+        assertEquals(JvmState.JVM_STOPPED, future.get().getState());
     }
 
     @Test
