@@ -1,21 +1,29 @@
 package com.cerner.jwala.service.jvm.impl.spring.component;
 
+import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.state.CurrentState;
 import com.cerner.jwala.common.domain.model.state.StateType;
+import com.cerner.jwala.persistence.jpa.type.EventType;
+import com.cerner.jwala.service.HistoryService;
+import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.concurrent.Future;
 
 /**
@@ -29,11 +37,15 @@ import java.util.concurrent.Future;
 public class JvmStateResolverWorker {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmStateResolverWorker.class);
-    private final ClientFactoryHelper clientFactoryHelper;
 
-    public JvmStateResolverWorker(ClientFactoryHelper clientFactoryHelper) {
-        this.clientFactoryHelper = clientFactoryHelper;
-    }
+    @Autowired
+    private ClientFactoryHelper clientFactoryHelper;
+
+    @Autowired
+    private HistoryService historyService;
+
+    @Autowired
+    private MessagingService messagingService;
 
     @Async("jvmTaskExecutor")
     public Future<CurrentState<Jvm, JvmState>> pingAndUpdateJvmState(final Jvm jvm, final JvmStateService jvmStateService) {
@@ -53,6 +65,14 @@ public class JvmStateResolverWorker {
             LOGGER.debug(">>> Response = {} from JVM {}", response.getStatusCode(), jvm.getId().getId());
             jvmStateService.updateNotInMemOrStaleState(jvm, JvmState.JVM_STARTED, StringUtils.EMPTY);
             currentState = new CurrentState<>(jvm.getId(), JvmState.JVM_STARTED, DateTime.now(), StateType.JVM);
+
+            if (response.getStatusCode() != HttpStatus.OK) {
+                final String msg = MessageFormat.format("Request {0} sent expecting a response code of {1} but got {2} instead",
+                        jvm.getStatusUri(), HttpStatus.OK.value(), response.getRawStatusCode());
+                messagingService.send(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM, msg));
+                historyService.createHistory(jvm.getJvmName(), new ArrayList<Group>(jvm.getGroups()), msg, EventType.SYSTEM_INFO, "");
+            }
+
         } catch (final IOException ioe) {
             LOGGER.warn("{} {} {}", jvm.getJvmName(), ioe.getMessage(), "Setting JVM state to STOPPED.", ioe);
             jvmStateService.updateNotInMemOrStaleState(jvm, JvmState.JVM_STOPPED, StringUtils.EMPTY);
