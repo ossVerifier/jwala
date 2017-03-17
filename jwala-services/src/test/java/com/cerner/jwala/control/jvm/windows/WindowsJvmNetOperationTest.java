@@ -19,7 +19,7 @@ public class WindowsJvmNetOperationTest {
         final Set<JvmControlOperation> missingOperationMappings = EnumSet.noneOf(JvmControlOperation.class);
 
         for (final JvmControlOperation operation : JvmControlOperation.values()) {
-            if (WindowsJvmNetOperation.lookup(operation) == null) {
+            if (!operation.equals(JvmControlOperation.DIAGNOSE_JVM) && WindowsJvmNetOperation.lookup(operation) == null) {
                 missingOperationMappings.add(operation);
             }
         }
