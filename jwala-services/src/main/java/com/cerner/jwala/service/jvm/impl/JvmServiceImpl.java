@@ -862,10 +862,13 @@ public class JvmServiceImpl implements JvmService {
      */
     private void updateHistory(final Jvm jvm, final String event, final JvmState jvmState) {
         historyService.createHistory(jvm.getJvmName(), new ArrayList<Group>(jvm.getGroups()), event, EventType.SYSTEM_INFO, "");
-        final CurrentState currentState = new CurrentState<>(jvm.getId(), jvmState, DateTime.now(), StateType.JVM);
-        messagingService.send(currentState);
-        messagingService.send(new JvmHistoryEvent(jvm.getId(), event, "", DateTime.now(),
-                JvmControlOperation.DIAGNOSE_JVM));
+        final CurrentState currentState = new CurrentState<>(jvm.getId(), jvmState, DateTime.now(), StateType.JVM, event);
+        if (jvmState.equals(JvmState.JVM_FAILED)) {
+            messagingService.send(currentState);
+        } else {
+            messagingService.send(new JvmHistoryEvent(jvm.getId(), event, "", DateTime.now(),
+                    JvmControlOperation.DIAGNOSE_JVM));
+        }
     }
 
     @Override
