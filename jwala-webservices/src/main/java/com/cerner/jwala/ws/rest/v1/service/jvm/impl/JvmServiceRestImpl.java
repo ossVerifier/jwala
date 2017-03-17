@@ -162,11 +162,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response diagnoseJvm(Identifier<Jvm> aJvmId) {
+    public Response diagnoseJvm(final Identifier<Jvm> aJvmId, final AuthenticatedUser authenticatedUser) {
         LOGGER.info("Diagnose JVM {}", aJvmId);
-        String diagnosis = jvmService.performDiagnosis(aJvmId);
-
-        return Response.ok(diagnosis).build();
+        jvmService.performDiagnosis(aJvmId, authenticatedUser.getUser().getId());
+        return Response.ok().build();
     }
 
     @Override

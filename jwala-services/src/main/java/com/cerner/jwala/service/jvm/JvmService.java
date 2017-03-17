@@ -8,6 +8,7 @@ import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.common.request.jvm.CreateJvmAndAddToGroupsRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
+import com.cerner.jwala.service.jvm.impl.JvmHttpRequestResult;
 
 import java.util.List;
 
@@ -33,7 +34,7 @@ public interface JvmService {
 
     Jvm generateAndDeployFile(String jvmName, String fileName, User user);
 
-    String performDiagnosis(Identifier<Jvm> aJvmId);
+    void performDiagnosis(Identifier<Jvm> aJvmId, String userId);
 
     List<String> getResourceTemplateNames(final String jvmName);
 
@@ -52,7 +53,7 @@ public interface JvmService {
      *
      * @param jvm the JVM
      */
-    void pingAndUpdateJvmState(Jvm jvm);
+    JvmHttpRequestResult pingAndUpdateJvmState(Jvm jvm);
 
     void deployApplicationContextXMLs(Jvm jvm, User user);
 

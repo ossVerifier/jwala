@@ -26,7 +26,10 @@ import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.files.FileManager;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
+import com.cerner.jwala.service.HistoryService;
+import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.VerificationBehaviorSupport;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
@@ -47,7 +50,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
-import org.mockito.Mock;
+import org.mockito.internal.verification.Times;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -72,7 +75,6 @@ import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyObject;
 import static org.mockito.Mockito.contains;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {JvmServiceImplVerifyTest.Config.class})
@@ -460,12 +462,12 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockResponse.getStatusCode()).thenReturn(HttpStatus.OK);
         when(Config.mockClientFactoryHelper.requestGet(any(URI.class))).thenReturn(mockResponse);
 
-        jvmService.performDiagnosis(aJvmId);
+        jvmService.performDiagnosis(aJvmId, "user");
         verify(Config.mockClientFactoryHelper).requestGet(eq(uri));
 
         reset(Config.mockClientFactoryHelper);
         when(mockResponse.getStatusCode()).thenReturn(HttpStatus.REQUEST_TIMEOUT);
-        jvmService.performDiagnosis(aJvmId);
+        jvmService.performDiagnosis(aJvmId, "user");
         verify(Config.mockClientFactoryHelper).requestGet(eq(uri));
     }
 
@@ -479,7 +481,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(Config.mockJvmPersistenceService.getJvm(aJvmId)).thenReturn(jvm);
 
         when(Config.mockClientFactoryHelper.requestGet(any(URI.class))).thenThrow(new IOException("TEST IO EXCEPTION"));
-        jvmService.performDiagnosis(aJvmId);
+        jvmService.performDiagnosis(aJvmId, "user");
         verify(Config.mockClientFactoryHelper).requestGet(eq(uri));
     }
 
@@ -492,8 +494,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(Config.mockJvmPersistenceService.getJvm(aJvmId)).thenReturn(jvm);
 
         when(Config.mockClientFactoryHelper.requestGet(any(URI.class))).thenThrow(new RuntimeException("RUN!!"));
-        String diagnosis = jvmService.performDiagnosis(aJvmId);
-        // assertTrue(!diagnosis.isEmpty());
+        jvmService.performDiagnosis(aJvmId, "user");
+        verify(Config.mockHistoryService, new Times(2)).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
     }
 
     @Test
@@ -918,6 +920,10 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         static HttpClientRequestFactory mockHttpClientFactory = mock(HttpClientRequestFactory.class);
 
+        static MessagingService mockMessagingService = mock(MessagingService.class);
+
+        static HistoryService mockHistoryService = mock(HistoryService.class);
+
         @Bean
         public JvmPersistenceService getMockJvmPersistenceService() {
             return mockJvmPersistenceService;
@@ -986,6 +992,16 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         @Bean(name = "webServerHttpRequestFactory")
         public static HttpClientRequestFactory getMockHttpClientFactory() {
             return mockHttpClientFactory;
+        }
+
+        @Bean
+        public static MessagingService getMockMessagingService() {
+            return mockMessagingService;
+        }
+
+        @Bean
+        public static HistoryService getMockHistoryService() {
+            return mockHistoryService;
         }
 
         @Bean

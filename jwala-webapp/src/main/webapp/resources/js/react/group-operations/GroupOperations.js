@@ -351,7 +351,7 @@ var GroupOperations = React.createClass({
                                                           "error-status-font" : "action-status-font");
                             }
 
-                        } else if (newJvmState.stateString === GroupOperations.SECURE_COPY || newJvmState.stateString === GroupOperations.INVOKE_SERVICE || newJvmState.stateString === GroupOperations.DELETE_SERVICE){
+                        } else if (newJvmState.stateString === GroupOperations.SECURE_COPY || newJvmState.stateString === GroupOperations.INVOKE_SERVICE || newJvmState.stateString === GroupOperations.DELETE_SERVICE || newJvmState.stateString === GroupOperations.STOPPED){
                             var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
                             if (commandStatusWidget !== undefined) {
                                 commandStatusWidget.push({stateString: newJvmState.stateString,
@@ -440,6 +440,7 @@ var GroupOperations = React.createClass({
             return "ext-comp-div-group-operations-table_" + groupId;
         },
         POLL_ERR_STATE: "POLLING ERROR!",
-        STATE_POLLER_INTERVAL: 1
+        STATE_POLLER_INTERVAL: 1,
+        STOPPED: "STOPPED"
     }
 });

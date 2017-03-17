@@ -83,11 +83,12 @@ public interface JvmServiceRest extends InitializingBean{
     /**
      * Initiate a heartbeat followed by an SSH check
      * @param aJvmId id of the jvm to diagnose
+     * @param authenticatedUser
      * @return A text response indicating whether the diagnose process was initiated.
      */
     @GET
     @Path("/{jvmId}/diagnosis")
-    Response diagnoseJvm(@PathParam("jvmId") final Identifier<Jvm> aJvmId);
+    Response diagnoseJvm(@PathParam("jvmId") final Identifier<Jvm> aJvmId, @BeanParam AuthenticatedUser authenticatedUser);
 
     @GET
     @Path("/{jvmName}/resources/name")

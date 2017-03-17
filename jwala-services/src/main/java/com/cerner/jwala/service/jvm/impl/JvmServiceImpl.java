@@ -7,6 +7,7 @@ import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
+import com.cerner.jwala.common.domain.model.jvm.message.JvmHistoryEvent;
 import com.cerner.jwala.common.domain.model.resource.ContentType;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
@@ -14,7 +15,6 @@ import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.state.CurrentState;
 import com.cerner.jwala.common.domain.model.state.StateType;
 import com.cerner.jwala.common.domain.model.user.User;
-import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
@@ -32,7 +32,10 @@ import com.cerner.jwala.files.FileManager;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
+import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
+import com.cerner.jwala.service.HistoryService;
+import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
@@ -46,11 +49,9 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
-import groovy.text.SimpleTemplateEngine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,10 +64,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
@@ -96,6 +94,12 @@ public class JvmServiceImpl implements JvmService {
 
     @Autowired
     private JvmStateService jvmStateService;
+
+    @Autowired
+    private HistoryService historyService;
+
+    @Autowired
+    private MessagingService messagingService;
 
     public JvmServiceImpl(final JvmPersistenceService jvmPersistenceService,
                           final GroupService groupService,
@@ -723,25 +727,15 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional
-    public String performDiagnosis(Identifier<Jvm> aJvmId) {
-        // if the Jvm does not exist, we'll get a 404 NotFoundException
-        Jvm jvm = jvmPersistenceService.getJvm(aJvmId);
-
-        pingAndUpdateJvmState(jvm);
-
-        SimpleTemplateEngine engine = new SimpleTemplateEngine();
-        Map<String, Object> binding = new HashMap<>();
-        binding.put("jvm", jvm);
-
-        try {
-            return engine.createTemplate(DIAGNOSIS_INITIATED).make(binding).toString();
-        } catch (CompilationFailedException | ClassNotFoundException | IOException e) {
-            throw new ApplicationException(DIAGNOSIS_INITIATED, e);
-            // why do this? Because if there was a problem with the template that made
-            // it past initial testing, then it is probably due to the jvm in the binding
-            // so just dump out the diagnosis template and the exception so it can be
-            // debugged.
-        }
+    public void performDiagnosis(final Identifier<Jvm> jvmId, final String userId) {
+        final Jvm jvm = jvmPersistenceService.getJvm(jvmId);
+        messagingService.send(new JvmHistoryEvent(jvm.getId(), "Diagnose and resolve state", userId, DateTime.now(), JvmControlOperation.SECURE_COPY));
+        historyService.createHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), "Diagnose and resolve state", EventType.USER_ACTION_INFO, "");
+        final JvmHttpRequestResult jvmHttpRequestResult = pingAndUpdateJvmState(jvm);
+        updateHistory(jvm, jvmHttpRequestResult.details, jvmHttpRequestResult.details.isEmpty() ||
+                jvmHttpRequestResult.jvmState.equals(JvmState.JVM_STOPPED) ||
+                jvmHttpRequestResult.jvmState.equals(JvmState.FORCED_STOPPED)  ? jvmHttpRequestResult.jvmState :
+                JvmState.JVM_FAILED);
     }
 
     @Override
@@ -828,20 +822,28 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional
-    public void pingAndUpdateJvmState(final Jvm jvm) {
+    public JvmHttpRequestResult pingAndUpdateJvmState(final Jvm jvm) {
         ClientHttpResponse response = null;
+        JvmState jvmState = jvm.getState();
+        String responseDetails = StringUtils.EMPTY;
         try {
             response = clientFactoryHelper.requestGet(jvm.getStatusUri());
             LOGGER.info(">>> Response = {} from jvm {}", response.getStatusCode(), jvm.getId().getId());
+            jvmState = JvmState.JVM_STARTED;
             if (response.getStatusCode() == HttpStatus.OK) {
-                jvmStateService.updateState(jvm.getId(), JvmState.JVM_STARTED, StringUtils.EMPTY);
+                jvmStateService.updateState(jvm.getId(), jvmState, StringUtils.EMPTY);
             } else {
-                jvmStateService.updateState(jvm.getId(), JvmState.JVM_STOPPED, MessageFormat.format(
-                        "Request for {0} failed with a response code of {1}", jvm.getStatusUri(), response.getRawStatusCode()));
+                // As long as we get a response even if it's not a 200 it means that the JVM is alive
+                jvmStateService.updateState(jvm.getId(), jvmState, StringUtils.EMPTY);
+                responseDetails =  MessageFormat.format("Request {0} sent expecting a response code of {1} but got {2} instead",
+                        jvm.getStatusUri(), HttpStatus.OK.value(), response.getRawStatusCode());
+
             }
-        } catch (IOException ioe) {
+        } catch (final IOException ioe) {
             LOGGER.info(ioe.getMessage(), ioe);
             jvmStateService.updateState(jvm.getId(), JvmState.JVM_STOPPED, StringUtils.EMPTY);
+            responseDetails = MessageFormat.format("Request {0} sent and got: {1}", jvm.getStatusUri(), ioe.getMessage());
+            jvmState = JvmState.JVM_STOPPED;
         } catch (RuntimeException rte) {
             LOGGER.error(rte.getMessage(), rte);
         } finally {
@@ -849,6 +851,18 @@ public class JvmServiceImpl implements JvmService {
                 response.close();
             }
         }
+        return new JvmHttpRequestResult(jvmState, responseDetails);
+    }
+
+    /**
+     * Update history table and send out the update
+     * @param jvm the JVM
+     * @param event the history event
+     */
+    private void updateHistory(final Jvm jvm, final String event, final JvmState jvmState) {
+        historyService.createHistory(jvm.getJvmName(), new ArrayList<Group>(jvm.getGroups()), event, EventType.SYSTEM_INFO, "");
+        final CurrentState currentState = new CurrentState<>(jvm.getId(), jvmState, DateTime.now(), StateType.JVM, event);
+        messagingService.send(currentState);
     }
 
     @Override
