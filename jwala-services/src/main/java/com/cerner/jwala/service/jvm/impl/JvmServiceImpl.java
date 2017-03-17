@@ -87,8 +87,6 @@ public class JvmServiceImpl implements JvmService {
     private final BinaryDistributionService binaryDistributionService;
     private static final String JWALA_SCRIPTS_PATH = ApplicationProperties.get("remote.commands.user-scripts");
 
-    private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
-    private static final String TEMPLATE_DIR = ApplicationProperties.get("paths.tomcat.instance.template");
     public static final String CONFIG_FILENAME_INVOKE_BAT = "invoke.bat";
     public static final String CONFIG_JAR = "_config.jar";
 
@@ -729,7 +727,8 @@ public class JvmServiceImpl implements JvmService {
     @Transactional
     public void performDiagnosis(final Identifier<Jvm> jvmId, final String userId) {
         final Jvm jvm = jvmPersistenceService.getJvm(jvmId);
-        messagingService.send(new JvmHistoryEvent(jvm.getId(), "Diagnose and resolve state", userId, DateTime.now(), JvmControlOperation.SECURE_COPY));
+        messagingService.send(new JvmHistoryEvent(jvm.getId(), "Diagnose and resolve state", userId, DateTime.now(),
+                JvmControlOperation.DIAGNOSE_JVM));
         historyService.createHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), "Diagnose and resolve state", EventType.USER_ACTION_INFO, "");
         final JvmHttpRequestResult jvmHttpRequestResult = pingAndUpdateJvmState(jvm);
         updateHistory(jvm, jvmHttpRequestResult.details, jvmHttpRequestResult.details.isEmpty() ||

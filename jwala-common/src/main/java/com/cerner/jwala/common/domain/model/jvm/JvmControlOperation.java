@@ -51,7 +51,10 @@ public enum JvmControlOperation {
 
     CHANGE_FILE_MODE("changeFileMode", NO_JVM_IN_PROGRESS_STATE, NO_JVM_COMPLETE_STATE, NO_JVM_FAILURE_STATE, NO_JVM_SUCCESS_KEYWORDS),
 
-    CHECK_FILE_EXISTS("checkFileExists", NO_JVM_IN_PROGRESS_STATE, NO_JVM_COMPLETE_STATE, NO_JVM_FAILURE_STATE, NO_JVM_SUCCESS_KEYWORDS),;
+    CHECK_FILE_EXISTS("checkFileExists", NO_JVM_IN_PROGRESS_STATE, NO_JVM_COMPLETE_STATE, NO_JVM_FAILURE_STATE, NO_JVM_SUCCESS_KEYWORDS),
+
+    DIAGNOSE_JVM("diagnoseJvm", NO_JVM_IN_PROGRESS_STATE, NO_JVM_COMPLETE_STATE, NO_JVM_FAILURE_STATE, NO_JVM_SUCCESS_KEYWORDS);
+
 
     private static final Map<String, JvmControlOperation> LOOKUP_MAP = new HashMap<>();
 
@@ -67,7 +70,7 @@ public enum JvmControlOperation {
     private final JvmState failureState;
     private final Pattern[] successOutputPattern;
 
-    private JvmControlOperation(final String theValue,
+    JvmControlOperation(final String theValue,
                                 final JvmState theOperationJvmState,
                                 final JvmState theConfirmedState,
                                 final JvmState theFailureState,
