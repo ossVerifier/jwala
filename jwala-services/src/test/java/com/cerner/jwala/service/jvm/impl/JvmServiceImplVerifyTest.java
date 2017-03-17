@@ -495,7 +495,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         when(Config.mockClientFactoryHelper.requestGet(any(URI.class))).thenThrow(new RuntimeException("RUN!!"));
         jvmService.performDiagnosis(aJvmId, "user");
-        verify(Config.mockHistoryService, new Times(2)).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
+        verify(Config.mockHistoryService).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
     }
 
     @Test
