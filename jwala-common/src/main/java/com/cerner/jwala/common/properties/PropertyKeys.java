@@ -147,7 +147,7 @@ public enum PropertyKeys {
     CATALINA_AUTHENTICATOR_LEVEL("org.apache.catalina.authenticator.level"),
     CATALINA_CLUSTER_LEVEL("org.apache.catalina.cluster.level"),
     CATALINA_HA_LEVEL("org.apache.catalina.ha.level"),
-    CATALINA_TRIBES_LEVEL("org.apache.catalina.tribes.leveL");
+    CATALINA_TRIBES_LEVEL("org.apache.catalina.tribes.level");
 
 
 
