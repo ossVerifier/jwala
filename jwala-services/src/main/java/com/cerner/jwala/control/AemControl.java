@@ -1,6 +1,7 @@
 package com.cerner.jwala.control;
 
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 
 /**
  * Constants specific to this module
@@ -29,7 +30,7 @@ public class AemControl {
         SERVICE_STATUS_SCRIPT_NAME("commands.cygwin.service-status", "service-status.sh"),
         UNPACK_BINARY_SCRIPT_NAME("commands.cygwin.unpack.sh", "unpack.sh"),
         UNZIP_SCRIPT_NAME("commands.unzip.sh", "unzip.sh"),
-        SLEEP_TIME("net.stop.sleep.time.seconds", NET_STOP_SLEEP_TIME_SECONDS_DEFAULT);
+        SLEEP_TIME(ApplicationProperties.get(PropertyKeys.NET_STOP_SLEEP_TIME_SECONDS), NET_STOP_SLEEP_TIME_SECONDS_DEFAULT);
 
         private final String propertyName;
         private final String defaultValue;

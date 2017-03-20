@@ -14,6 +14,7 @@ import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.properties.ExternalProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
@@ -123,7 +124,7 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public String encryptUsingPlatformBean(String cleartext) {
         SpelExpressionParser expressionParser = new SpelExpressionParser();
-        String encryptExpressionString = ApplicationProperties.get("encryptExpression");
+        String encryptExpressionString = ApplicationProperties.get(PropertyKeys.ENCRYPT_EXPRESSION);
         Expression encryptExpression = expressionParser.parseExpression(encryptExpressionString);
 
         StandardEvaluationContext context = new StandardEvaluationContext();
@@ -820,7 +821,7 @@ public class ResourceServiceImpl implements ResourceService {
         final String content = resourceContent.getContent();
         final ResourceGroup resourceGroup = generateResourceGroup();
         String fileContent = this.generateResourceFile(extPropertiesResourceName, content, resourceGroup, null, ResourceGeneratorType.TEMPLATE);
-        String jvmResourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/external-properties-download";
+        String jvmResourcesNameDir = ApplicationProperties.get(PropertyKeys.PATHS_GENERATED_RESOURCE_DIRECTORY) + "/external-properties-download";
 
         createConfigFile(jvmResourcesNameDir + "/", extPropertiesResourceName, fileContent);
 
@@ -887,7 +888,7 @@ public class ResourceServiceImpl implements ResourceService {
             if (MEDIA_TYPE_TEXT.equalsIgnoreCase(resourceTemplateMetaData.getContentType().getType()) ||
                     MediaType.APPLICATION_XML.equals(resourceTemplateMetaData.getContentType())) {
                 String fileContent = generateConfigFile(selectedValue, fileName);
-                String resourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/" + entity;
+                String resourcesNameDir = ApplicationProperties.get(PropertyKeys.PATHS_GENERATED_RESOURCE_DIRECTORY) + "/" + entity;
                 resourceSourceCopy = resourcesNameDir + "/" + deployFileName;
                 createConfigFile(resourcesNameDir + "/", deployFileName, fileContent);
             } else {

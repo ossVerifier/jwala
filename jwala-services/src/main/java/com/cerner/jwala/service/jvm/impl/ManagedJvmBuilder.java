@@ -37,6 +37,10 @@ public class ManagedJvmBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagedJvmBuilder.class);
 
+<<<<<<< Updated upstream
+=======
+    private static final String PATHS_RESOURCE_TEMPLATES = ApplicationProperties.get(PropertyKeys.PATHS_RESOURCE_TEMPLATES);
+>>>>>>> Stashed changes
     private static final String INSTALL_SERVICE_TEMPLATE = "install-service-jvm.bat.tpl";
     private static final String SERVER_XML_TEMPLATE = "server.xml.tpl";
     public static final String INSTALL_SERVICE_BAT = "install-service.bat";
@@ -337,15 +341,15 @@ public class ManagedJvmBuilder {
     }
 
     private String getBinaryDir() {
-        return ApplicationProperties.get("jwala.binary.dir");
+        return ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.LOCAL_JWALA_BINARY_DIR));
     }
 
     private String getWorkDir() {
-        return ApplicationProperties.get("paths.generated.resource.dir");
+        return ApplicationProperties.get(PropertyKeys.PATHS_GENERATED_RESOURCE_DIRECTORY);
     }
 
     private String getAgentDir() {
-        return ApplicationProperties.get("jwala.agent.dir");
+        return ApplicationProperties.get(PropertyKeys.LOCAL_JWALA_BINARY_DIR);
     }
 
     private File getStagingJvmJarPath() {

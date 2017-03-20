@@ -1,6 +1,7 @@
 package com.cerner.jwala.ws.rest.v1.service.admin.impl;
 
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.files.FilesConfiguration;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
@@ -51,7 +52,7 @@ public class AdminServiceRestImplTest {
     @Before
     public void setUp() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        authFlag = ApplicationProperties.get("jwala.authorization");
+        authFlag = ApplicationProperties.get(PropertyKeys.JWALA_AUTHORIZATION);
     }
 
     @After
@@ -120,7 +121,7 @@ public class AdminServiceRestImplTest {
         ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
         Object content = applicationResponse.getApplicationResponseContent();
         assertEquals(content, AdminServiceRestImpl.JSON_RESPONSE_TRUE);
-        System.setProperty("jwala.authorization", "false");
+        System.setProperty(ApplicationProperties.get(PropertyKeys.JWALA_AUTHORIZATION), "false");
     }
 
     @Test

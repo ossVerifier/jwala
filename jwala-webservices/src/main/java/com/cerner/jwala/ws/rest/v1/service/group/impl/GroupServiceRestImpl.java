@@ -33,6 +33,7 @@ import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.provider.NameSearchParameterProvider;
+import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.app.ApplicationServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.group.GroupChildType;
@@ -56,6 +57,8 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.*;
+
+import static com.cerner.jwala.common.properties.PropertyKeys.REMOTE_JWALA_EXECUTION_TIMEOUT_SECONDS;
 
 public class GroupServiceRestImpl implements GroupServiceRest {
 
@@ -382,7 +385,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         for (String keyEntityName : futureMap.keySet()) {
             Response response;
             try {
-                long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "600"));
+                long timeout = Long.parseLong(ApplicationProperties.get(ApplicationProperties.get(REMOTE_JWALA_EXECUTION_TIMEOUT_SECONDS), "600"));
                 Future<Response> responseFuture = futureMap.get(keyEntityName);
                 if(responseFuture != null) {
                     response = responseFuture.get(timeout, TimeUnit.SECONDS);

@@ -3,6 +3,7 @@ package com.cerner.jwala.ws.rest.v1.service.user.impl;
 import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.user.UserServiceRest;
 
@@ -35,7 +36,7 @@ public class UserServiceRestImpl implements UserServiceRest {
     public static final String JSON_RESPONSE_FALSE = "false";
 
     public static final String JSON_RESPONSE_OK = "{'response':'ok'}";
-    private static final String PROP_JWALA_ROLE_ADMIN = "jwala.role.admin";
+    private static final String PROP_JWALA_ROLE_ADMIN = ApplicationProperties.get(PropertyKeys.JWALA_ADMIN);
     
     private static final String USER = "user";
 

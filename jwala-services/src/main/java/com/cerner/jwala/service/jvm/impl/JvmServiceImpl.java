@@ -456,7 +456,7 @@ public class JvmServiceImpl implements JvmService {
 
     protected void deployScriptsToUserJwalaScriptsDir(Jvm jvm, User user) throws CommandFailureException, IOException {
         final ControlJvmRequest secureCopyRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SCP);
-        final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
+        final String commandsScriptsPath = ApplicationProperties.get(PropertyKeys.SCRIPTS_PATH);
 
         final String deployConfigJarPath = commandsScriptsPath + '/' + DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME;
         final String jvmName = jvm.getJvmName();
@@ -606,7 +606,7 @@ public class JvmServiceImpl implements JvmService {
         long startTime = System.currentTimeMillis();
         String configTarName = jvm.getJvmName() + ".jar";
         final String scriptsDir = ApplicationProperties.get(PropertyKeys.REMOTE_SCRIPT_DIR);
-        String jvmJarFile  = ApplicationProperties.get("paths.generated.resource.dir") + File.separator + jvm.getJvmName() + File.separator + configTarName;
+        String jvmJarFile  = ApplicationProperties.get(PropertyKeys.PATHS_GENERATED_RESOURCE_DIRECTORY) + File.separator + jvm.getJvmName() + File.separator + configTarName;
         String destination = scriptsDir + "/" + configTarName;
         LOGGER.info("Copy config jar {} to {} ", jvmJarFile, destination);
         final boolean alwaysOverwriteJvmConfigJar = true;
@@ -615,7 +615,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     private void deployJvmConfigJar(Jvm jvm, User user, String jvmJar) throws CommandFailureException {
-        final String parentDir = ApplicationProperties.get("remote.paths.instances");
+        final String parentDir = ApplicationProperties.get(PropertyKeys.REMOTE_PATH_INSTANCES_DIR);
         CommandOutput execData = jvmControlService.executeCreateDirectoryCommand(jvm, parentDir+"/"+jvm.getJvmName());
         if (execData.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully created the parent directory {}", parentDir);
@@ -897,7 +897,7 @@ public class JvmServiceImpl implements JvmService {
                     MediaType.APPLICATION_XML.equals(resourceTemplateMetaData.getContentType())) {
                 final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getTemplateContent(),
                         resourceGroup, jvm, ResourceGeneratorType.TEMPLATE);
-                generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + '/' + jvmName, deployFileName, generatedResourceStr),
+                generatedFiles.put(createConfigFile(ApplicationProperties.get(PropertyKeys.PATHS_GENERATED_RESOURCE_DIRECTORY) + '/' + jvmName, deployFileName, generatedResourceStr),
                         new ScpDestination(resourceTemplateMetaData.getDeployPath() + '/' + deployFileName, resourceTemplateMetaData.isOverwrite()));
             } else {
                 generatedFiles.put(jpaJvmConfigTemplate.getTemplateContent(),

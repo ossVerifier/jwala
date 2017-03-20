@@ -14,6 +14,7 @@ import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.common.request.group.*;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.common.rule.group.GroupNameRule;
@@ -446,7 +447,7 @@ public class GroupServiceImpl implements GroupService {
      */
     private void checkJvmGenerateAndDeployFutureErrorStatus(final Map<String, Future<Jvm>> futureMap) {
         final Map<String, List<String>> errorMap = new HashMap<>(futureMap.size());
-        final long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "600"));
+        final long timeout = Long.parseLong(ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.REMOTE_JWALA_EXECUTION_TIMEOUT_SECONDS), "600"));
 
         for (final String key : futureMap.keySet()) {
             try {

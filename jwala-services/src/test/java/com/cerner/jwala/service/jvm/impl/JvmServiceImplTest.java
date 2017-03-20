@@ -20,6 +20,7 @@ import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.common.request.group.AddJvmToGroupRequest;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.common.request.jvm.CreateJvmAndAddToGroupsRequest;
@@ -142,7 +143,7 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
                 mockHistoryFacadeService, new FileUtility());
         jvmService = jvmServiceImpl;
 
-        FileUtils.forceMkdir(new File(ApplicationProperties.get("paths.generated.resource.dir") + "/" + JUNIT_JVM));
+        FileUtils.forceMkdir(new File(ApplicationProperties.get(PropertyKeys.PATHS_GENERATED_RESOURCE_DIRECTORY) + "/" + JUNIT_JVM));
     }
 
     @Test

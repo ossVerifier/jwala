@@ -248,7 +248,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         final int beginIndex = destPath.lastIndexOf("/");
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
         // don't add any usage of the jwala user internal directory to the history
-        if (!ApplicationProperties.get("remote.commands.user-scripts").endsWith(fileName)) {
+        if (!ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.REMOTE_SCRIPT_DIR)).endsWith(fileName)) {
             final String eventDescription = event + " " + fileName;
             historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), eventDescription,
                     EventType.USER_ACTION_INFO, userId);

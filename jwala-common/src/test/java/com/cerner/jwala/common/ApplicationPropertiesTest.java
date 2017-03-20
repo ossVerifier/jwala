@@ -1,5 +1,6 @@
 package com.cerner.jwala.common;
 
+import com.cerner.jwala.common.properties.PropertyKeys;
 import junit.framework.TestCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,9 +36,9 @@ public class ApplicationPropertiesTest extends TestCase {
     }
 
     public void testReadProperties() {
-        assertEquals("string property", ApplicationProperties.get("string.property"));
-        assertEquals(Integer.valueOf(5), ApplicationProperties.getAsInteger("integer.property"));
-        assertEquals(Boolean.TRUE, ApplicationProperties.getAsBoolean("boolean.property"));
+        assertEquals(ApplicationProperties.get(PropertyKeys.STRING_PROPERTY), ApplicationProperties.get("string.property"));
+        assertEquals(Integer.valueOf(5), ApplicationProperties.getAsInteger(ApplicationProperties.get(PropertyKeys.INTEGER_PROPERTY)));
+        assertEquals(Boolean.TRUE, ApplicationProperties.getAsBoolean(ApplicationProperties.get(PropertyKeys.BOOLEAN_PROPERTY)));
     }
 
     public void testReload() {

@@ -1,5 +1,6 @@
 package com.cerner.jwala.common;
 
+import com.cerner.jwala.common.properties.PropertyKeys;
 import junit.framework.TestCase;
 import org.springframework.util.FileCopyUtils;
 
@@ -40,9 +41,9 @@ public class ExternalPropertiesTest extends TestCase {
 
     public void testReadProperties() {
         ExternalProperties.setPropertiesFilePath(SRC_TEST_RESOURCES_PROPERTIES + EXTERNAL_PROPERTIES);
-        assertEquals("string property", ExternalProperties.get("string.property"));
-        assertEquals(Integer.valueOf(5), ExternalProperties.getAsInteger("integer.property"));
-        assertEquals(Boolean.TRUE, ExternalProperties.getAsBoolean("boolean.property"));
+        assertEquals(ApplicationProperties.get(PropertyKeys.STRING_PROPERTY), ExternalProperties.get("string.property"));
+        assertEquals(Integer.valueOf(5), ExternalProperties.getAsInteger(ApplicationProperties.get(PropertyKeys.INTEGER_PROPERTY)));
+        assertEquals(Boolean.TRUE, ExternalProperties.getAsBoolean(ApplicationProperties.get(PropertyKeys.BOOLEAN_PROPERTY)));
     }
 
     public void testReload() throws IOException {
@@ -54,10 +55,10 @@ public class ExternalPropertiesTest extends TestCase {
         writeNewPropertyToFile(propertyToAdd, BUILD_TEST_RESOURCES_PROPERTIES + EXTERNAL_PROPERTIES);
 
         ExternalProperties.reload();
-        assertEquals("string property", ExternalProperties.get("string.property"));
-        assertEquals(Integer.valueOf(5), ExternalProperties.getAsInteger("integer.property"));
-        assertEquals(Boolean.TRUE, ExternalProperties.getAsBoolean("boolean.property"));
-        assertEquals(Boolean.TRUE, ExternalProperties.getAsBoolean("test.reload"));
+        assertEquals(ApplicationProperties.get(PropertyKeys.STRING_PROPERTY), ExternalProperties.get("string.property"));
+        assertEquals(Integer.valueOf(5), ExternalProperties.getAsInteger(ApplicationProperties.get(PropertyKeys.INTEGER_PROPERTY)));
+        assertEquals(Boolean.TRUE, ExternalProperties.getAsBoolean(ApplicationProperties.get(PropertyKeys.BOOLEAN_PROPERTY)));
+        assertEquals(Boolean.TRUE, ExternalProperties.getAsBoolean(ApplicationProperties.get(PropertyKeys.TEST_RELOAD)));
         assertNull(ApplicationProperties.get("home team"));
     }
 

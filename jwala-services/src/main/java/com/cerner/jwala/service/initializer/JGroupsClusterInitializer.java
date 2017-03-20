@@ -1,6 +1,7 @@
 package com.cerner.jwala.service.initializer;
 
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.service.exception.JGroupsClusterInitializerException;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
@@ -26,15 +27,15 @@ import java.util.ArrayList;
 public class JGroupsClusterInitializer implements InitializingBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(JGroupsClusterInitializer.class);
     private static final String JGROUPS_COORDINATOR_HOSTNAME = "jgroups.coordinator.hostname";
-    private static final String JGROUPS_COORDINATOR_IP_ADDRESS = "jgroups.coordinator.ip.address";
+    private static final String JGROUPS_COORDINATOR_IP_ADDRESS = ApplicationProperties.get(PropertyKeys.JGROUPS_COORDINATOR_IP_ADDRESS);
 
-    private final String jgroupsJavaNetPreferIPv4Stack = ApplicationProperties.get("jgroups.java.net.preferIPv4Stack", "true");
+    private final String jgroupsJavaNetPreferIPv4Stack = ApplicationProperties.get( ApplicationProperties.get(PropertyKeys.JGROUPS_JAVA_NET_PREFER_IPV4_STACK), "true");
     private final String jgroupsCoordinatorHostname = ApplicationProperties.get(JGROUPS_COORDINATOR_HOSTNAME);
     private final String jgroupsCoordinatorIPAddress = ApplicationProperties.get(JGROUPS_COORDINATOR_IP_ADDRESS);
-    private final String jgroupsCoordinatorPort = ApplicationProperties.get("jgroups.coordinator.port");
-    private final String jgroupsClusterConnectTimeout = ApplicationProperties.get("jgroups.cluster.connect.timeout", "10000");
-    private final String jgroupsClusterName = ApplicationProperties.get("jgroups.cluster.name", "DefaultJwalaCluster");
-    private final String jgroupsConfXml = ApplicationProperties.get("jgroups.conf.xml", "tcp.xml");
+    private final String jgroupsCoordinatorPort = ApplicationProperties.get(PropertyKeys.JGROUPS_COORDINATOR_PORT);
+    private final String jgroupsClusterConnectTimeout = ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.JGROUPS_CLUSTER_CONNECT_TIMEOUT), "10000");
+    private final String jgroupsClusterName = ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.JGROUPS_CLUSTER_NAME), "DefaultJwalaCluster");
+    private final String jgroupsConfXml = ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.JGROUPS_CONF_XML), "tcp.xml");
     private final ReceiverAdapter receiverAdapter;
 
     public JGroupsClusterInitializer(final ReceiverAdapter receiverAdapter) {

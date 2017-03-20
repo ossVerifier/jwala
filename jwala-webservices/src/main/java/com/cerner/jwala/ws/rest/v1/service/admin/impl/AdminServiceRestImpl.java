@@ -3,6 +3,7 @@ package com.cerner.jwala.ws.rest.v1.service.admin.impl;
 import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.files.FilesConfiguration;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.response.ResponseContent;
@@ -35,7 +36,7 @@ public class AdminServiceRestImpl implements AdminServiceRest {
     public static final String JSON_RESPONSE_TRUE = "true";
     public static final String JSON_RESPONSE_FALSE = "false";
 
-    private static final String JWALA_AUTHORIZATION = "jwala.authorization";
+    private static final String JWALA_AUTHORIZATION = ApplicationProperties.get(PropertyKeys.JWALA_AUTHORIZATION);
 
     private FilesConfiguration filesConfiguration;
     private ResourceService resourceService;

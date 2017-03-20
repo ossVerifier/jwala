@@ -1,6 +1,7 @@
 package com.cerner.jwala.ws.rest.v1.service.user;
 
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
 import com.cerner.jwala.ws.rest.v1.service.user.impl.UserServiceRestImpl;
 import org.junit.After;
@@ -30,9 +31,9 @@ public class UserServiceRestTests {
     @Before
     public void setUp() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        authFlag = ApplicationProperties.get("jwala.authorization");
+        authFlag = ApplicationProperties.get(PropertyKeys.JWALA_AUTHORIZATION);
         impl = new UserServiceRestImpl();
-        JWALA_ROLE_ADMIN = ApplicationProperties.get("jwala.role.admin");
+        JWALA_ROLE_ADMIN = ApplicationProperties.get(PropertyKeys.JWALA_ADMIN);
 
     }
 

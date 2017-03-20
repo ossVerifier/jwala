@@ -290,7 +290,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         Map<String, Future<CommandOutput>> futures = new HashMap<>();
         try {
             FileCopyUtils.copy(applicationWar, tempWarFile);
-            final String destPath = ApplicationProperties.get("remote.jwala.webapps.dir");
+            final String destPath = ApplicationProperties.get(PropertyKeys.REMOTE_JWALA_WEBAPPS_DIR);
             for (String hostName : hostNames) {
                 Future<CommandOutput> commandOutputFuture = executeCopyCommand(application, tempWarFile, destPath, null, hostName);
                 futures.put(hostName, commandOutputFuture);
@@ -350,7 +350,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
                     }
 
-                    final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
+                    final String unpackWarScriptPath = ApplicationProperties.get(PropertyKeys.SCRIPTS_PATH) + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
                     final String destinationUnpackWarScriptPath = jwalaScriptPath + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
                     commandOutput = distributionControlService.secureCopyFile(host, unpackWarScriptPath, destinationUnpackWarScriptPath);
 
@@ -558,7 +558,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     protected void waitForDeploy(final String appName, final Map<String, Future<Set<CommandOutput>>> futures) {
-        long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "600"));
+        long timeout = Long.parseLong(ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.REMOTE_JWALA_EXECUTION_TIMEOUT_SECONDS), "600"));
         if (futures != null) {
             for (Entry<String, Future<Set<CommandOutput>>> entry : futures.entrySet()) {
                 try {

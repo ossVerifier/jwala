@@ -509,7 +509,7 @@ public class WebServerServiceRestImplTest {
         CommandOutput retFailExecData = new CommandOutput(new ExecReturnCode(1), "", "Failed secure copy");
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
 //        when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
-//        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retFailExecData);
+//        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.SCRIPTS_PATH)) + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retFailExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
@@ -527,8 +527,8 @@ public class WebServerServiceRestImplTest {
         CommandOutput retFailExecData = new CommandOutput(new ExecReturnCode(1), "", "Failed secure copy");
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
 //        when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
-//        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
-//        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retFailExecData);
+//        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.SCRIPTS_PATH)) + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
+//        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.SCRIPTS_PATH)) + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retFailExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
@@ -545,9 +545,9 @@ public class WebServerServiceRestImplTest {
         CommandOutput retFailExecData = new CommandOutput(new ExecReturnCode(1), "", "Failed secure copy");
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
  /*       when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.INSTALL_SERVICE_WS_SERVICE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retFailExecData);
+        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.SCRIPTS_PATH)) + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.SCRIPTS_PATH)) + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.SCRIPTS_PATH)) + "/" + AemControl.Properties.INSTALL_SERVICE_WS_SERVICE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retFailExecData);
 */        when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
@@ -565,9 +565,9 @@ public class WebServerServiceRestImplTest {
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
 /*
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.INSTALL_SERVICE_WS_SERVICE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.SCRIPTS_PATH)) + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.SCRIPTS_PATH)) + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.SCRIPTS_PATH)) + "/" + AemControl.Properties.INSTALL_SERVICE_WS_SERVICE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retFailExecData);
 */
         when(impl.getWebServer(anyString())).thenReturn(webServer);

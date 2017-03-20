@@ -1,6 +1,7 @@
 package com.cerner.jwala.common.domain.model.ssh;
 
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -8,8 +9,8 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 public class DecryptPassword {
 
-    private final String decryptExpressionString = ApplicationProperties.get("decryptExpression");
-    private final String encryptExpressionString = ApplicationProperties.get("encryptExpression");
+    private final String decryptExpressionString = ApplicationProperties.get(PropertyKeys.DECRYPT_EXPRESSION);
+    private final String encryptExpressionString = ApplicationProperties.get(PropertyKeys.ENCRYPT_EXPRESSION);
 
     private final String decryptorImpl;
     private final String encryptorImpl;

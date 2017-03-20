@@ -1,6 +1,7 @@
 package com.cerner.jwala.web.security;
 
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -24,7 +25,7 @@ public class GrantedAuthoritiesMapperTests {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         authorities = new GrantedAuthoritiesMapperImpl();
         auths = new HashSet<SimpleGrantedAuthority>();
-        admin = new SimpleGrantedAuthority(ApplicationProperties.get("jwala.role.admin"));
+        admin = new SimpleGrantedAuthority(ApplicationProperties.get(PropertyKeys.JWALA_ADMIN));
         auths.add(admin);
     }
 

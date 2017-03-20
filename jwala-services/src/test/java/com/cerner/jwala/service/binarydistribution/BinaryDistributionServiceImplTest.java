@@ -8,6 +8,7 @@ import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.HistoryFacadeService;
@@ -250,7 +251,7 @@ public class BinaryDistributionServiceImplTest {
     @Test
     @Ignore
     public void testDistributeWebServer() throws CommandFailureException {
-        final File apache = new File(ApplicationProperties.get("remote.paths.apache.httpd"));
+        final File apache = new File(ApplicationProperties.get(PropertyKeys.REMOTE_PATHS_APACHE_HTTPD));
         final String webServerDir = apache.getName();
         final String webServerBinaryDeployDir = apache.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         final String hostname = "localhost";
@@ -267,7 +268,7 @@ public class BinaryDistributionServiceImplTest {
     @Test
     public void testPrepareUnzip() throws CommandFailureException {
         final String hostname = "localhost";
-        final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
+        final String jwalaScriptsPath = ApplicationProperties.get(PropertyKeys.REMOTE_SCRIPT_DIR);
         final String remoteUnzipScriptPath = jwalaScriptsPath + "/" + UNZIP_SCRIPT_NAME;
         when(Config.mockBinaryDistributionControlService.checkFileExists(hostname, jwalaScriptsPath)).thenReturn(new CommandOutput(new ExecReturnCode(1), "FAIL", ""));
         when(Config.mockBinaryDistributionControlService.createDirectory(hostname, jwalaScriptsPath)).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));

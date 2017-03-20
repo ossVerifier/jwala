@@ -1,5 +1,6 @@
 package com.cerner.jwala.web.security;
 
+import com.cerner.jwala.common.properties.PropertyKeys;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
@@ -36,7 +37,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     private static Logger LOGGER = Logger.getLogger(SecurityConfig.class);
-    private static final String JWALA_AUTH_ENABLED = "jwala.authorization";
+    private static final String JWALA_AUTH_ENABLED = ApplicationProperties.get(PropertyKeys.JWALA_AUTHORIZATION);
 
     private static final String LOGIN_PAGE = "/login";
     private static final String LOGIN_API = "/**/user/login";
@@ -55,7 +56,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        final String ADMIN = ApplicationProperties.get("jwala.role.admin");
+        final String ADMIN = ApplicationProperties.get(PropertyKeys.JWALA_ADMIN);
         final String AUTH = ApplicationProperties.get(JWALA_AUTH_ENABLED, "true");
 
         http.authorizeRequests().antMatchers(GEN_PUBLIC_RESOURCES, PUBLIC_RESOURCES, LOGIN_PAGE, LOGIN_API, LOGOUT_API)

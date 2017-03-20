@@ -15,6 +15,7 @@ import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
@@ -631,7 +632,7 @@ public class ResourceServiceImplTest {
         Properties properties = new Properties();
         properties.load(new FileInputStream(new File("./src/test/resources/vars.properties")));
 
-        final String rawMetaData = (String) properties.get("test.path.backslash.escaped"); // --> {"deployPath":"\\\\server\\d$"}
+        final String rawMetaData = (String) properties.get(ApplicationProperties.get(PropertyKeys.TEST_PATH_BACKSLASH)); // --> {"deployPath":"\\\\server\\d$"}
         ResourceTemplateMetaData result = resourceService.getTokenizedMetaData("test-file.txt", null, rawMetaData);
         assertEquals("\\\\server\\d$", result.getDeployPath());
     }
@@ -646,7 +647,7 @@ public class ResourceServiceImplTest {
     public void testMetaDataBackslash() throws IOException {
         Properties properties = new Properties();
         properties.load(new FileInputStream(new File("./src/test/resources/vars.properties")));
-        final String testPathBackslash = (String) properties.get("test.path.backslash"); // --> {"deployPath":"\\server\d$"}
+        final String testPathBackslash = (String) properties.get(ApplicationProperties.get(PropertyKeys.TEST_PATH_BACKSLASH)); // --> {"deployPath":"\\server\d$"}
 
         // Throws exception if backslashes are not escaped
         boolean exceptionThrown = false;
@@ -663,7 +664,7 @@ public class ResourceServiceImplTest {
         assertTrue(exception.getMessage().startsWith("Unrecognized character escape"));
 
         // Escaped backslashes in properties file still fails
-        final String testPathBackslashEscaped = (String) properties.get("test.path.backslash.escaped"); // --> {"deployPath":"\\\\server\\d$"}
+        final String testPathBackslashEscaped = (String) properties.get(ApplicationProperties.get(PropertyKeys.TEST_PATH_BACKSLASH)); // --> {"deployPath":"\\\\server\\d$"}
         exceptionThrown = false;
         exception = null;
         try {
@@ -678,7 +679,7 @@ public class ResourceServiceImplTest {
         assertTrue(exception.getMessage().startsWith("Unrecognized character escape"));
 
         // More backslashes works
-        final String testPathBackslashThree = (String) properties.get("test.path.backslash.escaped.escaped"); // --> {"deployPath":"\\\\\\\\server\\\\d$"}
+        final String testPathBackslashThree = (String) properties.get(ApplicationProperties.get(PropertyKeys.TEST_PATH_BACKSLASH_ESCAPED_ESCAPED)); // --> {"deployPath":"\\\\\\\\server\\\\d$"}
         exceptionThrown = false;
         exception = null;
         ResourceTemplateMetaData mappingResult = null;

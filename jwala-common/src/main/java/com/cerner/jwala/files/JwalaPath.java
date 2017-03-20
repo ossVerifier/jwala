@@ -1,12 +1,15 @@
 package com.cerner.jwala.files;
 
+import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
+
 import java.nio.file.Path;
 
 public enum JwalaPath {
 
-    WEB_ARCHIVE("paths.web-archive"),
+    WEB_ARCHIVE(ApplicationProperties.get(PropertyKeys.PATHS_WEB_ARCHIVE)),
     TEMPLATES("paths.templates"), 
-    RESOURCE_TEMPLATES("paths.resource-templates")
+    RESOURCE_TEMPLATES(ApplicationProperties.get(PropertyKeys.PATHS_RESOURCE_TEMPLATES))
     ;
     
     

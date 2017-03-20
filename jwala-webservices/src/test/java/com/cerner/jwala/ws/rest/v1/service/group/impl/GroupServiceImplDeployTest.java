@@ -16,6 +16,7 @@ import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.common.request.group.CreateGroupRequest;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.exception.CommandFailureException;
@@ -98,7 +99,7 @@ public class GroupServiceImplDeployTest {
         when(mockAuthUser.getUser()).thenReturn(mockUser);
 
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        httpdConfDirPath = ApplicationProperties.get("remote.paths.httpd.conf");
+        httpdConfDirPath = ApplicationProperties.get(PropertyKeys.REMOTE_PATHS_APACHE_HTTPD_CONF);
         // assertTrue(new File(httpdConfDirPath).mkdirs());
         new File(httpdConfDirPath).mkdirs();
         // assertTrue(new File(generatedResourceDir).mkdirs());

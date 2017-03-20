@@ -1,6 +1,7 @@
 package com.cerner.jwala.web.javascript.variable.property;
 
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.web.javascript.variable.JavaScriptVariable;
 import com.cerner.jwala.web.javascript.variable.StringJavaScriptVariable;
 
@@ -11,10 +12,10 @@ public enum ApplicationPropertySourceDefinition {
     LOAD_BALANCER_STATUS_MOUNT("loadBalancerStatusMount", "mod_jk.load-balancer.status.mount", "/balancer-manager", VariableStyle.STRING),
     STATE_POLL_TIMEOUT("statePollTimeout", "state.poll.timeout", "1000", VariableStyle.STRING),
     HISTORY_MAX_READ_REC_COUNT("historyReadMaxRecCount", "history.max-read-rec-count", "30", VariableStyle.STRING),
-    RESOURCES_ENABLED("resourcesEnabled", "resources.enabled", "true", VariableStyle.STRING),
-    OPS_GRP_CHILDREN_VIEW_OPEN("opsGrpChildrenViewOpen", "operations.group.children.view.open", "true", VariableStyle.STRING),
-    OPS_JVM_MGR_BTN_ENABLED("opsJvmMgrBtnEnabled", "operations.jvm.mgr.btn.enabled", "true", VariableStyle.STRING),
-    JWALA_ROLE_ADMIN("jwalaRoleAdmin", "jwala.role.admin", "Tomcat Admin", VariableStyle.STRING),
+    RESOURCES_ENABLED("resourcesEnabled", ApplicationProperties.get(PropertyKeys.RESOURCES_ENABLED), "true", VariableStyle.STRING),
+    OPS_GRP_CHILDREN_VIEW_OPEN("opsGrpChildrenViewOpen", ApplicationProperties.get(PropertyKeys.OPERATIONS_GROUP_CHILDREN_VIEW_OPEN), "true", VariableStyle.STRING),
+    OPS_JVM_MGR_BTN_ENABLED("opsJvmMgrBtnEnabled", ApplicationProperties.get(PropertyKeys.OPERATIONS_JVM_MGR_BTN_ENABLED), "true", VariableStyle.STRING),
+    JWALA_ROLE_ADMIN("jwalaRoleAdmin", ApplicationProperties.get(PropertyKeys.JWALA_ADMIN), "Tomcat Admin", VariableStyle.STRING),
     TOMCAT_MANAGER_PROTOCOL("tomcatManagerProtocol", "tomcat.manager.protocol", "http", VariableStyle.STRING);
 
     private final String variableName;
