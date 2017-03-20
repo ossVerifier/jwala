@@ -146,7 +146,7 @@ public class WebServerCommandFactory {
 
         final CommandOutput copyResult = binaryDistributionControlService.secureCopyFile(
                 webserver.getHost(),
-                ApplicationProperties.getRequired("commands.scripts-path") + "/" + scriptName,
+                ApplicationProperties.getRequired("ApplicationProperties.get(PropertyKeys.SCRIPTS_PATH)") + "/" + scriptName,
                 destAbsolutePath);
         if (!copyResult.getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy {}", destAbsolutePath);

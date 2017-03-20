@@ -130,7 +130,7 @@ public class JvmCommandFactory {
             throw new JvmServiceException("Failed to create directory " + destDir);
         }
 
-        CommandOutput copyResult = binaryDistributionControlService.secureCopyFile(jvm.getHostName(), ApplicationProperties.getRequired("commands.scripts-path") + "/" + scriptName, destAbsolutePath);
+        CommandOutput copyResult = binaryDistributionControlService.secureCopyFile(jvm.getHostName(), ApplicationProperties.getRequired("ApplicationProperties.get(PropertyKeys.SCRIPTS_PATH)") + "/" + scriptName, destAbsolutePath);
         if (copyResult.getReturnCode().wasSuccessful()) {
             LOGGER.info("Secure copy success to {}", destAbsolutePath);
         } else {

@@ -14,7 +14,7 @@ public class LoginTest extends JwalaTest {
     @Test
     public void testLogin() {
         driver.get(getBaseUrl() + "/login");
-        driver.findElement(By.id("userName")).sendKeys(properties.getProperty("jwala.user.name"));
+        driver.findElement(By.id("userName")).sendKeys(properties.getProperty(ApplicationProperties.get(PropertyKeys.JWALA_USERNAME)));
         driver.findElement(By.id("password")).sendKeys(properties.getProperty("jwala.user.pwd"));
         driver.findElement(By.cssSelector("input[type=\"button\"]")).click();
         new WebDriverWait(driver, 60).until(ExpectedConditions
