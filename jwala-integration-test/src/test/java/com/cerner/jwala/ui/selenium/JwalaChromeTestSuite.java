@@ -30,8 +30,8 @@ import java.util.concurrent.TimeUnit;
         LogoutTest.class})
 public class JwalaChromeTestSuite extends TestSuite {
 
-    private static final String WEBDRIVER_CHROME_DRIVER = "webdriver.chrome.driver";
-    private static final String ELEMENT_SEARCH_RENDER_WAIT_TIME = "element.search.render.wait.time";
+    private static final String WEBDRIVER_CHROME_DRIVER = ApplicationProperties.get(PropertyKeys.WEB_CHROME_DRIVER);
+    private static final String ELEMENT_SEARCH_RENDER_WAIT_TIME = ApplicationProperties.get(PropertyKeys.ELEMENT_SEARCH_RENDER_WAIT_TIME);
 
     @BeforeClass
     public static void setup() throws IOException, InterruptedException {

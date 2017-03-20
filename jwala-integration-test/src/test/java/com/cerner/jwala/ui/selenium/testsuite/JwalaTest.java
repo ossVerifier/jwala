@@ -45,7 +45,7 @@ public class JwalaTest {
     }
 
     protected String getBaseUrl() {
-        return properties.getProperty("base.url");
+        return properties.getProperty(ApplicationProperties.get(PropertyKeys.BASE_URL));
     }
 
     protected void testForBusyIcon(final int showTimeout, final int hideTimeout) {

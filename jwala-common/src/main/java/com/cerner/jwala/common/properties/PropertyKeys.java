@@ -25,7 +25,6 @@ public enum PropertyKeys {
     TOMCAT_MANAGER_XML_SSL_PATH("tomcat.manager.xml.ssl.path"),
     PATHS_WEB_ARCHIVE("paths.web-archive"),
     PATHS_RESOURCE_TEMPLATES("paths.resource-templates"),
-
     AEM_SSH_USER_NAME("AemSsh.userName"),
     AEM_SSH_PORT("AemSsh.port"),
     AEM_SSH_ENCRYPTED_PASSWORD("AemSsh.encrypted.password"),
@@ -143,7 +142,11 @@ public enum PropertyKeys {
     CATALINA_AUTHENTICATOR_LEVEL("org.apache.catalina.authenticator.level"),
     CATALINA_CLUSTER_LEVEL("org.apache.catalina.cluster.level"),
     CATALINA_HA_LEVEL("org.apache.catalina.ha.level"),
-    CATALINA_TRIBES_LEVEL("org.apache.catalina.tribes.level");
+    CATALINA_TRIBES_LEVEL("org.apache.catalina.tribes.level"),
+    WEB_CHROME_DRIVER("webdriver.chrome.driver"),
+    BASE_URL("base.url"),
+    JWALA_USER_PWD("jwala.user.pwd"),
+    ELEMENT_SEARCH_RENDER_WAIT_TIME("element.search.render.wait.time");
 
 
 
