@@ -146,7 +146,13 @@ public enum PropertyKeys {
     WEB_CHROME_DRIVER("webdriver.chrome.driver"),
     BASE_URL("base.url"),
     JWALA_USER_PWD("jwala.user.pwd"),
-    ELEMENT_SEARCH_RENDER_WAIT_TIME("element.search.render.wait.time");
+    ELEMENT_SEARCH_RENDER_WAIT_TIME("element.search.render.wait.time"),
+    JDBC_DRIVER_CLASSNAME("jdbc.driverClassName"),
+    JDBC_URL("jdbc.url"),
+    JDBC_USERNAME("jdbc.username"),
+    JDBC_PASSWORD("jdbc.password"),
+    APACHE_ENTERPRISE_MANAGER_TITLE("apacheEnterpriseManager.title"),
+    APACHE_ENTERPRISE_MANAGER_GREETING("apacheEnterpriseManager.greeting");
 
 
 
