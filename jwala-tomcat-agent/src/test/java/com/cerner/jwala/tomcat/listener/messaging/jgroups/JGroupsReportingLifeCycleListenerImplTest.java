@@ -1,7 +1,5 @@
 package com.cerner.jwala.tomcat.listener.messaging.jgroups;
 
-import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.common.properties.PropertyKeys;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleState;
@@ -54,7 +52,7 @@ public class JGroupsReportingLifeCycleListenerImplTest {
         lifeCycleListener.setServerName("testJvm");
         lifeCycleListener.setJgroupsPreferIpv4Stack("true");
         lifeCycleListener.setJgroupsConfigXml("tcp.xml");
-        lifeCycleListener.setJgroupsCoordinatorIp(prop.getProperty(ApplicationProperties.get(PropertyKeys.CO_ORDINATOR_IP)));
+        lifeCycleListener.setJgroupsCoordinatorIp(prop.getProperty("coordinator.ip"));
         lifeCycleListener.setJgroupsCoordinatorHostname("testHostname");
         lifeCycleListener.setJgroupsCoordinatorPort("30000");
         lifeCycleListener.setJgroupsClusterName("testCluster");

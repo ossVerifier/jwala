@@ -42,8 +42,8 @@ public class ExternalPropertiesTest extends TestCase {
     public void testReadProperties() {
         ExternalProperties.setPropertiesFilePath(SRC_TEST_RESOURCES_PROPERTIES + EXTERNAL_PROPERTIES);
         assertEquals(ApplicationProperties.get(PropertyKeys.STRING_PROPERTY), ExternalProperties.get("string.property"));
-        assertEquals(Integer.valueOf(5), ExternalProperties.getAsInteger(ApplicationProperties.get(PropertyKeys.INTEGER_PROPERTY)));
-        assertEquals(Boolean.TRUE, ExternalProperties.getAsBoolean(ApplicationProperties.get(PropertyKeys.BOOLEAN_PROPERTY)));
+        assertEquals(Integer.valueOf(5), ExternalProperties.getAsInteger(PropertyKeys.INTEGER_PROPERTY.getPropertyName()));
+        assertEquals(Boolean.TRUE, ExternalProperties.getAsBoolean(PropertyKeys.BOOLEAN_PROPERTY.getPropertyName()));
     }
 
     public void testReload() throws IOException {
@@ -56,9 +56,9 @@ public class ExternalPropertiesTest extends TestCase {
 
         ExternalProperties.reload();
         assertEquals(ApplicationProperties.get(PropertyKeys.STRING_PROPERTY), ExternalProperties.get("string.property"));
-        assertEquals(Integer.valueOf(5), ExternalProperties.getAsInteger(ApplicationProperties.get(PropertyKeys.INTEGER_PROPERTY)));
-        assertEquals(Boolean.TRUE, ExternalProperties.getAsBoolean(ApplicationProperties.get(PropertyKeys.BOOLEAN_PROPERTY)));
-        assertEquals(Boolean.TRUE, ExternalProperties.getAsBoolean(ApplicationProperties.get(PropertyKeys.TEST_RELOAD)));
+        assertEquals(Integer.valueOf(5), ExternalProperties.getAsInteger(PropertyKeys.INTEGER_PROPERTY.getPropertyName()));
+        assertEquals(Boolean.TRUE, ExternalProperties.getAsBoolean(PropertyKeys.BOOLEAN_PROPERTY.getPropertyName()));
+        assertEquals(Boolean.TRUE, ExternalProperties.getAsBoolean(PropertyKeys.TEST_RELOAD.getPropertyName()));
         assertNull(ApplicationProperties.get("home team"));
     }
 

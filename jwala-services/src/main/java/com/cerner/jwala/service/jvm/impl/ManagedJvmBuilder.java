@@ -36,11 +36,7 @@ import static com.cerner.jwala.common.properties.PropertyKeys.TOMCAT_MANAGER_XML
 public class ManagedJvmBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagedJvmBuilder.class);
-
-<<<<<<< Updated upstream
-=======
     private static final String PATHS_RESOURCE_TEMPLATES = ApplicationProperties.get(PropertyKeys.PATHS_RESOURCE_TEMPLATES);
->>>>>>> Stashed changes
     private static final String INSTALL_SERVICE_TEMPLATE = "install-service-jvm.bat.tpl";
     private static final String SERVER_XML_TEMPLATE = "server.xml.tpl";
     public static final String INSTALL_SERVICE_BAT = "install-service.bat";
@@ -91,8 +87,8 @@ public class ManagedJvmBuilder {
     private ManagedJvmBuilder addSSLManagerXml() {
 
         // check for the template and the destination property - both are required
-        final String destManagerXmlPath = ApplicationProperties.get(TOMCAT_MANAGER_XML_SSL_PATH);
-        final String templatesPath = ApplicationProperties.getRequired(PATHS_RESOURCE_TEMPLATES);
+        final String destManagerXmlPath = ApplicationProperties.get(PropertyKeys.TOMCAT_MANAGER_XML_SSL_PATH);
+        final String templatesPath = ApplicationProperties.getRequired(PropertyKeys.PATHS_RESOURCE_TEMPLATES);
         final String managerXmlFileName = "/manager.xml";
         final File srcManagerXmlFile = new File(templatesPath + managerXmlFileName);
         if (null == destManagerXmlPath || destManagerXmlPath.isEmpty() || !srcManagerXmlFile.exists()) {
@@ -185,7 +181,6 @@ public class ManagedJvmBuilder {
 
     protected ManagedJvmBuilder stageTomcat() {
         LOGGER.debug("Unzipping the tomcat binary {} to {} ", getTomcatBinary(), getStagingDir());
-
         fileUtility.unzip(getTomcatBinary(), getStagingDir());
         return this;
     }
@@ -216,7 +211,7 @@ public class ManagedJvmBuilder {
     protected String generateServiceScriptContent() {
         FileInputStream installServiceBatTemplateContentStream = null;
         try {
-            final Path templatesPath = Paths.get(ApplicationProperties.get(PATHS_RESOURCE_TEMPLATES));
+            final Path templatesPath = Paths.get(ApplicationProperties.get(PropertyKeys.PATHS_RESOURCE_TEMPLATES));
             installServiceBatTemplateContentStream = new FileInputStream(templatesPath.toAbsolutePath()
                     .normalize().toString() + "/" + new File(INSTALL_SERVICE_TEMPLATE));
             String scriptContent = resourceService.generateResourceFile("install_service.bat",
@@ -272,7 +267,7 @@ public class ManagedJvmBuilder {
     protected String generateServerXml() {
         FileInputStream installServiceBatTemplateContentStream = null;
         try {
-            final Path templatesPath = Paths.get(ApplicationProperties.get(PATHS_RESOURCE_TEMPLATES));
+            final Path templatesPath = Paths.get(ApplicationProperties.get(PropertyKeys.PATHS_RESOURCE_TEMPLATES));
             installServiceBatTemplateContentStream = new FileInputStream(templatesPath.toAbsolutePath()
                     .normalize().toString() + "/" + new File(SERVER_XML_TEMPLATE));
             String scriptContent = resourceService.generateResourceFile("server.xml",
@@ -333,15 +328,17 @@ public class ManagedJvmBuilder {
     }
 
     private File getTomcatBinary() {
+
         return new File(getBinaryDir() + "/" + getTomcatBinaryName());
     }
 
     private String getTomcatBinaryName() {
-        return ApplicationProperties.getRequired(PropertyKeys.TOMCAT_BINARY_FILE_NAME);
+        return ApplicationProperties.getRequired(
+                PropertyKeys.TOMCAT_BINARY_FILE_NAME);
     }
 
     private String getBinaryDir() {
-        return ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.LOCAL_JWALA_BINARY_DIR));
+        return ApplicationProperties.get(PropertyKeys.LOCAL_JWALA_BINARY_DIR);
     }
 
     private String getWorkDir() {

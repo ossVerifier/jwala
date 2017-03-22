@@ -212,7 +212,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         if (!remoteFileCheck(hostname, jwalaScriptsPath)) {
             remoteCreateDirectory(hostname, jwalaScriptsPath);
         }
-        final String unzipFile = ApplicationProperties.get(PropertyKeys.LOCAL_JWALA_BINARY_DIR) + "/" + UNZIPEXE;
+        final String unzipFile = ApplicationProperties.get(PropertyKeys.LOCAL_JWALA_BINARY_DIR.getPropertyName()) + "/" + UNZIPEXE;
         File unzipExe = new File(unzipFile);
         if (unzipExe.isFile() && !remoteFileCheck(hostname, jwalaScriptsPath + "/" + UNZIPEXE)) {
             LOGGER.info("SCP {} ", unzipFile);
@@ -220,7 +220,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             changeFileMode(hostname, "a+x", jwalaScriptsPath, UNZIPEXE);
         }
         final String remoteUnzipScriptPath = jwalaScriptsPath + "/" + UNZIP_SCRIPT_NAME;
-        final String unzipScriptFile = ApplicationProperties.get(PropertyKeys.SCRIPTS_PATH)+ "/" + UNZIP_SCRIPT_NAME;
+        final String unzipScriptFile = PropertyKeys.SCRIPTS_PATH.getPropertyName()+ "/" + UNZIP_SCRIPT_NAME;
         if (!remoteFileCheck(hostname, remoteUnzipScriptPath)) {
             LOGGER.info("SCP {} " + unzipScriptFile);
             remoteSecureCopyFile(hostname, unzipScriptFile,  remoteUnzipScriptPath);

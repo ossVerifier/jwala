@@ -350,7 +350,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
                     }
 
-                    final String unpackWarScriptPath = ApplicationProperties.get(PropertyKeys.SCRIPTS_PATH) + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
+                    final String unpackWarScriptPath = PropertyKeys.SCRIPTS_PATH.getPropertyName() + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
                     final String destinationUnpackWarScriptPath = jwalaScriptPath + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
                     commandOutput = distributionControlService.secureCopyFile(host, unpackWarScriptPath, destinationUnpackWarScriptPath);
 

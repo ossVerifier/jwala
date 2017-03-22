@@ -54,7 +54,6 @@ public class ApplicationProperties {
     public static String getRequired(String key) {
         String propVal = getProperties().getProperty(key);
         LOGGER.trace("ApplicationsProperties.get({})=({})", key, propVal);
-
         if (propVal == null || propVal.isEmpty()) {
             throw new PropertyNotFoundException("Required property with key " + key + " was not valued.");
         }
@@ -66,18 +65,15 @@ public class ApplicationProperties {
         if (propertyNames == null) {
             throw new ApplicationException("Attempted to call " + ApplicationProperties.class.getName() + ".get(property) with a null property key");
         }
-
         return get(propertyNames.getPropertyName());
     }
 
     public static String get(String key) {
         String propVal = getProperties().getProperty(key);
         LOGGER.trace("ApplicationsProperties.get({})=({})", key, propVal);
-
         if (REQUIRED.equalsIgnoreCase(propVal)) {
             LOGGER.warn("Required property with key {} was not valued.", key);
         }
-
         return propVal;
     }
 
@@ -87,6 +83,16 @@ public class ApplicationProperties {
 
     public static Boolean getAsBoolean(String key) {
         return Boolean.parseBoolean(getProperties().getProperty(key));
+    }
+
+    public static Boolean getAsBoolean(PropertyKeys key){
+        String stringKey=get(key);
+        return Boolean.parseBoolean(stringKey);
+    }
+
+    public static Integer getAsInteger(PropertyKeys key){
+        String stringKey=get(key);
+        return Integer.parseInt(stringKey);
     }
 
     public static Boolean getRequiredAsBoolean(PropertyKeys key) {
@@ -112,5 +118,10 @@ public class ApplicationProperties {
 
     public static String get(String key, String defaultValue) {
         return getProperties().getProperty(key, defaultValue);
+    }
+
+    public static String get(PropertyKeys key, String defaultValue){
+        String stringKey=key.getPropertyName();
+        return getProperties().getProperty(stringKey,defaultValue);
     }
 }

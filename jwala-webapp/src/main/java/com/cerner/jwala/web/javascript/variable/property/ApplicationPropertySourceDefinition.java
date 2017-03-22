@@ -12,10 +12,10 @@ public enum ApplicationPropertySourceDefinition {
     LOAD_BALANCER_STATUS_MOUNT("loadBalancerStatusMount", "mod_jk.load-balancer.status.mount", "/balancer-manager", VariableStyle.STRING),
     STATE_POLL_TIMEOUT("statePollTimeout", "state.poll.timeout", "1000", VariableStyle.STRING),
     HISTORY_MAX_READ_REC_COUNT("historyReadMaxRecCount", "history.max-read-rec-count", "30", VariableStyle.STRING),
-    RESOURCES_ENABLED("resourcesEnabled", ApplicationProperties.get(PropertyKeys.RESOURCES_ENABLED), "true", VariableStyle.STRING),
-    OPS_GRP_CHILDREN_VIEW_OPEN("opsGrpChildrenViewOpen", ApplicationProperties.get(PropertyKeys.OPERATIONS_GROUP_CHILDREN_VIEW_OPEN), "true", VariableStyle.STRING),
-    OPS_JVM_MGR_BTN_ENABLED("opsJvmMgrBtnEnabled", ApplicationProperties.get(PropertyKeys.OPERATIONS_JVM_MGR_BTN_ENABLED), "true", VariableStyle.STRING),
-    JWALA_ROLE_ADMIN("jwalaRoleAdmin", ApplicationProperties.get(PropertyKeys.JWALA_ADMIN), "Tomcat Admin", VariableStyle.STRING),
+    RESOURCES_ENABLED("resourcesEnabled", PropertyKeys.RESOURCES_ENABLED.getPropertyName(), "true", VariableStyle.STRING),
+    OPS_GRP_CHILDREN_VIEW_OPEN("opsGrpChildrenViewOpen", PropertyKeys.OPERATIONS_GROUP_CHILDREN_VIEW_OPEN.getPropertyName(), "true", VariableStyle.STRING),
+    OPS_JVM_MGR_BTN_ENABLED("opsJvmMgrBtnEnabled", PropertyKeys.OPERATIONS_JVM_MGR_BTN_ENABLED.getPropertyName(), "true", VariableStyle.STRING),
+    JWALA_ROLE_ADMIN("jwalaRoleAdmin", PropertyKeys.JWALA_ADMIN.getPropertyName(), "Tomcat Admin", VariableStyle.STRING),
     TOMCAT_MANAGER_PROTOCOL("tomcatManagerProtocol", "tomcat.manager.protocol", "http", VariableStyle.STRING);
 
     private final String variableName;

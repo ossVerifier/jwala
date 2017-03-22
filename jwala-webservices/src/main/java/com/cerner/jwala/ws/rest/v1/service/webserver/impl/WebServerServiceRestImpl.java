@@ -53,8 +53,8 @@ import java.util.List;
 public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
-    public static final String PATHS_GENERATED_RESOURCE_DIR = ApplicationProperties.get(PropertyKeys.PATHS_GENERATED_RESOURCE_DIRECTORY);
-    private static final String COMMANDS_SCRIPTS_PATH = ApplicationProperties.get(PropertyKeys.SCRIPTS_PATH);
+    public static final String PATHS_GENERATED_RESOURCE_DIR = PropertyKeys.PATHS_GENERATED_RESOURCE_DIRECTORY.getPropertyName();
+    private static final String COMMANDS_SCRIPTS_PATH = PropertyKeys.SCRIPTS_PATH.getPropertyName();
     private static final String HTTPD_CONF = "httpd.conf";
     private static final Long DEFAULT_WAIT_TIMEOUT = 30000L;
 

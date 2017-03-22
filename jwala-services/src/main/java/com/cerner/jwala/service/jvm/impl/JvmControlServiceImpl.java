@@ -12,6 +12,7 @@ import com.cerner.jwala.common.exec.CommandOutputReturnCode;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.control.command.common.Command;
 import com.cerner.jwala.control.command.common.ShellCommandFactory;
@@ -248,7 +249,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         final int beginIndex = destPath.lastIndexOf("/");
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
         // don't add any usage of the jwala user internal directory to the history
-        if (!ApplicationProperties.get(ApplicationProperties.get(PropertyKeys.REMOTE_SCRIPT_DIR)).endsWith(fileName)) {
+        if (!ApplicationProperties.get(PropertyKeys.REMOTE_SCRIPT_DIR).endsWith(fileName)) {
             final String eventDescription = event + " " + fileName;
             historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), eventDescription,
                     EventType.USER_ACTION_INFO, userId);

@@ -456,12 +456,12 @@ public class JvmServiceImpl implements JvmService {
 
     protected void deployScriptsToUserJwalaScriptsDir(Jvm jvm, User user) throws CommandFailureException, IOException {
         final ControlJvmRequest secureCopyRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SCP);
-        final String commandsScriptsPath = ApplicationProperties.get(PropertyKeys.SCRIPTS_PATH);
+        final String commandsScriptsPath = PropertyKeys.SCRIPTS_PATH.getPropertyName();
 
         final String deployConfigJarPath = commandsScriptsPath + '/' + DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME;
         final String jvmName = jvm.getJvmName();
         final String userId = user.getId();
-        final String scriptsDir = ApplicationProperties.get(PropertyKeys.REMOTE_SCRIPT_DIR);
+        final String scriptsDir = PropertyKeys.REMOTE_SCRIPT_DIR.getPropertyName();
 
         final String stagingArea = scriptsDir + '/' + jvmName;
 
@@ -606,7 +606,7 @@ public class JvmServiceImpl implements JvmService {
         long startTime = System.currentTimeMillis();
         String configTarName = jvm.getJvmName() + ".jar";
         final String scriptsDir = ApplicationProperties.get(PropertyKeys.REMOTE_SCRIPT_DIR);
-        String jvmJarFile  = ApplicationProperties.get(PropertyKeys.PATHS_GENERATED_RESOURCE_DIRECTORY) + File.separator + jvm.getJvmName() + File.separator + configTarName;
+        String jvmJarFile  = PropertyKeys.PATHS_GENERATED_RESOURCE_DIRECTORY.getPropertyName() + File.separator + jvm.getJvmName() + File.separator + configTarName;
         String destination = scriptsDir + "/" + configTarName;
         LOGGER.info("Copy config jar {} to {} ", jvmJarFile, destination);
         final boolean alwaysOverwriteJvmConfigJar = true;

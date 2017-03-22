@@ -17,7 +17,7 @@ import java.util.Set;
  */
 @Component
 public class GrantedAuthoritiesMapperImpl implements GrantedAuthoritiesMapper {
-    private static final String PROP_JWALA_ROLE_ADMIN = ApplicationProperties.get(PropertyKeys.JWALA_ADMIN);
+    private static final String PROP_JWALA_ROLE_ADMIN = PropertyKeys.JWALA_ADMIN.getPropertyName();
     public final static String JWALA_ROLE_ADMIN = ApplicationProperties.get(PROP_JWALA_ROLE_ADMIN);
 
     /* (non-Javadoc)

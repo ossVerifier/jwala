@@ -18,7 +18,7 @@ public class JschLogger implements com.jcraft.jsch.Logger {
     @Override
     public boolean isEnabled(int level) {
         // Just let the log function decide.
-        return ApplicationProperties.getAsBoolean(ApplicationProperties.get(PropertyKeys.SSH_VERBOSE) );
+        return ApplicationProperties.getAsBoolean(PropertyKeys.SSH_VERBOSE);
     }
 
     @Override

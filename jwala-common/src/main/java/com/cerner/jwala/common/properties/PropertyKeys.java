@@ -78,7 +78,7 @@ public enum PropertyKeys {
     LOG4J_APPENDER_STDOUT_TARGET("log4j.appender.stdout.Target"),
     LOG4J_APPENDER_STDOUT_LAYOUT("log4j.appender.stdout.layout"),
     LOG4J_APPENDER_STDOUT_LAYOUT_CONVERSIONPATTERN("log4j.appender.stdout.layout.ConversionPattern"),
-    STRING_PROPERTY("string property"),
+    STRING_PROPERTY("string.property"),
     INTEGER_PROPERTY("integer.property"),
     EXTERNAL_PROPERTY_ONE("external.property.one"),
     EXTERNAL_PROPERTY_TWO("external.property.two"),

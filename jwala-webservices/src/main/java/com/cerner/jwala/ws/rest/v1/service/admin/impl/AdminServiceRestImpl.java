@@ -36,7 +36,7 @@ public class AdminServiceRestImpl implements AdminServiceRest {
     public static final String JSON_RESPONSE_TRUE = "true";
     public static final String JSON_RESPONSE_FALSE = "false";
 
-    private static final String JWALA_AUTHORIZATION = ApplicationProperties.get(PropertyKeys.JWALA_AUTHORIZATION);
+    private static final String JWALA_AUTHORIZATION = PropertyKeys.JWALA_AUTHORIZATION.getPropertyName();
 
     private FilesConfiguration filesConfiguration;
     private ResourceService resourceService;
