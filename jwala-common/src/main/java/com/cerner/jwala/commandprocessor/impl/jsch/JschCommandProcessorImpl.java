@@ -6,6 +6,7 @@ import com.cerner.jwala.commandprocessor.jsch.impl.ChannelType;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
+import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.exception.ExitCodeNotAvailableException;
 import com.cerner.jwala.exception.RemoteCommandFailureException;
 import com.jcraft.jsch.*;
@@ -18,6 +19,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 
 public class JschCommandProcessorImpl implements CommandProcessor {
 
@@ -31,7 +33,8 @@ public class JschCommandProcessorImpl implements CommandProcessor {
     private ExecReturnCode returnCode;
 
     private static final int CHANNEL_CONNECT_TIMEOUT = 60000;
-    private static final int REMOTE_OUTPUT_STREAM_MAX_WAIT_TIME = 180000;
+    private static final int REMOTE_SHELL_OUTPUT_STREAM_MAX_WAIT_TIME = Integer.parseInt(ApplicationProperties.get("jwala.jsch.remote.shell.output.stream.max.wait.time", "180000"));
+    private static final int REMOTE_EXEC_OUTPUT_STREAM_MAX_WAIT_TIME = Integer.parseInt(ApplicationProperties.get("jwala.jsch.remote.exec.output.stream.max.wait.time", "180000"));
     private static final String EXIT_CODE_START_MARKER = "EXIT_CODE";
     private static final String EXIT_CODE_END_MARKER = "***";
     private String commandOutputStr;
@@ -151,11 +154,20 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             LOGGER.debug("reading remote output...");
             final StringBuilder remoteOutputStringBuilder = new StringBuilder();
             final StringBuilder remoteErrorStringBuilder = new StringBuilder();
+
+            final long startTime = System.currentTimeMillis();
             while (!channel.isClosed()) {
+                if ((System.currentTimeMillis() - startTime) > REMOTE_EXEC_OUTPUT_STREAM_MAX_WAIT_TIME) {
+                    String errorOutput = MessageFormat.format("Timeout waiting for Jsch exec channel to close! max wait time={0} command={1}",REMOTE_EXEC_OUTPUT_STREAM_MAX_WAIT_TIME,remoteExecCommand.getCommand().toCommandString());
+                    LOGGER.error(errorOutput);
+                    LOGGER.debug("Remote output: " + remoteOutputStringBuilder.toString());
+                    remoteErrorStringBuilder.append(errorOutput);
+                    break;
+                }
                 remoteOutputStringBuilder.append((char) remoteOutput.read());
             }
 
-            if (channel.getExitStatus() != 0) {
+            if (channel.getExitStatus() != 0 && channel.getExitStatus() != -1) {
                 int readByte = remoteError.read();
                 while (readByte != -1) {
                     remoteErrorStringBuilder.append((char) readByte);
@@ -215,7 +227,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
 
         final long startTime = System.currentTimeMillis();
         while(readByte != 0xff) {
-            if ((System.currentTimeMillis() - startTime) > REMOTE_OUTPUT_STREAM_MAX_WAIT_TIME) {
+            if ((System.currentTimeMillis() - startTime) > REMOTE_SHELL_OUTPUT_STREAM_MAX_WAIT_TIME) {
                 timeout = true;
                 break;
             }
