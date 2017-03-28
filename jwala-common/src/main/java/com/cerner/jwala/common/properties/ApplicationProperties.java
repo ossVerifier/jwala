@@ -57,6 +57,15 @@ public class ApplicationProperties {
         return Integer.parseInt(getProperties().getProperty(key));
     }
 
+    public static Integer getAsInteger(String key, Integer defaultValue) {
+        final String returnVal = getProperties().getProperty(key);
+        if (null == returnVal) {
+            LOGGER.debug("No property key found for {}, using default value {}", key, defaultValue);
+            return defaultValue;
+        }
+        return Integer.parseInt(returnVal);
+    }
+
     public static Boolean getAsBoolean(String key) {
         return Boolean.parseBoolean(getProperties().getProperty(key));
     }

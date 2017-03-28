@@ -116,7 +116,7 @@ public class ResourceServiceImpl implements ResourceService {
         this.resourceDao = resourceDao;
         this.webArchiveManager = webArchiveManager;
         this.resourceHandler = resourceHandler;
-        executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
+        executorService = Executors.newFixedThreadPool(ApplicationProperties.getAsInteger("resources.thread-task-executor.pool.size", 25));
         this.resourceContentGeneratorService = resourceContentGeneratorService;
     }
 

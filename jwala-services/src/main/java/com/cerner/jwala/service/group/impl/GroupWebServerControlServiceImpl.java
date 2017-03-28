@@ -28,7 +28,7 @@ public class GroupWebServerControlServiceImpl implements GroupWebServerControlSe
     public GroupWebServerControlServiceImpl(final GroupService theGroupService, WebServerControlService theWebServerControlService) {
         groupService = theGroupService;
         webServerControlService = theWebServerControlService;
-        executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("thread-task-executor.group-control.pool.size", "25")));
+        executorService = Executors.newFixedThreadPool(ApplicationProperties.getAsInteger("thread-task-executor.group-control.pool.size", 25));
     }
 
     @Transactional

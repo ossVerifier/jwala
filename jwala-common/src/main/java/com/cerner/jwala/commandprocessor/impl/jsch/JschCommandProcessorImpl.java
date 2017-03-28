@@ -24,8 +24,8 @@ import java.text.MessageFormat;
 public class JschCommandProcessorImpl implements CommandProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JschCommandProcessorImpl.class);
-    private final int REMOTE_SHELL_OUTPUT_STREAM_MAX_WAIT_TIME = Integer.parseInt(ApplicationProperties.get("jwala.jsch.remote.shell.output.stream.max.wait.time", "180000"));
-    private final int REMOTE_EXEC_OUTPUT_STREAM_MAX_WAIT_TIME = Integer.parseInt(ApplicationProperties.get("jwala.jsch.remote.exec.output.stream.max.wait.time", "180000"));
+    private final int REMOTE_SHELL_OUTPUT_STREAM_MAX_WAIT_TIME = ApplicationProperties.getAsInteger("jwala.jsch.remote.shell.output.stream.max.wait.time", 180000);
+    private final int REMOTE_EXEC_OUTPUT_STREAM_MAX_WAIT_TIME = ApplicationProperties.getAsInteger("jwala.jsch.remote.exec.output.stream.max.wait.time", 180000);
     private static final int CHANNEL_CONNECT_TIMEOUT = 60000;
     private static final String EXIT_CODE_START_MARKER = "EXIT_CODE";
     private static final String EXIT_CODE_END_MARKER = "***";

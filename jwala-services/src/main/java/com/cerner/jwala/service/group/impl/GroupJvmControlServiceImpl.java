@@ -32,7 +32,7 @@ public class GroupJvmControlServiceImpl implements GroupJvmControlService {
     public GroupJvmControlServiceImpl(final GroupService theGroupService, final JvmControlService theJvmControlService) {
         groupService = theGroupService;
         jvmControlService = theJvmControlService;
-        executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("thread-task-executor.group-control.pool.size", "25")));
+        executorService = Executors.newFixedThreadPool(ApplicationProperties.getAsInteger("thread-task-executor.group-control.pool.size", 25));
     }
 
     @Transactional

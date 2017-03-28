@@ -119,7 +119,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         this.resourceService = resourceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
         this.binaryDistributionService = binaryDistributionService;
-        executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
+        executorService = Executors.newFixedThreadPool(ApplicationProperties.getAsInteger("resources.thread-task-executor.pool.size", 25));
     }
 
 

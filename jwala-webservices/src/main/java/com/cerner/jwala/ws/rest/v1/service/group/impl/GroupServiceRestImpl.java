@@ -91,7 +91,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         this.jvmService = jvmService;
         this.webServerService = webServerService;
         this.applicationService = applicationService;
-        executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
+        executorService = Executors.newFixedThreadPool(ApplicationProperties.getAsInteger("resources.thread-task-executor.pool.size", 25));
     }
 
     @Override

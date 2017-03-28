@@ -46,4 +46,9 @@ public class ApplicationPropertiesTest extends TestCase {
         assertEquals("reloaded", ApplicationProperties.get("reload.property"));
         assertNull(ApplicationProperties.get("home team"));
     }
+
+    public void testAsIntegerDefaultValue() {
+        assertEquals(new Integer(1111), ApplicationProperties.getAsInteger("xxxxxx.not.an.integer.property.that.exists.xxxxxx", 1111));
+        assertEquals(new Integer(5), ApplicationProperties.getAsInteger("net.stop.sleep.time.seconds", 1111));
+    }
 }

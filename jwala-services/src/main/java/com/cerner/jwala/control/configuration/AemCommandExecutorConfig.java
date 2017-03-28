@@ -31,7 +31,7 @@ public class AemCommandExecutorConfig {
 
     @Bean(destroyMethod = "shutdownNow")
     protected ExecutorService getExecutorService() {
-        return Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("command.executor.fixed.thread.pool", "150")));
+        return Executors.newFixedThreadPool(ApplicationProperties.getAsInteger("command.executor.fixed.thread.pool", 150));
     }
 
     @Bean
