@@ -24,20 +24,20 @@ import java.text.MessageFormat;
 public class JschCommandProcessorImpl implements CommandProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JschCommandProcessorImpl.class);
-    public static final int CHANNEL_BORROW_LOOP_WAIT_TIME = 180000;
+    private final int REMOTE_SHELL_OUTPUT_STREAM_MAX_WAIT_TIME = Integer.parseInt(ApplicationProperties.get("jwala.jsch.remote.shell.output.stream.max.wait.time", "180000"));
+    private final int REMOTE_EXEC_OUTPUT_STREAM_MAX_WAIT_TIME = Integer.parseInt(ApplicationProperties.get("jwala.jsch.remote.exec.output.stream.max.wait.time", "180000"));
+    private static final int CHANNEL_CONNECT_TIMEOUT = 60000;
+    private static final String EXIT_CODE_START_MARKER = "EXIT_CODE";
+    private static final String EXIT_CODE_END_MARKER = "***";
+    private static final int CHANNEL_BORROW_LOOP_WAIT_TIME = 180000;
 
+    private String commandOutputStr;
     private final JSch jsch;
     private final RemoteExecCommand remoteExecCommand;
+
     private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
 
     private ExecReturnCode returnCode;
-
-    private static final int CHANNEL_CONNECT_TIMEOUT = 60000;
-    private static final int REMOTE_SHELL_OUTPUT_STREAM_MAX_WAIT_TIME = Integer.parseInt(ApplicationProperties.get("jwala.jsch.remote.shell.output.stream.max.wait.time", "180000"));
-    private static final int REMOTE_EXEC_OUTPUT_STREAM_MAX_WAIT_TIME = Integer.parseInt(ApplicationProperties.get("jwala.jsch.remote.exec.output.stream.max.wait.time", "180000"));
-    private static final String EXIT_CODE_START_MARKER = "EXIT_CODE";
-    private static final String EXIT_CODE_END_MARKER = "***";
-    private String commandOutputStr;
     private String errorOutputStr;
 
     public JschCommandProcessorImpl(final JSch jsch, final RemoteExecCommand remoteExecCommand,
@@ -106,7 +106,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             final PrintStream commandStream = new PrintStream(out, true);
             final String commandString = remoteExecCommand.getCommand().toCommandString();
             LOGGER.debug("commandString = " + commandString);
-            
+
             commandStream.println(commandString);
             commandStream.println("echo 'EXIT_CODE='$?***");
             commandStream.println("echo -n -e '\\xff'");
@@ -158,9 +158,9 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             final long startTime = System.currentTimeMillis();
             while (!channel.isClosed()) {
                 if ((System.currentTimeMillis() - startTime) > REMOTE_EXEC_OUTPUT_STREAM_MAX_WAIT_TIME) {
-                    String errorOutput = MessageFormat.format("Timeout waiting for Jsch exec channel to close! max wait time={0} command={1}",REMOTE_EXEC_OUTPUT_STREAM_MAX_WAIT_TIME,remoteExecCommand.getCommand().toCommandString());
+                    String errorOutput = MessageFormat.format("Timeout waiting for Jsch exec channel to close! max wait time={0} command={1}", REMOTE_EXEC_OUTPUT_STREAM_MAX_WAIT_TIME, remoteExecCommand.getCommand().toCommandString());
                     LOGGER.error(errorOutput);
-                    LOGGER.debug("Remote output: " + remoteOutputStringBuilder.toString());
+                    LOGGER.debug("Remote output: {}", remoteOutputStringBuilder.toString());
                     remoteErrorStringBuilder.append(errorOutput);
                     break;
                 }
@@ -212,10 +212,12 @@ public class JschCommandProcessorImpl implements CommandProcessor {
     }
 
     @Override
-    public void close() throws IOException {}
+    public void close() throws IOException {
+    }
 
     /**
      * Read remote output stream.
+     *
      * @param in the input stream
      * @throws IOException
      */
@@ -226,12 +228,12 @@ public class JschCommandProcessorImpl implements CommandProcessor {
         final StringBuilder inStringBuilder = new StringBuilder();
 
         final long startTime = System.currentTimeMillis();
-        while(readByte != 0xff) {
+        while (readByte != 0xff) {
             if ((System.currentTimeMillis() - startTime) > REMOTE_SHELL_OUTPUT_STREAM_MAX_WAIT_TIME) {
                 timeout = true;
                 break;
             }
-            inStringBuilder.append((char)readByte);
+            inStringBuilder.append((char) readByte);
             readByte = in.read();
         }
 
@@ -252,6 +254,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
 
     /**
      * Parse the return code from the output string.
+     *
      * @param outputStr the output string
      * @return {@link ExecReturnCode}
      */
@@ -266,11 +269,12 @@ public class JschCommandProcessorImpl implements CommandProcessor {
 
     /**
      * Prepare the session by setting session properties.
+     *
      * @param remoteSystemConnection
      * @return {@link Session}
      * @throws JSchException
      */
-    private Session prepareSession(final RemoteSystemConnection remoteSystemConnection)  throws JSchException {
+    private Session prepareSession(final RemoteSystemConnection remoteSystemConnection) throws JSchException {
         final Session session = jsch.getSession(remoteSystemConnection.getUser(), remoteSystemConnection.getHost(),
                 remoteSystemConnection.getPort());
         final String password = remoteSystemConnection.getPassword();

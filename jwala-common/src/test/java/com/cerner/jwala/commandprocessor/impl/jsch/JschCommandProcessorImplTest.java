@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
@@ -78,6 +79,7 @@ public class JschCommandProcessorImplTest {
         when(mockChannel.getOutputStream()).thenReturn(mockLocalInput);
         when(mockChannel.getErrStream()).thenReturn(mockRemoteErr);
         when(mockChannel.isClosed()).thenReturn(true);
+        when(mockChannel.getExitStatus()).thenReturn(0);
         jschCommandProcessor = new JschCommandProcessorImpl(mockJsch, new RemoteExecCommand(new RemoteSystemConnection("testUser", "testPassword", "testHost", 1111),
                 new ExecCommand("scp ./jwala-services/src/test/resources/known_hosts destpath/testfile.txt".split(" "))), null);
         try {
@@ -86,6 +88,30 @@ public class JschCommandProcessorImplTest {
             assertTrue(returnCode.getWasSuccessful());
         } catch (RemoteCommandFailureException e) {
             assertTrue("This should not fail ... " + e.getMessage(), false);
+        }
+    }
+
+    @Test
+    public void testProcessCommandExecForNegativeExitStatus() throws JSchException, IOException {
+        String restorePropertiesRootPath = System.getProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources/properties/jsch");
+
+        when(mockSession.openChannel("exec")).thenReturn(mockChannel);
+        when(mockChannel.getInputStream()).thenReturn(remoteOutputStream);
+        when(mockChannel.getOutputStream()).thenReturn(mockLocalInput);
+        when(mockChannel.getErrStream()).thenReturn(mockRemoteErr);
+        when(mockChannel.isClosed()).thenReturn(false);
+        when(mockChannel.getExitStatus()).thenReturn(-1);
+        jschCommandProcessor = new JschCommandProcessorImpl(mockJsch, new RemoteExecCommand(new RemoteSystemConnection("testUser", "testPassword", "testHost", 1111),
+                new ExecCommand("scp ./jwala-services/src/test/resources/known_hosts destpath/testfile.txt".split(" "))), null);
+        try {
+            jschCommandProcessor.processCommand();
+            ExecReturnCode returnCode = jschCommandProcessor.getExecutionReturnCode();
+            assertFalse(returnCode.getWasSuccessful());
+        } catch (RemoteCommandFailureException e) {
+            assertTrue("This should not fail ... " + e.getMessage(), false);
+        } finally {
+            System.setProperty(ApplicationProperties.PROPERTIES_FILE_NAME, restorePropertiesRootPath);
         }
     }
 
