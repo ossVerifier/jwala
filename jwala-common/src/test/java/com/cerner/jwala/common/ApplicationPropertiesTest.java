@@ -50,5 +50,32 @@ public class ApplicationPropertiesTest extends TestCase {
     public void testAsIntegerDefaultValue() {
         assertEquals(new Integer(1111), ApplicationProperties.getAsInteger("xxxxxx.not.an.integer.property.that.exists.xxxxxx", 1111));
         assertEquals(new Integer(5), ApplicationProperties.getAsInteger("net.stop.sleep.time.seconds", 1111));
+
+        // test asInteger without default value
+        boolean caughtApplicationException = false;
+        try {
+            ApplicationProperties.getAsInteger("remote.paths.instances");
+        } catch (Exception e) {
+            assertTrue(e instanceof ApplicationException);
+            assertTrue(e.getMessage().contains("Expecting an integer"));
+            caughtApplicationException = true;
+        }
+        assertTrue(caughtApplicationException);
+
+        // test asInteger that takes a default value
+        caughtApplicationException = false;
+        try {
+            ApplicationProperties.getAsInteger("remote.paths.instances", 1111);
+        } catch (Exception e) {
+            assertTrue(e instanceof ApplicationException);
+            assertTrue(e.getMessage().contains("Expecting an integer"));
+            caughtApplicationException = true;
+        }
+        assertTrue(caughtApplicationException);
+    }
+
+    public void testGetWithDefault() {
+        assertEquals("d:/jwala/app/instances",ApplicationProperties.get("remote.paths.instances", "default-value"));
+        assertEquals("default-value",ApplicationProperties.get("xxx.remote.paths.instances.xxx", "default-value"));
     }
 }

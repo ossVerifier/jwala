@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Properties;
 
 public class ApplicationProperties {
@@ -54,7 +55,14 @@ public class ApplicationProperties {
     }
 
     public static Integer getAsInteger(String key) {
-        return Integer.parseInt(getProperties().getProperty(key));
+        final String returnVal = getProperties().getProperty(key);
+        try {
+            return Integer.parseInt(returnVal);
+        } catch (NumberFormatException ex) {
+            String errorMsg = MessageFormat.format("Expecting an integer value for property with key {0} but instead found {1}", key, returnVal);
+            LOGGER.error(errorMsg);
+            throw new ApplicationException(errorMsg, ex);
+        }
     }
 
     public static Integer getAsInteger(String key, Integer defaultValue) {
@@ -63,7 +71,14 @@ public class ApplicationProperties {
             LOGGER.debug("No property key found for {}, using default value {}", key, defaultValue);
             return defaultValue;
         }
-        return Integer.parseInt(returnVal);
+
+        try {
+            return Integer.parseInt(returnVal);
+        } catch (NumberFormatException ex) {
+            String errorMsg = MessageFormat.format("Expecting an integer value for property with key {0} but instead found {1}", key, returnVal);
+            LOGGER.error(errorMsg);
+            throw new ApplicationException(errorMsg, ex);
+        }
     }
 
     public static Boolean getAsBoolean(String key) {
