@@ -2,13 +2,18 @@ package com.cerner.jwala.service.app.impl;
 
 import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
 import com.cerner.jwala.commandprocessor.impl.jsch.JschScpCommandProcessorImpl;
+import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exec.*;
 import com.cerner.jwala.common.request.app.ControlApplicationRequest;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.app.ApplicationCommandService;
+import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSchException;
+import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * An implementation of ApplicationCommandService.
@@ -19,6 +24,10 @@ public class ApplicationCommandServiceImpl implements ApplicationCommandService 
 
     private final SshConfiguration sshConfig;
     private JschBuilder jschBuilder;
+
+    @Autowired
+    @Qualifier("execChannelPool")
+    private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
 
     public ApplicationCommandServiceImpl(final SshConfiguration sshConfig, JschBuilder jschBuilder) {
         this.sshConfig = sshConfig;
@@ -35,7 +44,7 @@ public class ApplicationCommandServiceImpl implements ApplicationCommandService 
         ExecCommand execCommand = new ExecCommand("secure-copy", params[1], params[2]);
         RemoteExecCommand remoteCommand = new RemoteExecCommand(remoteConnection, execCommand);
         try {
-            final JschScpCommandProcessorImpl jschScpCommandProcessor = new JschScpCommandProcessorImpl(jschBuilder.build(), remoteCommand);
+            final JschScpCommandProcessorImpl jschScpCommandProcessor = new JschScpCommandProcessorImpl(jschBuilder.build(), remoteCommand, channelPool);
             jschScpCommandProcessor.processCommand();
             // if processCommand fails it throws an exception before completing
             return new CommandOutput(new ExecReturnCode(0), "", "");

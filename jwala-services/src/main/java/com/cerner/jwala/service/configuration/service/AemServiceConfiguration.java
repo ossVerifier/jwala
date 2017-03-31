@@ -128,8 +128,8 @@ public class AemServiceConfiguration {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    @Autowired
-    private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
+//    @Autowired
+//    private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
 
     @Autowired
     private GroupStateNotificationService groupStateNotificationService;
@@ -353,8 +353,16 @@ public class AemServiceConfiguration {
         return new HistoryServiceImpl(historyCrudService);
     }
 
-    @Bean
-    public GenericKeyedObjectPool<ChannelSessionKey, Channel> getChannelPool(final AemSshConfig sshConfig) throws JSchException {
+    @Bean(name = "shellChannelPool")
+    public GenericKeyedObjectPool<ChannelSessionKey, Channel> getShellChannelPool(final AemSshConfig sshConfig) throws JSchException {
+        final GenericKeyedObjectPoolConfig genericKeyedObjectPoolConfig = new GenericKeyedObjectPoolConfig();
+        genericKeyedObjectPoolConfig.setMaxTotalPerKey(10);
+        genericKeyedObjectPoolConfig.setBlockWhenExhausted(true);
+        return new GenericKeyedObjectPool(new KeyedPooledJschChannelFactory(sshConfig.getJschBuilder().build()));
+    }
+
+    @Bean(name = "execChannelPool")
+    public GenericKeyedObjectPool<ChannelSessionKey, Channel> getExecChannelPool(final AemSshConfig sshConfig) throws JSchException {
         final GenericKeyedObjectPoolConfig genericKeyedObjectPoolConfig = new GenericKeyedObjectPoolConfig();
         genericKeyedObjectPoolConfig.setMaxTotalPerKey(10);
         genericKeyedObjectPoolConfig.setBlockWhenExhausted(true);

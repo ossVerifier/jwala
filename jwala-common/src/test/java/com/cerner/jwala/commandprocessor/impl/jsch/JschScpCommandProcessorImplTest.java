@@ -1,13 +1,16 @@
 package com.cerner.jwala.commandprocessor.impl.jsch;
 
 import com.cerner.jwala.commandprocessor.CommandProcessor;
+import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.exception.RemoteCommandFailureException;
+import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
+import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +34,9 @@ public class JschScpCommandProcessorImplTest {
     @Mock
     private RemoteExecCommand mockRemoteExecCommand;
 
+    @Mock
+    private GenericKeyedObjectPool<ChannelSessionKey, Channel> mockChannelPool;
+
     private CommandProcessor jschScpCommandProcessor;
 
     private static final String PROPERTIES_ROOT_PATH = "PROPERTIES_ROOT_PATH";
@@ -45,7 +51,7 @@ public class JschScpCommandProcessorImplTest {
     public void setup() {
         System.setProperty(PROPERTIES_ROOT_PATH, resourceDir);
         initMocks(this);
-        jschScpCommandProcessor = new JschScpCommandProcessorImpl(mockJsch, mockRemoteExecCommand);
+        jschScpCommandProcessor = new JschScpCommandProcessorImpl(mockJsch, mockRemoteExecCommand, mockChannelPool);
     }
 
     @After

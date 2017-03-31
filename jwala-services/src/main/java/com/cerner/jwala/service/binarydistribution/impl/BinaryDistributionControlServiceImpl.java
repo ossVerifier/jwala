@@ -1,6 +1,7 @@
 package com.cerner.jwala.service.binarydistribution.impl;
 
 import com.cerner.jwala.commandprocessor.impl.jsch.JschScpCommandProcessorImpl;
+import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exec.*;
@@ -11,9 +12,12 @@ import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
+import com.jcraft.jsch.Channel;
+import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -36,6 +40,10 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
     @Autowired
     private RemoteCommandExecutorService remoteCommandExecutorService;
 
+    @Autowired
+    @Qualifier("execChannelPool")
+    private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
+
     static String CREATE_DIR="if [ ! -e \"%s\" ]; then mkdir -p %s; fi;";
     static String REMOVE="rm";
     static String SECURE_COPY = "scp";
@@ -47,7 +55,7 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
     public CommandOutput secureCopyFile(final String hostname, final String source, final String destination) throws CommandFailureException  {
         RemoteExecCommand command = new RemoteExecCommand(getConnection(hostname),  new ExecCommand(SECURE_COPY, source, destination));
         try {
-            final JschScpCommandProcessorImpl jschScpCommandProcessor = new JschScpCommandProcessorImpl(aemSshConfig.getJschBuilder().build(), command);
+            final JschScpCommandProcessorImpl jschScpCommandProcessor = new JschScpCommandProcessorImpl(aemSshConfig.getJschBuilder().build(), command, channelPool);
             jschScpCommandProcessor.processCommand();
             jschScpCommandProcessor.close();
             return  new CommandOutput(new ExecReturnCode(jschScpCommandProcessor.getExecutionReturnCode().getReturnCode()),

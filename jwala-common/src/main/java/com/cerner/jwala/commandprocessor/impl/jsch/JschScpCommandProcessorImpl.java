@@ -1,6 +1,8 @@
 package com.cerner.jwala.commandprocessor.impl.jsch;
 
 import com.cerner.jwala.commandprocessor.CommandProcessor;
+import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
+import com.cerner.jwala.commandprocessor.jsch.impl.ChannelType;
 import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
@@ -8,17 +10,23 @@ import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.exception.RemoteCommandFailureException;
 import com.jcraft.jsch.*;
+import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 import java.util.List;
 
 public class JschScpCommandProcessorImpl implements CommandProcessor {
     private static final int TIMEOUT = 300000;
     public static final String JSCH_READ_ACK_SLEEP_DURATION = "jsch.read.ack.sleep.duration";
     public static final String READ_ACK_SLEEP_DEFAULT_VALUE = "250";
+    private static final int CHANNEL_CONNECT_TIMEOUT = 60000;
+    private static final int CHANNEL_BORROW_LOOP_WAIT_TIME = 180000;
     private boolean checkAckOk;
     private static final Logger LOGGER = LoggerFactory.getLogger(JschScpCommandProcessorImpl.class);
 
@@ -28,9 +36,12 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
     private OutputStream localInput;
     private InputStream remoteOutput;
 
-    public JschScpCommandProcessorImpl(JSch jsch, RemoteExecCommand remoteCommand) {
+    private final GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
+
+    public JschScpCommandProcessorImpl(JSch jsch, RemoteExecCommand remoteCommand, GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool) {
         this.jsch = jsch;
         this.remoteCommand = remoteCommand;
+        this.channelPool = channelPool;
     }
 
     /**
@@ -46,20 +57,25 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
         Session session = null;
         Channel channel = null;
 
-        try {
-            final RemoteSystemConnection remoteSystemConnection = remoteCommand.getRemoteSystemConnection();
+        final RemoteSystemConnection remoteSystemConnection = remoteCommand.getRemoteSystemConnection();
+        final ChannelSessionKey channelSessionKey = new ChannelSessionKey(remoteSystemConnection, ChannelType.EXEC);
+        ChannelExec channelExec = null;
 
+        try {
             LOGGER.debug("scp remote command {} source:{} destination:{}", remoteSystemConnection, commandFragments.get(1), commandFragments.get(2));
 
-            session = prepareSession(remoteSystemConnection);
-            session.connect();
+//            session = prepareSession(remoteSystemConnection);
+//            session.connect();
 
             final String target = commandFragments.get(2).replace("\\", "/");
-
             // exec 'scp -t rfile' remotely
             final String command = "scp -t " + target;
-            channel = session.openChannel("exec");
-            final ChannelExec channelExec = (ChannelExec) channel;
+
+//            channel = session.openChannel("exec");
+
+            channel = getChannelExec(channelSessionKey);
+
+            channelExec = (ChannelExec) channel;
             channelExec.setCommand(command);
 
             // get I/O streams for remote scp
@@ -67,6 +83,7 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
             remoteOutput = channelExec.getInputStream();
 
             channelExec.connect();
+
             LOGGER.debug(">>>>>> Channel connected...");
             if (checkAck(remoteOutput) != 0) {
                 throw new RemoteCommandFailureException(remoteCommand, new Throwable("Failed to connect to the remote host during secure copy"));
@@ -84,10 +101,15 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
             if (channel != null && channel.isConnected()) {
                 channel.disconnect();
             }
+//
+//            if (session != null && session.isConnected()) {
+//                session.disconnect();
+//            }
 
-            if (session != null && session.isConnected()) {
-                session.disconnect();
+            if (channel != null) {
+                channelPool.returnObject(channelSessionKey, channel);
             }
+
         }
     }
 
@@ -292,6 +314,46 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
             session.setConfig("PreferredAuthentications", "password,gssapi-with-mic,publickey,keyboard-interactive");
         }
         return session;
+    }
+
+    /**
+     * Get a {@link ChannelExec}
+     *
+     * @param channelSessionKey the session key that identifies the channel
+     * @return {@link ChannelExec}
+     * @throws Exception thrown by borrowObject and invalidateObject
+     */
+    private ChannelExec getChannelExec(final ChannelSessionKey channelSessionKey) throws Exception {
+        final long startTime = System.currentTimeMillis();
+        Channel channel;
+        do {
+            LOGGER.debug("borrowing a channel...");
+            channel = channelPool.borrowObject(channelSessionKey);
+//            if (channel != null) {
+//                LOGGER.debug("channel {} borrowed", channel.getId());
+//                if (!channel.isConnected()) {
+//                    try {
+//                        LOGGER.debug("channel {} connecting...", channel.getId());
+//                        channel.connect(CHANNEL_CONNECT_TIMEOUT);
+//                        LOGGER.debug("channel {} connected!", channel.getId());
+//                    } catch (final JSchException jsche) {
+//                        LOGGER.error("Borrowed channel {} connection failed! Invalidating the channel...",
+//                                channel.getId(), jsche);
+//                        channelPool.invalidateObject(channelSessionKey, channel);
+//                    }
+//                } else {
+//                    LOGGER.debug("Channel {} already connected!", channel.getId());
+//                }
+//            }
+//
+            if (channel == null && (System.currentTimeMillis() - startTime) > CHANNEL_BORROW_LOOP_WAIT_TIME) {
+                final String errMsg = MessageFormat.format("Failed to get a channel within {0} ms! Aborting channel acquisition!",
+                        CHANNEL_BORROW_LOOP_WAIT_TIME);
+                LOGGER.error(errMsg);
+                throw new RuntimeException(errMsg);
+            }
+        } while (channel == null);
+        return (ChannelExec) channel;
     }
 
 }

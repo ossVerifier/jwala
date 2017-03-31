@@ -15,6 +15,7 @@ import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
@@ -57,6 +58,7 @@ public class JschServiceImpl implements JschService {
     private JSch jsch;
 
     @Autowired
+    @Qualifier("shellChannelPool")
     private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
 
     @Override
