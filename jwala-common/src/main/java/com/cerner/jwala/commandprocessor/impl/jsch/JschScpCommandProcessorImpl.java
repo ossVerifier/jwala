@@ -6,6 +6,7 @@ import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.exception.RemoteCommandFailureException;
 import com.jcraft.jsch.*;
 import org.slf4j.Logger;
@@ -16,7 +17,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class JschScpCommandProcessorImpl implements CommandProcessor {
-    private static final int TIMEOUT = 300000;
+    private static final int TIMEOUT = ApplicationProperties.getAsInteger(PropertyKeys.JSCP_READ_REMOTE_TIMEOUT, 300000);
+
     public static final String JSCH_READ_ACK_SLEEP_DURATION = "jsch.read.ack.sleep.duration";
     public static final String READ_ACK_SLEEP_DEFAULT_VALUE = "250";
     private boolean checkAckOk;
