@@ -45,7 +45,8 @@ var CodeMirrorComponent = React.createClass({
     resize: function() {
         var textAreaHeight = $(this.refs.theContainer.getDOMNode()).height() - $(this.refs.theToolbar.getDOMNode()).height() -
                     CodeMirrorComponent.SPLITTER_DISTANCE_FROM_TOOLBAR;
-        $(".CodeMirror.cm-s-default").css("height", $(".horz-divider.rsplitter.childContainer.vert").height() - $(".RToolBar").height() - 35);
+        console.log(textAreaHeight);
+        $(".CodeMirror.cm-s-default").css("height", textAreaHeight);
     },
     onChanged: function() {
         this.refs.theToolbar.refs.saveBtn.setEnabled(this.isContentChanged());
@@ -56,5 +57,8 @@ var CodeMirrorComponent = React.createClass({
         this.codeMirror.setValue(data);
         this.codeMirror.on("change", this.onChanged);
         this.state.data = this.codeMirror.getValue();
+    },
+    statics: {
+        SPLITTER_DISTANCE_FROM_TOOLBAR: 19
     }
 });

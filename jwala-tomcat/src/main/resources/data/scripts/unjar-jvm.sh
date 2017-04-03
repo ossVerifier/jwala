@@ -36,12 +36,9 @@ if $cygwin; then
       /usr/bin/echo JVM version not installed: $3 does not exist on this host
       exit $JWALA_EXIT_CODE_FAILED
     fi
+
     $3 xf `cygpath -wa $1`
     /usr/bin/rm $1
-    #delete META-INF
-    if [ -e "$2/../META-INF" ]; then
-      rm -r "$2/../META-INF"
-    fi
     /usr/bin/echo Deploy of $1 was successful
     exit $JWALA_EXIT_CODE_SUCCESS
 fi
@@ -68,10 +65,6 @@ if $linux; then
     fi
 	$3 xf $1
     rm $1
-    #delete META-INF
-    if [ -e "$2/../META-INF" ]; then
-      /usr/bin/sudo rm -r "$2/../META-INF"
-    fi
     echo Deploy of $1 was successful
     exit $JWALA_EXIT_CODE_SUCCESS
 
