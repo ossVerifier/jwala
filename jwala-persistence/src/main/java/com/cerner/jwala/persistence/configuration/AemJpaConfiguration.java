@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import javax.naming.NamingException;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
+import com.cerner.jwala.common.properties.ApplicationProperties;
 
 @Configuration
 @EnableTransactionManagement
@@ -43,7 +44,7 @@ public class AemJpaConfiguration {
     @Bean
     public PlatformTransactionManager getPlatformTransactionManager(final EntityManagerFactory emf) {
         final JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setDefaultTimeout(30);
+        transactionManager.setDefaultTimeout(ApplicationProperties.getAsInteger("jpa.transaction.timeout",120));
         transactionManager.setEntityManagerFactory(emf);
         return transactionManager;
     }

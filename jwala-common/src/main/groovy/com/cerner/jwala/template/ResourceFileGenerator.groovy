@@ -9,13 +9,26 @@ import com.cerner.jwala.common.properties.ApplicationProperties
 import com.cerner.jwala.common.properties.ExternalProperties
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException
 import groovy.text.StreamingTemplateEngine
+import groovy.text.Template
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.*;
+import java.util.concurrent.*;
 
 class ResourceFileGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceFileGenerator.class);
-
+    private static HashMap<String,TemplateCacheEntry> templates = new ConcurrentHashMap<String,TemplateCacheEntry>();
+    private static Object locker = new Object();
+	
+	// 1 hour in millis = 60 minutes = 60 * 60 seconds = 60 * 60 * 1000 milliseconds
+	private static long retentionTimeMillis = 3600000;
+	
+	class TemplateCacheEntry {
+		public Template tmpl;
+		public Long createTimeMillis;
+	}
+	
     static <T> String generateResourceConfig(String fileName, String templateText, ResourceGroup resourceGroup, T selectedValue) {
         Group group = null
         WebServer webServer = null
@@ -83,9 +96,29 @@ class ResourceFileGenerator {
         }
 
         final engine = new StreamingTemplateEngine();
+        TemplateCacheEntry templce = null;
+        synchronized (locker) {
+	        templce = templates.get(templateText);
+	        if (templce==null) {
+	        	templce = new TemplateCacheEntry();
+	        	templce.templ = engine.createTemplate(templateText);
+				templce.createTimeMillis = System.currentTimeMillis();
+		        templates.put(templateText, templce);
+	        	LOGGER.info("Created new template for:" + fileName);
+	        } else {
+	        	LOGGER.info("Re-using template for:" + fileName);
+	        }
+	        
+		    for (Iterator<Map.Entry<String, TemplateCacheEntry>> it = templates.entrySet().iterator(); it.hasNext(); ) {
+		      Map.Entry<String, TemplateCacheEntry> entry = it.next();
+		      if (entry.createTimeMillis<(System.currentTimeMillis-retentionTimeMillis)) {
+		        it.remove();
+		      }
+		    }
+        }
 
         try {
-            return engine.createTemplate(templateText).make(binding.withDefault { '' })
+            return templce.templ.make(binding.withDefault { '' })
         } catch (final Exception e) {
             final String messageHistory = "Failed to bind data and properties to : " + fileName.trim();
             final String message = messageHistory + " for " + entityInfo + ". Cause(s) of the failure is/are: " + e.getMessage()

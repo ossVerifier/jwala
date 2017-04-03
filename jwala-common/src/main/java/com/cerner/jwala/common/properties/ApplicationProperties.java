@@ -85,6 +85,20 @@ public class ApplicationProperties {
         return Integer.parseInt(getProperties().getProperty(key));
     }
 
+    public static Integer getAsInteger(String key, int defaultVal) {
+    	String v = get(key);
+    	if (v==null) {
+            LOGGER.warn("Error getting integer value for {}. Returning the default value {}.", key, defaultVal);
+    		return defaultVal;
+    	}
+    	try {
+    		return Integer.parseInt(getProperties().getProperty(key));
+    	} catch (Exception e) {
+            LOGGER.warn("Error getting integer value for {}. Returning the default value {}.", key, defaultVal);
+    		return defaultVal;    		
+    	}
+    }
+
     public static Boolean getAsBoolean(String key) {
         return Boolean.parseBoolean(getProperties().getProperty(key));
     }
