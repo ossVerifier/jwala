@@ -75,9 +75,7 @@ var MainTabs = React.createClass({
         return <div>Loading tab items...</div>
     },
     componentDidMount: function() {
-        var items = [{title:"Operations", content:<GroupOperations className="group-config"
-                                                                   service={ServiceFactory.getGroupService()}
-                                                                   statePollTimeout={jwalaVars.statePollTimeout}/>},
+        var items = [{title:"Operations", content:<GroupOperationsPage/>},
                      {title: "Configuration", content:<ConfigureTabs/>,  disabled: !MainArea.isAdminRole},
                      {title: "Admin", content:<AdminTab/>}]
         this.setState({items: items});

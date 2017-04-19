@@ -77,6 +77,7 @@
 <script src="gen-public-resources/js/react/flashing-button.js"></script>
 <script src="gen-public-resources/js/react/generic-components/datatable-button.js"></script>
 <script src="gen-public-resources/js/react/group-operations/GroupOperations.js"></script>
+<script src="gen-public-resources/js/react/group-operations/GroupOperationsPage.js"></script>
 <script src="gen-public-resources/js/react/group-operations/CommandStatusWidget.js"></script>
 <script src="gen-public-resources/js/react/group-operations/GroupOperationsDataTable.js"></script>
 <script src="gen-public-resources/js/react/group-operations/ServerStateWidget.js"></script>
