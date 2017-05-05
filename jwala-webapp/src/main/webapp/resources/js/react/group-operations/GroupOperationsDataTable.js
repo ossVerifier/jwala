@@ -667,7 +667,7 @@ var GroupOperationsDataTable = React.createClass({
         };
         var heapDumpRequestCallback = function (response) {
             var msg;
-            if (response.applicationResponseContent.standardError === "") {
+            if (!response.applicationResponseContent.standardError) {
                 msg = response.applicationResponseContent.standardOutput;
                 if (msg.trim() === "") {
                     msg = "Oops! Something went wrong! The JVM might not have been started.";
