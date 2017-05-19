@@ -1,0 +1,12 @@
+{
+    "deployFileName":"test-webapp.properties",
+    "deployPath":"${vars.'remote.paths.instances'}/../properties",
+    "templateName":"test-webapp.properties.tpl",
+    "contentType":"text/xml",
+    "entity":{
+                "type":"GROUPED_APPS",
+                "group":"Postman-Test-Group",
+                "target":"Postman-test-webapp",
+                "deployToJvms":"true"
+        }
+}
