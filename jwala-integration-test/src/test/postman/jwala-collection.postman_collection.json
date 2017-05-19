@@ -4235,7 +4235,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"jvmId\":\"{{JvmId}}\",\"systemProperties\":\"\",\"jvmName\":\"{{JvmName}}\",\"hostName\":\"{{host}}\",\"statusPath\":\"/tomcat-power.gif\",\"httpPort\":\"9110\",\"httpsPort\":\"9111\",\"redirectPort\":\"9112\",\"shutdownPort\":\"-1\",\"ajpPort\":\"9113\",\"userName\":\"\",\"encryptedPassword\":\"\",\"groupIds\":[{\"groupId\":{{GroupId}}}]}"
+							"raw": "{\"jvmId\":\"{{JvmId}}\",\"systemProperties\":\"\",\"jvmName\":\"{{JvmName}}\",\"hostName\":\"{{host}}\",\"statusPath\":\"/tomcat-power.gif\",\"httpPort\":\"{{JvmHttpPort}}\",\"httpsPort\":\"{{JvmHttpsPort}}\",\"redirectPort\":\"9112\",\"shutdownPort\":\"-1\",\"ajpPort\":\"9113\",\"userName\":\"\",\"encryptedPassword\":\"\",\"groupIds\":[{\"groupId\":{{GroupId}}}]}"
 						},
 						"description": ""
 					},
@@ -5051,7 +5051,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"jvmId\":\"999999\",\"systemProperties\":\"\",\"jvmName\":\"{{JvmName}}\",\"hostName\":\"{{host}}\",\"statusPath\":\"/tomcat-power.gif\",\"httpPort\":\"9110\",\"httpsPort\":\"9111\",\"redirectPort\":\"9112\",\"shutdownPort\":\"-1\",\"ajpPort\":\"9113\",\"userName\":\"\",\"encryptedPassword\":\"\",\"groupIds\":[{\"groupId\":\"{{GroupId}}\"}],\"jdkMediaId\":\"\"}"
+							"raw": "{\"jvmId\":\"999999\",\"systemProperties\":\"\",\"jvmName\":\"{{JvmName}}\",\"hostName\":\"{{host}}\",\"statusPath\":\"/tomcat-power.gif\",\"httpPort\":\"{{JvmHttpPort}}\",\"httpsPort\":\"{{JvmHttpsPort}}\",\"redirectPort\":\"9112\",\"shutdownPort\":\"-1\",\"ajpPort\":\"9113\",\"userName\":\"\",\"encryptedPassword\":\"\",\"groupIds\":[{\"groupId\":\"{{GroupId}}\"}],\"jdkMediaId\":\"\"}"
 						},
 						"description": "Update jvm with existing name"
 					},
