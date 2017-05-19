@@ -4350,7 +4350,7 @@
 						}
 					],
 					"request": {
-						"url": "{{url}}/v1.0/resources/exists/fileName?jvmName={{HealthCheckJvm}}",
+						"url": "{{url}}/v1.0/resources/exists/fileName?jvmName={{JvmName}}",
 						"method": "GET",
 						"header": [],
 						"body": {
@@ -4378,7 +4378,7 @@
 						}
 					],
 					"request": {
-						"url": "{{url}}/v1.0/resources/exists/fileName?webappName={{HealthCheckApp}}",
+						"url": "{{url}}/v1.0/resources/exists/fileName?webappName={{WebappName}}",
 						"method": "GET",
 						"header": [],
 						"body": {
@@ -4406,7 +4406,7 @@
 						}
 					],
 					"request": {
-						"url": "{{url}}/v1.0/resources/exists/fileName?webserverName={{HealthCheckWebServer}}",
+						"url": "{{url}}/v1.0/resources/exists/fileName?webserverName={{WebserverName}}",
 						"method": "GET",
 						"header": [],
 						"body": {
@@ -5472,14 +5472,14 @@
 					"response": []
 				},
 				{
-					"name": "update health-check.war metadata",
+					"name": "update hello-world.war metadata",
 					"request": {
-						"url": "{{url}}/v1.0/resources/template/metadata/healthcheck-webapp-1.0.1.war;group={{HealthCheckGroup}};webApp={{HealthCheckApp}}",
+						"url": "{{url}}/v1.0/resources/template/metadata/{{WebAppWarFileName}};group={{GroupName}};webApp={{WebappName}}",
 						"method": "PUT",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"templateName\":\"healthcheck-webapp-1.0.1.war\",\r\n    \"contentType\":\"application/binary\",\r\n    \"deployPath\":\"${vars['remote.jwala.webapps.dir']\",\r\n    \"deployFileName\":\"healthcheck-webapp-1.0.1.war\",\r\n    \"unpack\": false,\r\n    \"entity\":{\r\n        \"type\":\"GROUPED_APPS\",\r\n        \"group\":\"HEALTH CHECK 4.0\",\r\n        \"target\":\"HEALTH-CHECK-4.0\",\r\n        \"deployToJvms\":false\r\n    }\r\n}"
+							"raw": "{\r\n    \"templateName\":\"{{WebAppWarFileName}}\",\r\n    \"contentType\":\"application/binary\",\r\n    \"deployPath\":\"${vars['remote.jwala.webapps.dir']\",\r\n    \"deployFileName\":\"{{WebAppWarFileName}}\",\r\n    \"unpack\": false,\r\n    \"entity\":{\r\n        \"type\":\"GROUPED_APPS\",\r\n        \"group\":\"{{GroupName}}\",\r\n        \"target\":\"{{WebAppName}}\",\r\n        \"deployToJvms\":false\r\n    }\r\n}"
 						},
 						"description": ""
 					},
@@ -5500,7 +5500,7 @@
 						}
 					],
 					"request": {
-						"url": "{{url}}/v1.0/groups/{{HealthCheckGroup}}/apps/conf/healthcheck-webapp-1.0.1.war/HEALTH-CHECK-4.0?hostName={{host}}",
+						"url": "{{url}}/v1.0/groups/{{GroupName}}/apps/conf/{{WebAppWarFileName}}/{{WebappName}}?hostName={{host}}",
 						"method": "PUT",
 						"header": [],
 						"body": {
@@ -5514,12 +5514,12 @@
 				{
 					"name": "update jvm child's metadata",
 					"request": {
-						"url": "{{url}}/v1.0/resources/template/metadata/hct.xml;group=HEALTH%20CHECK%204.0;jvm={{HealthCheckJvm}};webApp=HEALTH-CHECK-4.0",
+						"url": "{{url}}/v1.0/resources/template/metadata/{{WebAppContextFileName}};group={{GroupName}};jvm={{JvmName}};webApp={{WebAppName}}",
 						"method": "PUT",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n        \"templateName\":\"hctXmlTemplate.tpl\",\r\n        \"contentType\":\"text/xml\",\r\n        \"deployPath\":\"${vars.'remote.paths.instances'/${jvm.jvmName}/conf/stp/localhost\",\r\n        \"deployFileName\":\"hct.xml\",\r\n        \"entity\":{\r\n                \"type\":\"GROUPED_APPS\",\r\n                \"group\":\"HEALTH CHECK 4.0\",\r\n                \"target\":\"HEALTH-CHECK-4.0\"\r\n        }\r\n}"
+							"raw": "{\r\n        \"templateName\":\"{{WebAppContextFileName}}.tpl\",\r\n        \"contentType\":\"text/xml\",\r\n        \"deployPath\":\"${vars.'remote.paths.instances'/${jvm.jvmName}/conf/stp/localhost\",\r\n        \"deployFileName\":\"{{WebAppContextFileName}}\",\r\n        \"entity\":{\r\n                \"type\":\"GROUPED_APPS\",\r\n                \"group\":\"{{GroupName}}\",\r\n                \"target\":\"{{WebAppName}}\"\r\n        }\r\n}"
 						},
 						"description": ""
 					},
@@ -5539,7 +5539,7 @@
 						}
 					],
 					"request": {
-						"url": "{{url}}/v1.0/applications/HEALTH-CHECK-4.0/conf/hct.xml;groupName=HEALTH%20CHECK%204.0;jvmName={{HealthCheckJvm}}",
+						"url": "{{url}}/v1.0/applications/{{WebAppName}}/conf/{{WebAppContextFileName}};groupName={{GroupName}};jvmName={{JvmName}}",
 						"method": "PUT",
 						"header": [],
 						"body": {
@@ -5553,26 +5553,26 @@
 				{
 					"name": "update jvm child's metadata copy",
 					"request": {
-						"url": "{{url}}/v1.0/resources/template/metadata/hct.xml;group=HEALTH%20CHECK%204.0;jvm={{HealthCheckJvm}};webApp=HEALTH-CHECK-4.0",
+						"url": "{{url}}/v1.0/resources/template/metadata/{{WebAppContextFileName}};group={{GroupName}};jvm={{JvmName}};webApp={{WebAppName}}",
 						"method": "PUT",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n        \"templateName\":\"hctXmlTemplate.tpl\",\r\n        \"contentType\":\"text/xml\",\r\n        \"deployPath\":\"${vars.'remote.paths.instances'}/${jvm.jvmName}/conf/stp/localhost\",\r\n        \"deployFileName\":\"hct.xml\",\r\n        \"entity\":{\r\n                \"type\":\"GROUPED_APPS\",\r\n                \"group\":\"HEALTH CHECK 4.0\",\r\n                \"target\":\"HEALTH-CHECK-4.0\"\r\n        }\r\n}\r\n\r\n"
+							"raw": "{\r\n        \"templateName\":\"{{WebAppContextFileName}}.tpl\",\r\n        \"contentType\":\"text/xml\",\r\n        \"deployPath\":\"${vars.'remote.paths.instances'}/${jvm.jvmName}/conf/stp/localhost\",\r\n        \"deployFileName\":\"{{WebAppContextFileName}}\",\r\n        \"entity\":{\r\n                \"type\":\"GROUPED_APPS\",\r\n                \"group\":\"{{GroupName}}\",\r\n                \"target\":\"{{WebAppName}}\"\r\n        }\r\n}\r\n\r\n"
 						},
 						"description": ""
 					},
 					"response": []
 				},
 				{
-					"name": "update health-check.war metadata copy",
+					"name": "update hello-world.war metadata copy",
 					"request": {
-						"url": "{{url}}/v1.0/resources/template/metadata/healthcheck-webapp-1.0.1.war;group=HEALTH%20CHECK%204.0;webApp=HEALTH-CHECK-4.0",
+						"url": "{{url}}/v1.0/resources/template/metadata/{{WebAppWarFileName}};group={{GroupName}};webApp={{WebAppName}}",
 						"method": "PUT",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"templateName\":\"healthcheck-webapp-1.0.1.war\",\r\n    \"contentType\":\"application/binary\",\r\n    \"deployPath\":\"${vars['remote.jwala.webapps.dir']}\",\r\n    \"deployFileName\":\"healthcheck-webapp-1.0.1.war\",\r\n    \"unpack\": false,\r\n    \"entity\":{\r\n        \"type\":\"GROUPED_APPS\",\r\n        \"group\":\"HEALTH CHECK 4.0\",\r\n        \"target\":\"HEALTH-CHECK-4.0\",\r\n        \"deployToJvms\":false\r\n    }\r\n}"
+							"raw": "{\r\n    \"templateName\":\"{{WebAppWarFileName}}\",\r\n    \"contentType\":\"application/binary\",\r\n    \"deployPath\":\"${vars['remote.jwala.webapps.dir']}\",\r\n    \"deployFileName\":\"{{WebAppWarFileName}}\",\r\n    \"unpack\": false,\r\n    \"entity\":{\r\n        \"type\":\"GROUPED_APPS\",\r\n        \"group\":\"{{GroupName}}\",\r\n        \"target\":\"{{WebAppName}}\",\r\n        \"deployToJvms\":false\r\n    }\r\n}"
 						},
 						"description": ""
 					},
@@ -5729,7 +5729,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"webappId\":{{AppId}},\"name\":\"HEALTH-CHECK-4.0\",\"webappContext\":\"/{{WebAppContext}}\",\"groupId\":{{GroupId}},\"loadBalanceAcrossServers\":true}"
+							"raw": "{\"webappId\":{{AppId}},\"name\":\"{{WebAppName}}\",\"webappContext\":\"/{{WebAppContext}}\",\"groupId\":{{GroupId}},\"loadBalanceAcrossServers\":true}"
 						},
 						"description": ""
 					},
