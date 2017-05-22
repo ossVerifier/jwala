@@ -1102,13 +1102,13 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"tests[\"Status code is 201\"] = responseCode.code === 201;"
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
 								]
 							}
 						}
 					],
 					"request": {
-						"url": "{{url}}/v1.0/resources/template/",
+						"url": "{{url}}/v1.0/resources/template",
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -1955,7 +1955,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "[{\"webserverId\":\"999999\",\"webserverName\":{{WebserverName}},\"hostName\":\"{{host}}\",\"portNumber\":\"{{WebserverHttpPort}}\",\"httpsPort\":\"{{WebserverHttpsPort}}\",\"statusPath\":\"/apache_pb.png\",\"groupIds\":[{\"groupId\":{{GroupId}}}]}]"
+							"raw": "[{\"webserverId\":\"999999\",\"webserverName\":\"{{WebserverName}}\",\"hostName\":\"{{host}}\",\"portNumber\":\"{{WebserverHttpPort}}\",\"httpsPort\":\"{{WebserverHttpsPort}}\",\"statusPath\":\"/apache_pb.png\",\"groupIds\":[{\"groupId\":\"{{GroupId}}\"}], \"apacheHttpdMediaId\":\"HttpdMediaId\"}]"
 						},
 						"description": "Try and update a web server with ID 999999"
 					},
