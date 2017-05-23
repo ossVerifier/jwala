@@ -1,6 +1,7 @@
 package com.cerner.jwala.service.jvm.impl;
 
 import com.cerner.jwala.common.FileUtility;
+import com.cerner.jwala.common.JwalaUtil;
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
@@ -757,7 +758,7 @@ public class JvmServiceImpl implements JvmService {
         } else {
             updateState(jvm.getId(), JvmState.JVM_FAILED);
             String standardError =
-                    execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
+                    JwalaUtil.scrubDomainUserPassword(execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError());
             LOGGER.error("Installing windows service {} failed :: ERROR: {}", jvm.getJvmName(), standardError);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Installing windows service failed for " + INSTALL_SERVICE_SCRIPT_NAME + ".  Please refer to the history window.");
         }

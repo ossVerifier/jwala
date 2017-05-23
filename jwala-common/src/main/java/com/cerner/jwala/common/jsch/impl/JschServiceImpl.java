@@ -12,6 +12,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 
+import com.cerner.jwala.common.JwalaUtil;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,7 +142,7 @@ public class JschServiceImpl implements JschService {
                                 remoteSystemConnection.getHost(), remoteSystemConnection.getPort(), remoteSystemConnection.getUser()), e);
             }
 
-            final String errMsg = MessageFormat.format("Failed to run the following command: {0}", command);
+            final String errMsg = MessageFormat.format("Failed to run the following command: {0}", JwalaUtil.scrubDomainUserPassword(command.toString()));
             LOGGER.error(errMsg, e);
             throw new JschServiceException(errMsg, e);
         } finally {

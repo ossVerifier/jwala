@@ -1,5 +1,6 @@
 package com.cerner.jwala.service.jvm.impl;
 
+import com.cerner.jwala.common.JwalaUtil;
 import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -39,26 +40,27 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 
+import static org.opengis.metadata.identification.TopicCategory.HEALTH;
+
 public class JvmControlServiceImpl implements JvmControlService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JvmControlServiceImpl.class);
+    public static final String INSTALL_SERVICE_PWD_PARAM = "svc_password=" ;
+    public static final String INSTALL_SERVICE_PWD_PATTERN = INSTALL_SERVICE_PWD_PARAM+"(.*?)\\s";
+    private static final String FORCED_STOPPED = "FORCED STOPPED";
+    private static final String JVM = "JVM ";
+    private static final String MSG_SERVICE_ALREADY_STARTED = "Service already started";
+    private static final String MSG_SERVICE_ALREADY_STOPPED = "Service already stopped";
+    private static final int THREAD_SLEEP_DURATION = 1000;
+    private final JvmPersistenceService jvmPersistenceService;
+    private final HistoryFacadeService historyFacadeService;
+    private final JvmStateService jvmStateService;
 
     @Autowired
     private JvmCommandFactory jvmCommandFactory;
 
     @Autowired
     private ShellCommandFactory shellCommandFactory;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(JvmControlServiceImpl.class);
-    private static final String FORCED_STOPPED = "FORCED STOPPED";
-    private static final String JVM = "JVM ";
-
-    private final JvmPersistenceService jvmPersistenceService;
-    private final HistoryFacadeService historyFacadeService;
-    private final JvmStateService jvmStateService;
-
-    private static final int THREAD_SLEEP_DURATION = 1000;
-
-    private static final String MSG_SERVICE_ALREADY_STARTED = "Service already started";
-    private static final String MSG_SERVICE_ALREADY_STOPPED = "Service already stopped";
 
     public JvmControlServiceImpl(final JvmPersistenceService jvmPersistenceService,
                                  final JvmStateService jvmStateService,
@@ -146,8 +148,11 @@ public class JvmControlServiceImpl implements JvmControlService {
 
             return commandOutput;
         } catch (final RemoteCommandExecutorServiceException e) {
-            LOGGER.error(e.getMessage(), e);
-            historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), e.getMessage(), EventType.SYSTEM_ERROR,
+            String message = e.getMessage();
+            if(controlJvmRequest.getControlOperation().equals(JvmControlOperation.INSTALL_SERVICE)){
+                message = JwalaUtil.scrubDomainUserPassword(message);
+            }
+            historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), message, EventType.SYSTEM_ERROR,
                     aUser.getId());
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE,
                     "CommandFailureException when attempting to control a JVM: " + controlJvmRequest, e);

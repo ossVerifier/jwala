@@ -23,8 +23,8 @@
 HTTPD_LANG=${HTTPD_LANG-"C"}
 
 INITLOGS_ARGS=""
-
 apache_home=@APACHE_HOME@
+export LD_LIBRARY_PATH=$apache_home/lib:$LD_LIBRARY_PATH
 httpd_conf=@HTTPD_CONF@
 httpd=${HTTPD-$apache_home/bin/httpd}
 prog=httpd
