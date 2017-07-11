@@ -1,4 +1,4 @@
-package com.cerner.jwala.ui.selenium.steps.configuration;
+package com.cerner.jwala.ui.selenium.steps.configuration.webapp;
 
 import com.cerner.jwala.ui.selenium.SeleniumTestHelper;
 import com.cerner.jwala.ui.selenium.component.JwalaUi;
@@ -19,7 +19,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by Jedd Cuison on 7/5/2017
  */
-public class ManageWebAppRunSteps {
+public class CreateWebAppRunSteps {
 
     @Autowired
     private JwalaUi jwalaUi;
