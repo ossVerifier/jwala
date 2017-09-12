@@ -144,12 +144,15 @@ public class JwalaUi {
         return true;
     }
 
-    public void sendKeys(final CharSequence val) {
-        driver.switchTo().activeElement().sendKeys(val);
+    public void sendKeys(final String val) {
+        jsSendKeys(val, driver.switchTo().activeElement());
     }
 
     public void sendKeys(final By by, final String val) {
-        final WebElement textBox = driver.findElement(by);
+        jsSendKeys(val, driver.findElement(by));
+    }
+
+    private void jsSendKeys(final String val, final WebElement textBox) {
         final JavascriptExecutor myExecutor = ((JavascriptExecutor) driver);
         myExecutor.executeScript("arguments[0].value='" + val + "';", textBox);
     }
