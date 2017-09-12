@@ -5,6 +5,7 @@ import com.cerner.jwala.common.scrubber.ScrubberService;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -31,6 +32,8 @@ public class TestConfig {
     private static final String ELEMENT_SEARCH_RENDER_WAIT_TIME = "element.search.render.wait.time";
     private static final String TEST_PROPERTY_PATH = "test.property.path";
     private static final String PARAMETERS_PROPERTIES = "selenium/test.properties";
+    public static final String ELEMENT_CONDITIONAL_EVENT_WAIT_TIME = "element.conditional.event.wait.time";
+    public static final String DEFAULT_ELEMENT_CONDITIONAL_EVENT_WAIT_TIME = "20";
 
     public TestConfig() throws SQLException, IOException, ClassNotFoundException {
         // make sure the db is clean before running the tests
@@ -51,8 +54,12 @@ public class TestConfig {
     }
 
     @Bean
-    public WebDriverWait getWebDriverWait(final WebDriver driver) {
-        return new WebDriverWait(driver, 20, 100);
+    public WebDriverWait getWebDriverWait(final WebDriver driver,
+                                          @Qualifier("seleniumTestProperties")
+                                          final Properties properties) {
+        final long timeout = NumberUtils.toLong(properties.getProperty(ELEMENT_CONDITIONAL_EVENT_WAIT_TIME,
+                                                                       DEFAULT_ELEMENT_CONDITIONAL_EVENT_WAIT_TIME));
+        return new WebDriverWait(driver, timeout, 100);
     }
 
     @Bean(name = "parameterProperties")
