@@ -148,8 +148,10 @@ public class JwalaUi {
         driver.switchTo().activeElement().sendKeys(val);
     }
 
-    public void sendKeys(final By by, final CharSequence val) {
-        driver.findElement(by).sendKeys(val);
+    public void sendKeys(final By by, final String val) {
+        final WebElement textBox = driver.findElement(by);
+        final JavascriptExecutor myExecutor = ((JavascriptExecutor) driver);
+        myExecutor.executeScript("arguments[0].value='" + val + "';", textBox);
     }
 
     public void click(final By by) {
