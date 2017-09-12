@@ -23,6 +23,7 @@ public class LoginRunSteps {
     @Given("^I am on the login page$")
     public void loadLoginPage() {
         jwalaUi.loadPath("/login");
+        jwalaUi.waitUntilElementIsVisible(By.id("logInForm"));
     }
 
     @When("^I fill in the \"User Name\" field with a valid user name$")
