@@ -204,7 +204,7 @@ public class JwalaUi {
      * @param numberOfElements the number of elements to satisfy the "to be" condition
      */
     public void waitUntilNumberOfElementsToBe(final By by, final int numberOfElements) {
-        webDriverWait.until(ExpectedConditions.numberOfElementsToBe(by, 1));
+        webDriverWait.until(ExpectedConditions.numberOfElementsToBe(by, numberOfElements));
     }
 
     public void selectItem(final By by, final String itemName) {
