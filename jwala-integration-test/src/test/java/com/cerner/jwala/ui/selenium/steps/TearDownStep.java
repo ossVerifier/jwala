@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.io.IOException;
 import java.sql.*;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -35,12 +36,21 @@ public class TearDownStep {
     final String userName;
     final String password;
 
+    private JwalaOsType osType;
+
     public TearDownStep() throws IOException, ClassNotFoundException {
         properties = SeleniumTestHelper.getProperties();
         Class.forName(properties.getProperty("jwala.db.driver"));
         connectionStr = properties.getProperty("jwala.db.connection");
         userName = properties.getProperty("jwala.db.userName");
         password = properties.getProperty("jwala.db.password");
+
+        try {
+            osType = JwalaOsType.valueOf(properties.getProperty("jwala.os.type"));
+        } catch (IllegalArgumentException | NullPointerException e) {
+            // the default is Windows
+            osType = JwalaOsType.WINDOWS;
+        }
 
         // indirectly required by JschServiceImpl via use of ApplicationProperties
         System.setProperty("PROPERTIES_ROOT_PATH", this.getClass().getResource("/selenium/vars.properties").getPath()
@@ -85,13 +95,33 @@ public class TearDownStep {
 
         if (serviceInfo.isStarted()) {
             // Stop the service first so that service delete is executed by the OS asap
-            jschService.runShellCommand(remoteSystemConnection, "sc stop " + serviceInfo.name, 300000);
+            switch (osType) {
+                case WINDOWS:
+                    jschService.runShellCommand(remoteSystemConnection, "sc stop " + serviceInfo.name, 300000);
+                    break;
+                case UNIX:
+                    jschService.runShellCommand(remoteSystemConnection, "sudo service " + serviceInfo.name + " stop", 300000);
+                    break;
+                default:
+                    throw new TearDownException(
+                            MessageFormat.format("I don't know how to stop services for os type -> {0}", osType));
+            }
         }
 
         // If the service state is NEW, that means that the service has not yet been created so let's not issue a
         // delete command to save some time
         if (!serviceInfo.isNew()) {
-            jschService.runShellCommand(remoteSystemConnection, "sc delete " + serviceInfo.name, 300000);
+            switch (osType) {
+                case WINDOWS:
+                    jschService.runShellCommand(remoteSystemConnection, "sc delete " + serviceInfo.name, 300000);
+                    break;
+                case UNIX:
+                    jschService.runShellCommand(remoteSystemConnection, "sudo rm /etc/init.d/" + serviceInfo.name, 300000);
+                    break;
+                default:
+                    throw new TearDownException(
+                            MessageFormat.format("I don't know how to delete services for os type -> {0}", osType));
+            }
         }
     }
 
