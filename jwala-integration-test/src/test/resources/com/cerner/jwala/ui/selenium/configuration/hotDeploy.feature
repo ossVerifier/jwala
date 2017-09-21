@@ -79,11 +79,18 @@ Feature: HotDeploy a resource file
       | deployName   | server.xml                          |
       | deployPath   | jvm.server.xml.resource.deploy.path |
       | templateName | server.xml.tpl                      |
+    # for Windows
     And I created a group JVM resource with the following parameters:
       | group        | seleniumGroup                   |
       | deployName   | setenv.bat                      |
       | deployPath   | jvm.setenv.resource.deploy.path |
       | templateName | setenv.bat.tpl                  |
+    # for Linux
+    And I created a group JVM resource with the following parameters:
+      | group        | seleniumGroup                   |
+      | deployName   | setenv.sh                      |
+      | deployPath   | jvm.setenv.resource.deploy.path |
+      | templateName | setenv.sh.tpl                  |
     And I created a web app resource with the following parameters:
       | group        | seleniumGroup                       |
       | webApp       | seleniumWebapp                      |

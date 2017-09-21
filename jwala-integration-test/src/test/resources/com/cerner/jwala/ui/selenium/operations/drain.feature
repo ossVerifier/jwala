@@ -46,12 +46,20 @@ Feature: Drain
         | group       | seleniumGroup  |
 
     # create resources
+    # for Windows
     And I created a JVM resource with the following parameters:
         | group       | seleniumGroup                   |
         | jvm         | seleniumJvm                     |
         | deployName  | setenv.bat                      |
         | deployPath  | jvm.setenv.resource.deploy.path |
         | templateName| setenv.bat.tpl                  |
+    # for Linux
+    And I created a JVM resource with the following parameters:
+        | group       | seleniumGroup                   |
+        | jvm         | seleniumJvm                     |
+        | deployName  | setenv.sh                       |
+        | deployPath  | jvm.setenv.resource.deploy.path |
+        | templateName| setenv.sh.tpl                   |
     And I created a JVM resource with the following parameters:
         | group       | seleniumGroup                       |
         | jvm         | seleniumJvm                         |
