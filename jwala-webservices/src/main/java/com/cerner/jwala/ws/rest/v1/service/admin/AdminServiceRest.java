@@ -33,4 +33,8 @@ public interface AdminServiceRest {
     @GET
     @Path("/context/authorization")
     Response getAuthorizationDetails();
+
+    @DELETE
+    @Path("/cache")
+    Response clearCache();
 }

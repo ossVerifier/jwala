@@ -1,14 +1,15 @@
 package com.cerner.jwala.ws.rest.v1.service.admin.impl;
 
 import com.cerner.jwala.common.domain.model.fault.FaultType;
+import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.files.FilesConfiguration;
+import com.cerner.jwala.service.AdminService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.response.ResponseContent;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.admin.AdminServiceRest;
-
 import org.apache.log4j.LogManager;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.slf4j.Logger;
@@ -42,6 +43,9 @@ public class AdminServiceRestImpl implements AdminServiceRest {
 
     @Autowired
     PropertySourcesPlaceholderConfigurer configurer;
+
+    @Autowired
+    private AdminService adminService;
 
     public AdminServiceRestImpl(FilesConfiguration theFilesConfiguration, ResourceService resourceService) {
         this.filesConfiguration = theFilesConfiguration;
@@ -125,5 +129,16 @@ public class AdminServiceRestImpl implements AdminServiceRest {
                 return null;
             }
         });
+    }
+
+    @Override
+    public Response clearCache() {
+        try {
+            adminService.clearCache();
+        } catch (final RuntimeException e) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(FaultType.CACHE_ERROR, e.getMessage(), e));
+        }
+        return Response.status(Response.Status.NO_CONTENT).build();
     }
 }
