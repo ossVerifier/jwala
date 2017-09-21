@@ -29,12 +29,20 @@ Scenario: Do a happy path start, thread dump, heap dump, stop and deletion of a 
         | group      | CONTROL-JVM-TEST-G   |
 
     # create resources
+    # for Windows
     And I created a JVM resource with the following parameters:
         | group       | CONTROL-JVM-TEST-G                   |
         | jvm         | CONTROL-JVM-TEST-J                     |
         | deployName  | setenv.bat                      |
         | deployPath  | jvm.setenv.resource.deploy.path |
         | templateName| setenv.bat.tpl                  |
+    # for Linux
+    And I created a JVM resource with the following parameters:
+        | group       | CONTROL-JVM-TEST-G                   |
+        | jvm         | CONTROL-JVM-TEST-J                     |
+        | deployName  | setenv.sh                      |
+        | deployPath  | jvm.setenv.resource.deploy.path |
+        | templateName| setenv.sh.tpl                  |
     And I created a JVM resource with the following parameters:
         | group       | CONTROL-JVM-TEST-G                       |
         | jvm         | CONTROL-JVM-TEST-J                         |
