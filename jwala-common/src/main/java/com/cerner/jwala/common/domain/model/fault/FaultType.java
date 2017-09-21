@@ -158,7 +158,9 @@ public enum FaultType implements MessageResponseStatus {
 
     MEDIA_NOT_FOUND("AEM77", "MediaNotFound"),
 
-    RESOURCE_NO_ATTACHMENT_EXCEPTION("AEM78", "ResourceNoAttachmentException");
+    RESOURCE_NO_ATTACHMENT_EXCEPTION("AEM78", "ResourceNoAttachmentException"),
+
+    CACHE_ERROR("AEM79", "Cache related error");
 
     private final String faultCode;
     private final String faultMessage;
