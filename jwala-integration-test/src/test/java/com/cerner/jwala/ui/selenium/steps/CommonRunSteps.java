@@ -187,7 +187,6 @@ public class CommonRunSteps {
         uploadResourceRunSteps.setDeployName(parameters.get("deployName"));
         uploadResourceRunSteps.setDeployPath(parameters.get("deployPath"));
         uploadResourceRunSteps.selectResourceFile(parameters.get("templateName"));
-        uploadResourceRunSteps.clickAssignToJvmsCheckbox();
         uploadResourceRunSteps.clickUploadResourceDlgOkBtn();
         uploadResourceRunSteps.checkForSuccessfulResourceUpload();
     }

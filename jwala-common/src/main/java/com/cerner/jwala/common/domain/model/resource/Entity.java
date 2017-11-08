@@ -6,7 +6,7 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
  * Resource entity that wraps type, group and target
- *
+ * <p>
  * Created by Jedd Cuison on 3/30/2016
  */
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
@@ -15,6 +15,8 @@ public class Entity {
     private final String group;
     private final String target;
     private final String parentName;
+
+    @Deprecated
     private final boolean deployToJvms;
 
     @JsonCreator
@@ -46,6 +48,7 @@ public class Entity {
         return parentName;
     }
 
+    @Deprecated
     public boolean getDeployToJvms() {
         return deployToJvms;
     }

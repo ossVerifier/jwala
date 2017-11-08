@@ -812,12 +812,6 @@
 							"mode": "formdata",
 							"formdata": [
 								{
-									"key": "assignToJvms",
-									"value": "true",
-									"type": "text",
-									"warning": ""
-								},
-								{
 									"key": "templateFile",
 									"type": "file",
 									"warning": "",

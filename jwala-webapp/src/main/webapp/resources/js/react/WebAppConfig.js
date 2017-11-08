@@ -318,8 +318,7 @@ var UploadWarWidget = React.createClass({
             showProperties: false,
             uploadFilename: "",
             deployPath: "",
-            uploadData: null,
-            assignToJvms: false
+            uploadData: null
         }
     },
     render: function() {
@@ -342,10 +341,6 @@ var UploadWarWidget = React.createClass({
                        <label>*WAR File</label>
                        <label ref="fileInputLabel" htmlFor="fileInput" className="error"/>
                        <input ref="fileInput" name="fileInput" type="file" accept=".war" required onChange={this.onChangeFileInput}/>
-                       <br/>
-                       <input type="checkbox" value={this.state.assignToJvms} onChange={this.onChangeAssignToJvms}>
-                           <span>Assign to JVMs</span>
-                       </input>
                        <br/>
                        <label>Deploy Path</label>
                        <input ref="deployPathInput" name="deployPath" value={this.state.deployPath} onChange={this.onChangeDeployPath}/>
@@ -393,9 +388,6 @@ var UploadWarWidget = React.createClass({
 
         this.setState({uploadFilename: $(this.refs.fileInput.getDOMNode()).val()});
     },
-    onChangeAssignToJvms: function() {
-        this.setState({assignToJvms: !this.state.assignToJvms});
-    },
     onChangeDeployPath: function() {
         this.setState({deployPath: $(this.refs.deployPathInput.getDOMNode()).val()});
     },
@@ -410,7 +402,6 @@ var UploadWarWidget = React.createClass({
         var self = this;
         var formData = new FormData();
 
-        formData.append("assignToJvms", this.state.assignToJvms);
         formData.append("templateFile", this.refs.fileInput.getDOMNode().files[0]);
         $(this.refs.warUploadForm.getDOMNode()).serializeArray().forEach(function(item){
             formData.append(item.name, item.value);

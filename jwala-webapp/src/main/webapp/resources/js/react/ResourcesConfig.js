@@ -301,7 +301,6 @@ var ResourcesConfig = React.createClass({
                 formData.append("metaData", metaDataFile);
             } else if (!isExtProperties){
                 formData.append("deployPath", this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm.getDeployPath());
-                formData.append("assignToJvms", this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm.getAssignToJvms());
             }
             formData.append("templateFile", templateFile);
 
@@ -1027,23 +1026,15 @@ var SelectMetaDataAndTemplateFilesWidget = React.createClass({
 
 var MetaDataEntryForm = React.createClass({
     getInitialState: function() {
-        return {deployPath: null, deployFilename: null, assignToJvms: false};
+        return {deployPath: null, deployFilename: null};
     },
     render: function() {
-        var assignToJvmsCheckbox = null;
-        if (this.props.groupLevelWebApp) {
-            assignToJvmsCheckbox = this.state.assignToJvms === false ?
-                <input ref="assignToJvms" name="assignToJvms" type="checkbox" onChange={this.onChangeAssignToJvms}>Assign to JVMs</input> :
-                <input ref="assignToJvms" name="assignToJvms" type="checkbox" checked onChange={this.onChangeAssignToJvms}>Assign to JVMs</input>;
-        }
-
         return <div className="MetaDataEntryForm">
                    <label>*Deploy Name</label>
                    <label htmlFor="deployFilename" className="error"/>
                    <input ref="deployFilename" name="deployFilename" type="text" required valueLink={this.linkState("deployFilename")}/>
                    <label>Deploy Path</label>
                    <input ref="deployPath" type="text"  valueLink={this.linkState("deployPath")}/>
-                   {assignToJvmsCheckbox}
                </div>
     },
     mixins: [React.addons.LinkedStateMixin],
@@ -1053,14 +1044,8 @@ var MetaDataEntryForm = React.createClass({
     getDeployPath: function() {
         return this.state.deployPath;
     },
-    getAssignToJvms: function() {
-        return this.state.assignToJvms;
-    },
     getDeployFilename: function() {
         return this.state.deployFilename;
-    },
-    onChangeAssignToJvms: function() {
-        this.setState({assignToJvms: !this.state.assignToJvms});
     }
 })
 

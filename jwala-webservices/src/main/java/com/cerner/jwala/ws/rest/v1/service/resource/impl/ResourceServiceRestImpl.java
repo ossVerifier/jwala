@@ -167,14 +167,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             metaDataMap.put("templateName", templateName);
             metaDataMap.put("contentType", resourceService.getResourceMimeType(bufferedInputStream));
 
-            // Note: In the create resource UI "assign to JVMs" makes more sense than "deploy to JVMs" e.g.
-            //       one create's a resource that will be assigned to JVMs.
-            //       We have to put it in its meta data counter part which is deployToJvms.
-            //       IMHO meta data's deployToJvms should be renamed to assignToJvms but it can't be changed just yet
-            //       not until an impact analysis has been made.
-            // TODO: Discuss with the team about renaming meta data's deployToJvms to assignToJvms
-            final Entity entity = new Entity(null, null, null, null, Boolean.parseBoolean((String) metaDataMap.get("assignToJvms")));
-            metaDataMap.remove("assignToJvms");
+            final Entity entity = new Entity(null, null, null, null, false);
             metaDataMap.put("entity", entity);
 
             final ResourceTemplateMetaData resourceTemplateMetaData =

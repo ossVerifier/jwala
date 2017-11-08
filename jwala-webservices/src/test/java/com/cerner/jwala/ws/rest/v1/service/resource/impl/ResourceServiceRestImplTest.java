@@ -154,14 +154,6 @@ public class ResourceServiceRestImplTest {
         final Attachment deployPathAttachment = mock(Attachment.class);
         when(deployPathAttachment.getDataHandler()).thenReturn(deployPathDataHandler);
 
-        // assign to JVMs
-        final DataHandler assignToJvmsDataHandler = mock(DataHandler.class);
-        when(assignToJvmsDataHandler.getName()).thenReturn("assignToJvms");
-        when(assignToJvmsDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("true", Charset.defaultCharset()));
-
-        final Attachment assignToJvmsPathAttachment = mock(Attachment.class);
-        when(assignToJvmsPathAttachment.getDataHandler()).thenReturn(assignToJvmsDataHandler);
-
         // File attachment
         final DataHandler fileAttachmentDataHandler = mock(DataHandler.class);
         when(fileAttachmentDataHandler.getName()).thenReturn("sample-resource.tpl");
@@ -174,7 +166,6 @@ public class ResourceServiceRestImplTest {
         final List<Attachment> attachmentList = new ArrayList<>();
         attachmentList.add(fileAttachment);
         attachmentList.add(deployPathAttachment);
-        attachmentList.add(assignToJvmsPathAttachment);
 
         final Response response = cut.createResource("httpd.conf", createResourceParam, attachmentList);
         assertEquals("0", ((ApplicationResponse) response.getEntity()).getMsgCode());
@@ -224,14 +215,6 @@ public class ResourceServiceRestImplTest {
         final Attachment deployPathAttachment = mock(Attachment.class);
         when(deployPathAttachment.getDataHandler()).thenReturn(deployPathDataHandler);
 
-        // assign to JVMs
-        final DataHandler assignToJvmsDataHandler = mock(DataHandler.class);
-        when(assignToJvmsDataHandler.getName()).thenReturn("assignToJvms");
-        when(assignToJvmsDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("true", Charset.defaultCharset()));
-
-        final Attachment assignToJvmsPathAttachment = mock(Attachment.class);
-        when(assignToJvmsPathAttachment.getDataHandler()).thenReturn(assignToJvmsDataHandler);
-
         // File attachment
         final DataHandler fileAttachmentDataHandler = mock(DataHandler.class);
         when(fileAttachmentDataHandler.getName()).thenReturn("sample-resource.tpl");
@@ -244,7 +227,6 @@ public class ResourceServiceRestImplTest {
         final List<Attachment> attachmentList = new ArrayList<>();
         attachmentList.add(fileAttachment);
         attachmentList.add(deployPathAttachment);
-        attachmentList.add(assignToJvmsPathAttachment);
 
         when(impl.getMetaData(anyString())).thenThrow(new IOException());
 
