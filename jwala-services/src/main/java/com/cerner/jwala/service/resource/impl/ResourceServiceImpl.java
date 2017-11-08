@@ -255,7 +255,7 @@ public class ResourceServiceImpl implements ResourceService {
             ResourceContent resourceContent = getResourceContent(resourceIdentifierWithResource);
 
             try {
-                if (entity instanceof Application && getMetaData(resourceContent.getMetaData()).getEntity().getDeployToJvms()) {
+                if (entity instanceof Application && isDeployToJvms(getMetaData(resourceContent.getMetaData()))) {
                     LOGGER.info("Skipping application resource validation for {} because deployToJvms=true", resourceName);
                     continue;
                 }
@@ -279,6 +279,11 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         checkForResourceGenerationException(resourceIdentifier, exceptionList, entity);
+    }
+
+    private boolean isDeployToJvms(ResourceTemplateMetaData resourceTemplateMetaData) throws IOException {
+        final String deployToJvms = resourceTemplateMetaData.getEntity().getDeployToJvms();
+        return StringUtils.isNotEmpty(deployToJvms) && Boolean.valueOf(deployToJvms);
     }
 
     @Override
@@ -609,7 +614,7 @@ public class ResourceServiceImpl implements ResourceService {
         final String deployFileName = metaData.getDeployFileName();
 
         for (final Application application : applications) {
-            if (metaData.getEntity().getDeployToJvms() && application.getName().equals(targetAppName)) {
+            if (isDeployToJvms(metaData) && application.getName().equals(targetAppName)) {
                 for (final Jvm jvm : group.getJvms()) {
                     UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
                             deployFileName, jvm.getJvmName(), metaData.getJsonData(), templateContent

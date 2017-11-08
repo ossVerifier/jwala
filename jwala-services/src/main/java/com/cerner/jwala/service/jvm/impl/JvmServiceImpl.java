@@ -218,7 +218,7 @@ public class JvmServiceImpl implements JvmService {
                 String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, templateName, app.getName());
                 try {
                     ResourceTemplateMetaData metaData = resourceService.getMetaData(metaDataStr);
-                    if (metaData.getEntity().getDeployToJvms()) {
+                    if (isDeployToJvms(metaData)) {
                         final String template = resourceService.getAppTemplate(groupName, app.getName(),
                                 templateName);
                         final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
@@ -235,6 +235,11 @@ public class JvmServiceImpl implements JvmService {
             }
         }
 
+    }
+
+    private boolean isDeployToJvms(ResourceTemplateMetaData metaData) {
+        final String deployToJvms = metaData.getEntity().getDeployToJvms();
+        return StringUtils.isNotEmpty(deployToJvms) && Boolean.valueOf(deployToJvms);
     }
 
     @Transactional

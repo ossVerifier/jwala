@@ -475,7 +475,7 @@ public class ApplicationServiceImplTest {
         when(Config.mockGroupPersistenceService.getGroupAppResourceTemplateMetaData(anyString(), anyString(), anyString())).thenReturn("");
         when(Config.mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
-        when(mockEntity.getDeployToJvms()).thenReturn(false);
+        when(mockEntity.getDeployToJvms()).thenReturn("false");
         when(Config.mockGroupPersistenceService.getGroupAppsResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
         when(Config.mockResourceService.generateAndDeployFile(any(ResourceIdentifier.class), anyString(), anyString(),
                 anyString())).thenReturn(mockCommandOutput);
@@ -515,7 +515,7 @@ public class ApplicationServiceImplTest {
         when(Config.mockGroupPersistenceService.getGroupAppResourceTemplateMetaData(anyString(), anyString(), anyString())).thenReturn("");
         when(Config.mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
-        when(mockEntity.getDeployToJvms()).thenReturn(false);
+        when(mockEntity.getDeployToJvms()).thenReturn("false");
         when(Config.mockGroupPersistenceService.getGroupAppsResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
         when(Config.mockResourceService.generateAndDeployFile(any(ResourceIdentifier.class), anyString(), anyString(),
                 anyString())).thenReturn(mockCommandOutput);
@@ -704,7 +704,7 @@ public class ApplicationServiceImplTest {
         ResourceGroup mockResourceGroup = mock(ResourceGroup.class);
 
         Entity mockEntity = mock(Entity.class);
-        when(mockEntity.getDeployToJvms()).thenReturn(false);
+        when(mockEntity.getDeployToJvms()).thenReturn("false");
 
         ResourceTemplateMetaData mockResourceTemplateMetaData = mock(ResourceTemplateMetaData.class);
         when(mockResourceTemplateMetaData.getEntity()).thenReturn(mockEntity);

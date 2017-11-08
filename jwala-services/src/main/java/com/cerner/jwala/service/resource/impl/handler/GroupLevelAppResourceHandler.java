@@ -146,7 +146,7 @@ public class GroupLevelAppResourceHandler extends ResourceHandler {
         final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(groupName);
 
         for (final Application application : applications) {
-            if (metaDataCopy.getEntity().getDeployToJvms() && application.getName().equals(resourceIdentifier.webAppName)) {
+            if (isDeployToJvms(metaDataCopy) && application.getName().equals(resourceIdentifier.webAppName)) {
                 for (final Jvm jvm : group.getJvms()) {
                     UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaDataCopy.getTemplateName(),
                             metaDataCopy.getDeployFileName(), jvm.getJvmName(), metaDataCopy.getJsonData(), templateContent
@@ -156,6 +156,11 @@ public class GroupLevelAppResourceHandler extends ResourceHandler {
                 }
             }
         }
+    }
+
+    private boolean isDeployToJvms(ResourceTemplateMetaData metaDataCopy) {
+        final String deployToJvms = metaDataCopy.getEntity().getDeployToJvms();
+        return StringUtils.isNotEmpty(deployToJvms) && Boolean.valueOf(deployToJvms);
     }
 
     @Override

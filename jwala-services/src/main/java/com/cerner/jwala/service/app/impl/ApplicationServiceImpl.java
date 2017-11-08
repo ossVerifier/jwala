@@ -331,7 +331,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName, app.getName());
                 try {
                     ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(resourceTemplateName, app, metaDataStr);
-                    if (jvms != null && !jvms.isEmpty() && !metaData.getEntity().getDeployToJvms()) {
+                    if (jvms != null && !jvms.isEmpty() && !isDeployToJvms(metaData)) {
                         // still need to iterate through the JVMs to get the host names
                         Set<String> hostNames = new HashSet<>();
                         for (Jvm jvm : jvms) {
@@ -350,6 +350,11 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
         }
 
+    }
+
+    private boolean isDeployToJvms(ResourceTemplateMetaData metaData) {
+        final String deployToJvms = metaData.getEntity().getDeployToJvms();
+        return StringUtils.isNotEmpty(deployToJvms) && Boolean.valueOf(deployToJvms);
     }
 
     @Override
@@ -586,7 +591,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             LOGGER.debug("metadata for template: {} is {}", resourceTemplate, metaDataStr);
             try {
                 ResourceTemplateMetaData metaData = resourceService.getMetaData(metaDataStr);
-                if (!metaData.getEntity().getDeployToJvms()) {
+                if (!isDeployToJvms(metaData)) {
                     LOGGER.info("Template {} needs to be deployed adding it to the list", resourceTemplate);
                     resourceSet.add(resourceTemplate);
                 } else {

@@ -295,7 +295,7 @@ public class GroupServiceImplDeployTest {
         ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
         Entity mockEntity = mock(Entity.class);
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
-        when(mockEntity.getDeployToJvms()).thenReturn(false);
+        when(mockEntity.getDeployToJvms()).thenReturn("false");
         when(mockEntity.getTarget()).thenReturn("testApp");
         when(mockMetaData.isHotDeploy()).thenReturn(false);
         when(Config.mockApplicationService.getApplication(anyString())).thenReturn(mockApp);
@@ -330,7 +330,7 @@ public class GroupServiceImplDeployTest {
         Entity mockMetaDataEntity = mock(Entity.class);
         when(mockMetaData.getEntity()).thenReturn(mockMetaDataEntity);
         when(mockMetaData.isHotDeploy()).thenReturn(false);
-        when(mockMetaDataEntity.getDeployToJvms()).thenReturn(false);
+        when(mockMetaDataEntity.getDeployToJvms()).thenReturn("false");
         when(Config.mockApplicationService.getApplication(anyString())).thenReturn(mockApp);
         when(Config.mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
 

@@ -11,7 +11,6 @@ import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
-import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
 import com.cerner.jwala.common.exception.FaultCodeException;
@@ -43,6 +42,7 @@ import com.cerner.jwala.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -700,7 +700,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         try {
             // cannot call getTokenizedMetaData here - the app resource could be associated to a JVM and use JVM attributes
             metaData = resourceService.getMetaData(groupAppMetaData);
-            if (metaData.getEntity().getDeployToJvms()) {
+            if (isDeployToJvms(metaData)) {
                 historyFacadeService.write(hostName, group, "Deploying " + fileName + " to "+hostName, EventType
                         .USER_ACTION_INFO, aUser.getUser().getId());
                 performGroupAppDeployToJvms(groupName, fileName, aUser, group, appName, applicationServiceRest, hostName, metaData.isHotDeploy());
@@ -726,6 +726,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             throw new InternalErrorException(FaultType.BAD_STREAM, "Failed to map meta data for resource template " + fileName + " in group " + groupName, e);
         }
         return ResponseBuilder.ok(group);
+    }
+
+    private boolean isDeployToJvms(ResourceTemplateMetaData metaData) {
+        final String deployToJvms = metaData.getEntity().getDeployToJvms();
+        return StringUtils.isNotEmpty(deployToJvms) && Boolean.valueOf(deployToJvms);
     }
 
     /**

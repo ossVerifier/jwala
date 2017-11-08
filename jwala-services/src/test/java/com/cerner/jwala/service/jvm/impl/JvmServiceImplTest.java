@@ -44,7 +44,6 @@ import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.jvm.exception.JvmServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
-import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import com.jcraft.jsch.JSchException;
@@ -163,7 +162,7 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
         when(Config.mockGroupPersistenceService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(templateNames);
         when(Config.mockApplicationService.findApplications(any())).thenReturn(applications);
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
-        when(mockEntity.getDeployToJvms()).thenReturn(false);
+        when(mockEntity.getDeployToJvms()).thenReturn("false");
 
         jvmService.createDefaultTemplates(jvm.getJvmName(), group);
 
