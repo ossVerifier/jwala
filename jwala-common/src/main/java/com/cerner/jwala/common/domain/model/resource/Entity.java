@@ -17,19 +17,19 @@ public class Entity {
     private final String parentName;
 
     @Deprecated
-    private final boolean deployToJvms;
+    private final String deployToJvms;
 
     @JsonCreator
     public Entity(@JsonProperty("type") final String type,
                   @JsonProperty("group") final String group,
                   @JsonProperty("target") final String target,
                   @JsonProperty("parentName") final String parentName,
-                  @JsonProperty("deployToJvms") final Boolean deployToJvms) {
+                  @JsonProperty("deployToJvms") final String deployToJvms) {
         this.type = type;
         this.group = group;
         this.target = target;
         this.parentName = parentName;
-        this.deployToJvms = deployToJvms == null ? true : deployToJvms;
+        this.deployToJvms = deployToJvms;
     }
 
     public String getType() {
@@ -49,7 +49,7 @@ public class Entity {
     }
 
     @Deprecated
-    public boolean getDeployToJvms() {
+    public String getDeployToJvms() {
         return deployToJvms;
     }
 
