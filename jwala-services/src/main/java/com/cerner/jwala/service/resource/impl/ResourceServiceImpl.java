@@ -255,15 +255,6 @@ public class ResourceServiceImpl implements ResourceService {
             ResourceContent resourceContent = getResourceContent(resourceIdentifierWithResource);
 
             try {
-                if (entity instanceof Application && isDeployToJvms(getMetaData(resourceContent.getMetaData()))) {
-                    LOGGER.info("Skipping application resource validation for {} because deployToJvms=true", resourceName);
-                    continue;
-                }
-            } catch (IOException e) {
-                throw new ApplicationException(MessageFormat.format("Unable to retrieve meta data for {0} during validation step.", resourceName), e);
-            }
-
-            try {
                 generateResourceFile(resourceName, resourceContent.getMetaData(), resourceGroup, entity, ResourceGeneratorType.METADATA);
             } catch (ResourceFileGeneratorException e) {
                 LOGGER.error("Failed to generate {} {} for {}", resourceName, ResourceGeneratorType.METADATA, entity, e);
@@ -279,11 +270,6 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         checkForResourceGenerationException(resourceIdentifier, exceptionList, entity);
-    }
-
-    private boolean isDeployToJvms(ResourceTemplateMetaData resourceTemplateMetaData) throws IOException {
-        final String deployToJvms = resourceTemplateMetaData.getEntity().getDeployToJvms();
-        return StringUtils.isNotEmpty(deployToJvms) && Boolean.valueOf(deployToJvms);
     }
 
     @Override
@@ -597,8 +583,6 @@ public class ResourceServiceImpl implements ResourceService {
                                                                             final String templateContent,
                                                                             final String targetAppName) throws IOException {
         final String groupName = metaData.getEntity().getGroup();
-        Group group = groupPersistenceService.getGroup(groupName);
-        final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(groupName);
         ConfigTemplate createdConfigTemplate = null;
 
         if (MediaType.APPLICATION_ZIP.equals(metaData.getContentType()) &&
@@ -612,18 +596,6 @@ public class ResourceServiceImpl implements ResourceService {
             applicationPersistenceService.updateWarInfo(targetAppName, metaData.getTemplateName(), templateContent, tokenizedWarDeployPath);
         }
         final String deployFileName = metaData.getDeployFileName();
-
-        for (final Application application : applications) {
-            if (isDeployToJvms(metaData) && application.getName().equals(targetAppName)) {
-                for (final Jvm jvm : group.getJvms()) {
-                    UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                            deployFileName, jvm.getJvmName(), metaData.getJsonData(), templateContent
-                    );
-                    JpaJvm jpaJvm = jvmPersistenceService.getJpaJvm(jvm.getId(), false);
-                    applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm);
-                }
-            }
-        }
 
         createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(groupName, targetAppName, deployFileName,
                 metaData.getJsonData(), templateContent);
