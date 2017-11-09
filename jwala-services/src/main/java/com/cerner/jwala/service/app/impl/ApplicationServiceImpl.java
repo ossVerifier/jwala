@@ -137,7 +137,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional
     @Override
     public Application updateApplication(UpdateApplicationRequest updateApplicationRequest, User anUpdatingUser)
-            throws ApplicationServiceException{
+            throws ApplicationServiceException {
         updateApplicationRequest.validate();
         final Application application = applicationPersistenceService.updateApplication(updateApplicationRequest);
 
@@ -331,7 +331,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName, app.getName());
                 try {
                     ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(resourceTemplateName, app, metaDataStr);
-                    if (jvms != null && !jvms.isEmpty() && !isDeployToJvms(metaData)) {
+                    if (jvms != null && !jvms.isEmpty()) {
                         // still need to iterate through the JVMs to get the host names
                         Set<String> hostNames = new HashSet<>();
                         for (Jvm jvm : jvms) {
@@ -350,11 +350,6 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
         }
 
-    }
-
-    private boolean isDeployToJvms(ResourceTemplateMetaData metaData) {
-        final String deployToJvms = metaData.getEntity().getDeployToJvms();
-        return StringUtils.isNotEmpty(deployToJvms) && Boolean.valueOf(deployToJvms);
     }
 
     @Override
@@ -414,7 +409,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             return resourceService.getTokenizedMetaData(appWarName, application, metaData).getDeployPath();
         } catch (IOException e) {
             String messageErr = MessageFormat.format("Failed to generate the war meta data for {0}", application);
-            LOGGER.error(messageErr,e);
+            LOGGER.error(messageErr, e);
             throw new ApplicationServiceException(messageErr);
         }
     }
@@ -591,12 +586,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             LOGGER.debug("metadata for template: {} is {}", resourceTemplate, metaDataStr);
             try {
                 ResourceTemplateMetaData metaData = resourceService.getMetaData(metaDataStr);
-                if (!isDeployToJvms(metaData)) {
-                    LOGGER.info("Template {} needs to be deployed adding it to the list", resourceTemplate);
-                    resourceSet.add(resourceTemplate);
-                } else {
-                    LOGGER.info("Not deploying {} because deployToJvms=true", resourceTemplate);
-                }
+                LOGGER.info("Template {} needs to be deployed adding it to the list", resourceTemplate);
+                resourceSet.add(resourceTemplate);
             } catch (IOException e) {
                 LOGGER.error("Error in templatizing the metadata file", e);
                 throw new InternalErrorException(FaultType.IO_EXCEPTION, "Error in templatizing the metadata for resource " + resourceTemplate);
