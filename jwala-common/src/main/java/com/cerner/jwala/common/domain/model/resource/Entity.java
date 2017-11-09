@@ -16,20 +16,15 @@ public class Entity {
     private final String target;
     private final String parentName;
 
-    @Deprecated
-    private final String deployToJvms;
-
     @JsonCreator
     public Entity(@JsonProperty("type") final String type,
                   @JsonProperty("group") final String group,
                   @JsonProperty("target") final String target,
-                  @JsonProperty("parentName") final String parentName,
-                  @JsonProperty("deployToJvms") final String deployToJvms) {
+                  @JsonProperty("parentName") final String parentName) {
         this.type = type;
         this.group = group;
         this.target = target;
         this.parentName = parentName;
-        this.deployToJvms = deployToJvms;
     }
 
     public String getType() {
@@ -48,11 +43,6 @@ public class Entity {
         return parentName;
     }
 
-    @Deprecated
-    public String getDeployToJvms() {
-        return deployToJvms;
-    }
-
     @Override
     public String toString() {
         return "Entity{" +
@@ -60,7 +50,6 @@ public class Entity {
                 ", group='" + group + '\'' +
                 ", target='" + target + '\'' +
                 ", parentName='" + parentName + '\'' +
-                ", deployToJvms=" + deployToJvms +
                 '}';
     }
 }

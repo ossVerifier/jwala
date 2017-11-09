@@ -24,15 +24,14 @@ public class ResourceTemplateMetaDataTest {
             "        \"type\": \"GROUPED_JVMS\",\n" +
             "        \"group\": \"HEALTH CHECK 4.0\",\n" +
             "        \"target\": \"HEALTH CHECK 4.0\",\n" +
-            "        \"parentName\": null,\n" +
-            "        \"deployToJvms\": true\n" +
+            "        \"parentName\": null\n" +
             "    },\n" +
             "    \"unpack\": false\n" +
             "}";
 
     private static final String EXPECTED_META_DATA_STR = "ResourceTemplateMetaData{templateName='SetenvBatTemplate.tpl', " +
             "contentType=text/plain, deployFileName='setenv.bat', deployPath='${jvm.tomcatMedia.remoteDir}/${jvm.jvmName}/bin', " +
-            "entity=Entity{type='GROUPED_JVMS', group='HEALTH CHECK 4.0', target='HEALTH CHECK 4.0', parentName='null', deployToJvms=true}, " +
+            "entity=Entity{type='GROUPED_JVMS', group='HEALTH CHECK 4.0', target='HEALTH CHECK 4.0', parentName='null'}, " +
             "unpack=false, overwrite=true, hotDeploy=false}";
 
     @Test
