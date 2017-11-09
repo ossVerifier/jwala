@@ -215,7 +215,7 @@ public class ResourceHandlerConfigurationTest {
         when(mockApplication.getName()).thenReturn("sampleApp");
         applications.add(mockApplication);
         when(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE.findApplicationsBelongingTo(anyString())).thenReturn(applications);
-        final Entity entity = new Entity(null, null, null, null, true);
+        final Entity entity = new Entity(null, null, null, null, "true");
 
         final ObjectMapper objectMapper = new ObjectMapper();
         final Map<String, Object> metaDataMap = objectMapper.readValue(metaData.getJsonData(), Map.class);
@@ -225,7 +225,6 @@ public class ResourceHandlerConfigurationTest {
         resourceHandler.createResource(getGroupLevelAppResourceIdentifier(), metaData, templateContent);
         verify(MockConfig.getMockGroupPersistenceService()).populateGroupAppTemplate(anyString(), anyString(), anyString(),
                 anyString(), anyString());
-        verify(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
     }
 
     @Test
@@ -241,7 +240,7 @@ public class ResourceHandlerConfigurationTest {
         when(mockApplication.getName()).thenReturn("sampleApp");
         applications.add(mockApplication);
         when(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE.findApplicationsBelongingTo(anyString())).thenReturn(applications);
-        final Entity entity = new Entity(null, null, null, null, true);
+        final Entity entity = new Entity(null, null, null, null, "true");
 
         final ObjectMapper objectMapper = new ObjectMapper();
         final Map<String, Object> metaDataMap = objectMapper.readValue(metaData.getJsonData(), Map.class);
@@ -253,7 +252,6 @@ public class ResourceHandlerConfigurationTest {
         resourceHandler.createResource(getGroupLevelAppResourceIdentifier(), metaData, "some.war");
         verify(MockConfig.getMockGroupPersistenceService()).populateGroupAppTemplate(anyString(), anyString(), anyString(),
                 anyString(), anyString());
-        verify(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
         verify(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE).updateWarInfo(anyString(), anyString(), anyString(), anyString());
     }
 

@@ -6,8 +6,6 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.request.app.UpdateApplicationRequest;
-import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
-import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
@@ -101,8 +99,6 @@ public class GroupLevelAppResourceHandler extends ResourceHandler {
             createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(groupName, resourceIdentifier.webAppName,
                     metaDataCopy.getDeployFileName(), metaDataCopy.getJsonData(), templateContent);
 
-            createJvmTemplateFromAppResource(resourceIdentifier, templateContent, metaDataCopy, groupName, group);
-
             createResourceResponseWrapper = new CreateResourceResponseWrapper(createdConfigTemplate);
         } else if (successor != null) {
             createResourceResponseWrapper = successor.createResource(resourceIdentifier, metaDataCopy, templateContent);
@@ -137,30 +133,6 @@ public class GroupLevelAppResourceHandler extends ResourceHandler {
         }
 
         return metaDataCopy;
-    }
-
-    private void createJvmTemplateFromAppResource(ResourceIdentifier resourceIdentifier, String templateContent, ResourceTemplateMetaData metaDataCopy, String groupName, Group group) {
-        // Can't we just get the application using the group name and target app name instead of getting all the applications
-        // then iterating it to compare with the target app name ???
-        // If we can do that then TODO: Refactor this to return only one application and remove the iteration!
-        final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(groupName);
-
-        for (final Application application : applications) {
-            if (isDeployToJvms(metaDataCopy) && application.getName().equals(resourceIdentifier.webAppName)) {
-                for (final Jvm jvm : group.getJvms()) {
-                    UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaDataCopy.getTemplateName(),
-                            metaDataCopy.getDeployFileName(), jvm.getJvmName(), metaDataCopy.getJsonData(), templateContent
-                    );
-                    JpaJvm jpaJvm = jvmPersistenceService.getJpaJvm(jvm.getId(), false);
-                    applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm);
-                }
-            }
-        }
-    }
-
-    private boolean isDeployToJvms(ResourceTemplateMetaData metaDataCopy) {
-        final String deployToJvms = metaDataCopy.getEntity().getDeployToJvms();
-        return StringUtils.isNotEmpty(deployToJvms) && Boolean.valueOf(deployToJvms);
     }
 
     @Override

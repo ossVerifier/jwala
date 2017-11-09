@@ -320,7 +320,6 @@ public class ResourceServiceImplTest {
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("user-id");
         resourceService.createTemplate(metaDataIn, templateIn, "test-app-name", mockUser);
-        verify(Config.mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
         verify(Config.mockGroupPesistenceService).populateGroupAppTemplate(anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
