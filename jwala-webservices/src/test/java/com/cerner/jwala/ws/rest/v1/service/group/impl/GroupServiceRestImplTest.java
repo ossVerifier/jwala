@@ -792,20 +792,6 @@ public class GroupServiceRestImplTest {
         groupServiceRest.generateAndDeployGroupAppFile("test-group", "anyFile.txt", "testApp", mockAuthenticatedUser, "anyHost");
     }
 
-    @Test(expected = InternalErrorException.class)
-    public void testPerformGroupAppDeployToJvmsFail() {
-        final Set<Jvm> jvms = new HashSet<>();
-        final String hostname = "testHost";
-        final ApplicationServiceRest mockApplicationServiceRest = mock(ApplicationServiceRest.class);
-        JvmState jvmState = JvmState.JVM_STARTED;
-        jvms.add(mockJvm);
-        when(mockJvm.getHostName()).thenReturn(hostname);
-        when(mockGroup.getJvms()).thenReturn(jvms);
-        when(mockJvm.getState()).thenReturn(jvmState);
-
-        groupServiceRest.performGroupAppDeployToJvms("test-group", "test-file", mockAuthenticatedUser, mockGroup, "test-app", mockApplicationServiceRest, hostname, false);
-    }
-
     /**
      * Instead of mocking the ServletInputStream, let's extend it instead.
      *

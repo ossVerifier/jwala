@@ -42,7 +42,6 @@ import com.cerner.jwala.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -700,37 +699,26 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         try {
             // cannot call getTokenizedMetaData here - the app resource could be associated to a JVM and use JVM attributes
             metaData = resourceService.getMetaData(groupAppMetaData);
-            if (isDeployToJvms(metaData)) {
-                historyFacadeService.write(hostName, group, "Deploying " + fileName + " to "+hostName, EventType
-                        .USER_ACTION_INFO, aUser.getUser().getId());
-                performGroupAppDeployToJvms(groupName, fileName, aUser, group, appName, applicationServiceRest, hostName, metaData.isHotDeploy());
+            ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                    .setGroupName(groupName)
+                    .setWebAppName(appName)
+                    .setResourceName(fileName)
+                    .build();
+            resourceService.validateSingleResourceForGeneration(resourceIdentifier);
+            if (hostName != null && !hostName.isEmpty()) {
+                // deploy to particular host
+                historyFacadeService.write(hostName, group, "Deploying application resource " +
+                        resourceIdentifier.resourceName, EventType.USER_ACTION_INFO, aUser.getUser().getId());
+                performGroupAppDeployToHost(groupName, fileName, appName, hostName, metaData.isHotDeploy());
             } else {
-                ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
-                        .setGroupName(groupName)
-                        .setWebAppName(appName)
-                        .setResourceName(fileName)
-                        .build();
-                resourceService.validateSingleResourceForGeneration(resourceIdentifier);
-                if (hostName != null && !hostName.isEmpty()) {
-                    // deploy to particular host
-                    historyFacadeService.write(hostName, group, "Deploying application resource " +
-                            resourceIdentifier.resourceName, EventType.USER_ACTION_INFO, aUser.getUser().getId());
-                    performGroupAppDeployToHost(groupName, fileName, appName, hostName, metaData.isHotDeploy());
-                } else {
-                    // deploy to all hosts in group
-                    performGroupAppDeployToHosts(groupName, fileName, appName, metaData.isHotDeploy(), aUser);
-                }
+                // deploy to all hosts in group
+                performGroupAppDeployToHosts(groupName, fileName, appName, metaData.isHotDeploy(), aUser);
             }
         } catch (IOException e) {
             LOGGER.error("Failed to map meta data for resource template {} in group {} :: meta data: {} ", fileName, groupName, groupAppMetaData, e);
             throw new InternalErrorException(FaultType.BAD_STREAM, "Failed to map meta data for resource template " + fileName + " in group " + groupName, e);
         }
         return ResponseBuilder.ok(group);
-    }
-
-    private boolean isDeployToJvms(ResourceTemplateMetaData metaData) {
-        final String deployToJvms = metaData.getEntity().getDeployToJvms();
-        return StringUtils.isNotEmpty(deployToJvms) && Boolean.valueOf(deployToJvms);
     }
 
     /**
@@ -776,9 +764,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 String hostIpAddress = JwalaUtils.getHostAddress(hostName);
                 boolean addToDeployedHost = true;
                 //Check by hosts by IP address
-                for(String deployedHost: deployedHosts){
+                for (String deployedHost : deployedHosts) {
                     String deployedHostIPAddress = JwalaUtils.getHostAddress(deployedHost);
-                    if(deployedHostIPAddress.equals(hostIpAddress)){
+                    if (deployedHostIPAddress.equals(hostIpAddress)) {
                         addToDeployedHost = false;
                         break;
                     }
@@ -793,17 +781,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             }
         }
         if (!futureMap.isEmpty()) {
-            checkResponsesForErrorStatus(futureMap);
-        }
-    }
-
-    void performGroupAppDeployToJvms(final String groupName, final String fileName, final AuthenticatedUser aUser, final Group group,
-                                     final String appName, final ApplicationServiceRest appServiceRest, final String hostName, boolean hotDeploy) {
-        final Set<Jvm> groupJvms = group.getJvms();
-        Set<Jvm> jvms = getJvmsByHostname(hostName, groupJvms);
-        if (null != jvms && !jvms.isEmpty()) {
-            checkJvmsStatesBeforeDeployAppResource(fileName, group, hotDeploy, jvms);
-            Map<String, Future<Response>> futureMap = executeGroupAppDeployToJvms(groupName, fileName, aUser, appName, appServiceRest, jvms);
             checkResponsesForErrorStatus(futureMap);
         }
     }
@@ -825,25 +802,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             jvms = groupJvms;
         }
         return jvms;
-    }
-
-    private Map<String, Future<Response>> executeGroupAppDeployToJvms(final String groupName, final String fileName, final AuthenticatedUser aUser, final String appName, final ApplicationServiceRest appServiceRest, Set<Jvm> jvms) {
-        final String groupAppTemplateContent = groupService.getGroupAppResourceTemplate(groupName, appName, fileName, false, new ResourceGroup());
-        final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        final Map<String, Future<Response>> futureMap = new HashMap<>();
-        for (Jvm jvm : jvms) {
-            final String jvmName = jvm.getJvmName();
-            Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
-                @Override
-                public Response call() throws Exception {
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                    appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
-                    return appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
-                }
-            });
-            futureMap.put(jvmName, responseFuture);
-        }
-        return futureMap;
     }
 
     private void checkJvmsStatesBeforeDeployAppResource(String fileName, Group group, boolean hotDeploy, Set<Jvm> jvms) {
