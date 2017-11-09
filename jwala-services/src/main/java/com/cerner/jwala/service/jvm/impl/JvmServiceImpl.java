@@ -59,7 +59,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.NoResultException;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -211,35 +210,6 @@ public class JvmServiceImpl implements JvmService {
             }
         }
 
-        for (Application app : applicationService.findApplications(parentGroup.getId())) {
-
-            templateNames = groupPersistenceService.getGroupAppsResourceTemplateNames(groupName, app.getName());
-            for (String templateName : templateNames) {
-                String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, templateName, app.getName());
-                try {
-                    ResourceTemplateMetaData metaData = resourceService.getMetaData(metaDataStr);
-                    if (isDeployToJvms(metaData)) {
-                        final String template = resourceService.getAppTemplate(groupName, app.getName(),
-                                templateName);
-                        final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
-                                .setResourceName(templateName).setJvmName(jvmName)
-                                .setWebAppName(app.getName()).build();
-                        resourceService.createResource(resourceIdentifier, metaData, new ByteArrayInputStream(template.getBytes(StandardCharsets.UTF_8)));
-                    }
-                } catch (IOException e) {
-                    LOGGER.error("Failed to map meta data while creating JVM for template {} in group {}",
-                            templateName, groupName, e);
-                    throw new InternalErrorException(FaultType.BAD_STREAM, "Failed to map data for template " +
-                            templateName + " in group " + groupName, e);
-                }
-            }
-        }
-
-    }
-
-    private boolean isDeployToJvms(ResourceTemplateMetaData metaData) {
-        final String deployToJvms = metaData.getEntity().getDeployToJvms();
-        return StringUtils.isNotEmpty(deployToJvms) && Boolean.valueOf(deployToJvms);
     }
 
     @Transactional
