@@ -167,7 +167,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             metaDataMap.put("templateName", templateName);
             metaDataMap.put("contentType", resourceService.getResourceMimeType(bufferedInputStream));
 
-            final Entity entity = new Entity(null, null, null, null, null);
+            final Entity entity = new Entity(null, null, null, null);
             metaDataMap.put("entity", entity);
 
             final ResourceTemplateMetaData resourceTemplateMetaData =

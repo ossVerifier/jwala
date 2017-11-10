@@ -5701,7 +5701,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"templateName\":\"{{HealthCheckWar}}/${badSyntax\",\r\n    \"contentType\":\"application/binary\",\r\n    \"deployPath\":\"{{mediaRemoteDir}}/app/webapps\",\r\n    \"deployFileName\":\"{{HealthCheckWar}}\",\r\n    \"unpack\": false,\r\n    \"entity\":{\r\n        \"type\":\"GROUPED_APPS\",\r\n        \"group\":\"HEALTH CHECK 4.0\",\r\n        \"target\":\"HEALTH-CHECK-4.0\",\r\n        \"deployToJvms\":false\r\n    }\r\n}"
+							"raw": "{\r\n    \"templateName\":\"{{HealthCheckWar}}/${badSyntax\",\r\n    \"contentType\":\"application/binary\",\r\n    \"deployPath\":\"{{mediaRemoteDir}}/app/webapps\",\r\n    \"deployFileName\":\"{{HealthCheckWar}}\",\r\n    \"unpack\": false,\r\n    \"entity\":{\r\n        \"type\":\"GROUPED_APPS\",\r\n        \"group\":\"HEALTH CHECK 4.0\",\r\n        \"target\":\"HEALTH-CHECK-4.0\",\r\n     }\r\n}"
 						},
 						"description": ""
 					},
@@ -5815,7 +5815,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"templateName\":\"{{HealthCheckWar}}\",\r\n    \"contentType\":\"application/binary\",\r\n    \"deployPath\":\"{{mediaRemoteDir}}/app/webapps\",\r\n    \"deployFileName\":\"{{HealthCheckWar}}\",\r\n    \"unpack\": false,\r\n    \"entity\":{\r\n        \"type\":\"GROUPED_APPS\",\r\n        \"group\":\"HEALTH CHECK 4.0\",\r\n        \"target\":\"HEALTH-CHECK-4.0\",\r\n        \"deployToJvms\":false\r\n    }\r\n}"
+							"raw": "{\r\n    \"templateName\":\"{{HealthCheckWar}}\",\r\n    \"contentType\":\"application/binary\",\r\n    \"deployPath\":\"{{mediaRemoteDir}}/app/webapps\",\r\n    \"deployFileName\":\"{{HealthCheckWar}}\",\r\n    \"unpack\": false,\r\n    \"entity\":{\r\n        \"type\":\"GROUPED_APPS\",\r\n        \"group\":\"HEALTH CHECK 4.0\",\r\n        \"target\":\"HEALTH-CHECK-4.0\",\r\n    }\r\n}"
 						},
 						"description": ""
 					},

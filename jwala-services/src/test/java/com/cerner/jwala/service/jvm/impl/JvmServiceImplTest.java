@@ -162,7 +162,6 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
         when(Config.mockGroupPersistenceService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(templateNames);
         when(Config.mockApplicationService.findApplications(any())).thenReturn(applications);
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
-        when(mockEntity.getDeployToJvms()).thenReturn("false");
 
         jvmService.createDefaultTemplates(jvm.getJvmName(), group);
 
@@ -259,7 +258,7 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
         when(Config.mockGroupService.getGroupJvmResourceTemplate(anyString(), anyString(), any(ResourceGroup.class), anyBoolean())).thenReturn("<server>xml</server>");
         when(Config.mockGroupService.getGroupJvmResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"server-deploy.xml\"}");
         when(Config.mockGroupService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(appTemplateNames);
-        when(Config.mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString(), anyString())).thenReturn("{\"deployPath\":\"c:/fake/app/path\", \"deployFileName\":\"app-context.xml\", \"entity\":{\"deployToJvms\":\"true\", \"target\":\"app-target\"}}");
+        when(Config.mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString(), anyString())).thenReturn("{\"deployPath\":\"c:/fake/app/path\", \"deployFileName\":\"app-context.xml\", \"entity\":{\"target\":\"app-target\"}}");
         when(Config.mockResourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
         when(createJvmRequest.getJvmName()).thenReturn("TestJvm");
         when(Config.mockJvmPersistenceService.findJvmByExactName(anyString())).thenThrow(NoResultException.class);

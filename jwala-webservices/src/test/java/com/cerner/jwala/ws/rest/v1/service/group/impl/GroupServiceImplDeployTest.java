@@ -240,7 +240,7 @@ public class GroupServiceImplDeployTest {
         returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", "testApp", mockAuthUser, hostName);
         assertEquals(200, returnResponse.getStatus());
 
-        when(Config.mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\", \"deployToJvms\": false}}");
+        when(Config.mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\"}}");
         when(mockJvm.getHostName()).thenReturn("TestHost");
         when(Config.mockGroupService.deployGroupAppTemplate(anyString(), anyString(), any(Application.class), anyString())).thenReturn(
                 new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
@@ -287,7 +287,7 @@ public class GroupServiceImplDeployTest {
         when(mockResponse.getStatus()).thenReturn(200);
         when(Config.mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
         when(Config.mockGroupService.getGroupAppResourceTemplate(anyString(), anyString(), anyString(), anyBoolean(), any(ResourceGroup.class))).thenReturn("new hct.xml content");
-        when(Config.mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\", \"deployToJvms\":false}}");
+        when(Config.mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\"}}");
         when(Config.mockGroupService.deployGroupAppTemplate(anyString(), anyString(), any(Application.class), any(Jvm.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(Config.mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(Config.mockApplicationService.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
@@ -295,7 +295,6 @@ public class GroupServiceImplDeployTest {
         ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
         Entity mockEntity = mock(Entity.class);
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
-        when(mockEntity.getDeployToJvms()).thenReturn("false");
         when(mockEntity.getTarget()).thenReturn("testApp");
         when(mockMetaData.isHotDeploy()).thenReturn(false);
         when(Config.mockApplicationService.getApplication(anyString())).thenReturn(mockApp);
@@ -324,13 +323,12 @@ public class GroupServiceImplDeployTest {
         when(mockGroup.getJvms()).thenReturn(Collections.singleton(mockJvm));
 
         when(Config.mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
-        when(Config.mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\", \"deployToJvms\":false}}");
+        when(Config.mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\"}}");
 
         ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
         Entity mockMetaDataEntity = mock(Entity.class);
         when(mockMetaData.getEntity()).thenReturn(mockMetaDataEntity);
         when(mockMetaData.isHotDeploy()).thenReturn(false);
-        when(mockMetaDataEntity.getDeployToJvms()).thenReturn("false");
         when(Config.mockApplicationService.getApplication(anyString())).thenReturn(mockApp);
         when(Config.mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
 
