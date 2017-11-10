@@ -1,11 +1,11 @@
 Feature: Security
 
-Scenario: User logs in using different user accounts
+  Scenario: User logs in using different user accounts
 
     Given I load predefined user accounts
     Then I use those accounts to login successfully and unsuccessfully
 
-Scenario: User logs in
+  Scenario: User logs in
 
     Given I am on the login page
     When I fill in the "User Name" field with a valid user name
@@ -14,7 +14,7 @@ Scenario: User logs in
     Then I should see the main page
 
 
-Scenario: User logs out
+  Scenario: User logs out
 
     Given I logged in
     When I click the logout link

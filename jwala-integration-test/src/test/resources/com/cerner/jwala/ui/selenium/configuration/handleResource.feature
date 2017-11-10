@@ -10,9 +10,9 @@ Feature: Deleting a resource
       | archiveFilename | jdk.media.archive |
       | remoteDir       | media.remote.dir  |
     And I created a media with the following parameters:
-      | mediaName       | apache.tomcat.media |
+      | mediaName       | apache.tomcat.media         |
       | mediaType       | Apache Tomcat               |
-      | archiveFilename | apache.tomcat.media.archive         |
+      | archiveFilename | apache.tomcat.media.archive |
       | remoteDir       | media.remote.dir            |
     And I created a jvm with the following parameters:
       | jvmName    | seleniumJvm         |

@@ -1,6 +1,6 @@
 Feature: Add, Edit and Delete a Web Server
 
-Scenario: Add Web Application
+  Scenario: Add Web Application
 
     Given I logged in
     And I am in the Configuration tab
@@ -11,9 +11,9 @@ Scenario: Add Web Application
     And I fill in the web app "Name" field with "WEBAPP_X"
     And I fill in the web app "Context Path" field with "webapp"
     And I associate the web app to the following groups:
-        |GROUP_FOR_ADD_WEBAPP_TEST|
+      | GROUP_FOR_ADD_WEBAPP_TEST |
     And I click the add web app dialog ok button
     Then I see the following web app details in the web app table:
-        |name   |WEBAPP_X                 |
-        |context|webapp                   |
-        |group  |GROUP_FOR_ADD_WEBAPP_TEST|
+      | name    | WEBAPP_X                  |
+      | context | webapp                    |
+      | group   | GROUP_FOR_ADD_WEBAPP_TEST |

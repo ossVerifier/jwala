@@ -1,6 +1,6 @@
 Feature: Add, Edit and Delete a Media
 
-Scenario: Add a media
+  Scenario: Add a media
 
     Given I logged in
     And I am in the Configuration tab

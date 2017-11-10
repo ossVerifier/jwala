@@ -1,6 +1,6 @@
 Feature: Add, Edit and Delete a Group
 
-Scenario: Add a group
+  Scenario: Add a group
 
     Given I logged in
     And I am in the Configuration tab

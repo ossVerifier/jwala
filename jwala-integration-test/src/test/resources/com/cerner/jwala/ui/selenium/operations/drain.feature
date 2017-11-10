@@ -33,13 +33,13 @@ Feature: Drain
       | portNumber | jvm.http.port       |
       | group      | seleniumGroup       |
     And I created a web server with the following parameters:
-      | webserverName      | seleniumWebserver   |
-      | hostName           | host1               |
-      | portNumber         | ws.http.port        |
-      | httpsPort          | ws.https.port       |
-      | group              | seleniumGroup       |
+      | webserverName      | seleniumWebserver  |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | seleniumGroup      |
       | apacheHttpdMediaId | apache.httpd.media |
-      | statusPath         | ws.status.path      |
+      | statusPath         | ws.status.path     |
     And I created a web app with the following parameters:
       | webappName  | seleniumWebapp |
       | contextPath | /hello         |

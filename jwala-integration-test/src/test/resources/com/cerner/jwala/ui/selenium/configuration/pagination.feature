@@ -16,7 +16,7 @@ Feature: Pagination
     And I am in the web server tab
     And I select the dropdown of "webserver" with option "100"
     And I created a web server with the following parameters:
-      | webserverName      | WebServer01         |
+      | webserverName      | WebServer01        |
       | hostName           | host1              |
       | portNumber         | ws.http.port       |
       | httpsPort          | ws.https.port      |
@@ -24,7 +24,7 @@ Feature: Pagination
       | apacheHttpdMediaId | apache.httpd.media |
       | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer02         |
+      | webserverName      | WebServer02        |
       | hostName           | host1              |
       | portNumber         | ws.http.port       |
       | httpsPort          | ws.https.port      |
@@ -32,7 +32,7 @@ Feature: Pagination
       | apacheHttpdMediaId | apache.httpd.media |
       | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer03         |
+      | webserverName      | WebServer03        |
       | hostName           | host1              |
       | portNumber         | ws.http.port       |
       | httpsPort          | ws.https.port      |
@@ -40,7 +40,7 @@ Feature: Pagination
       | apacheHttpdMediaId | apache.httpd.media |
       | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer04         |
+      | webserverName      | WebServer04        |
       | hostName           | host1              |
       | portNumber         | ws.http.port       |
       | httpsPort          | ws.https.port      |
@@ -48,7 +48,7 @@ Feature: Pagination
       | apacheHttpdMediaId | apache.httpd.media |
       | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer05         |
+      | webserverName      | WebServer05        |
       | hostName           | host1              |
       | portNumber         | ws.http.port       |
       | httpsPort          | ws.https.port      |
@@ -56,7 +56,7 @@ Feature: Pagination
       | apacheHttpdMediaId | apache.httpd.media |
       | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer06         |
+      | webserverName      | WebServer06        |
       | hostName           | host1              |
       | portNumber         | ws.http.port       |
       | httpsPort          | ws.https.port      |
@@ -64,7 +64,7 @@ Feature: Pagination
       | apacheHttpdMediaId | apache.httpd.media |
       | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer07         |
+      | webserverName      | WebServer07        |
       | hostName           | host1              |
       | portNumber         | ws.http.port       |
       | httpsPort          | ws.https.port      |
@@ -72,7 +72,7 @@ Feature: Pagination
       | apacheHttpdMediaId | apache.httpd.media |
       | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer08         |
+      | webserverName      | WebServer08        |
       | hostName           | host1              |
       | portNumber         | ws.http.port       |
       | httpsPort          | ws.https.port      |
@@ -80,7 +80,7 @@ Feature: Pagination
       | apacheHttpdMediaId | apache.httpd.media |
       | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer09         |
+      | webserverName      | WebServer09        |
       | hostName           | host1              |
       | portNumber         | ws.http.port       |
       | httpsPort          | ws.https.port      |
