@@ -5,18 +5,18 @@ Feature: HotDeploy a resource file
     And I am in the Configuration tab
     And I created a group with the name "seleniumGroup"
     And I created a media with the following parameters:
-      | mediaName       | apache-httpd-2.4.20     |
-      | mediaType       | Apache HTTPD            |
-      | archiveFilename | apache-httpd-2.4.20.zip |
-      | remoteDir       | media.remote.dir        |
+      | mediaName       | apache.httpd.media         |
+      | mediaType       | Apache HTTPD               |
+      | archiveFilename | apache.httpd.media.archive |
+      | remoteDir       | media.remote.dir           |
     And I created a web server with the following parameters:
-      | webserverName      | seleniumWebserver   |
-      | hostName           | host1               |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | seleniumGroup       |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | seleniumWebserver  |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | seleniumGroup      |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server resource with the following parameters:
       | group        | seleniumGroup              |
       | webServer    | seleniumWebserver          |
@@ -53,22 +53,22 @@ Feature: HotDeploy a resource file
     And I am in the Configuration tab
     And I created a group with the name "seleniumGroup"
     And I created a media with the following parameters:
-      | mediaName       | jdk1.8.0_92      |
-      | mediaType       | JDK              |
-      | archiveFilename | jdk1.8.0_92.zip  |
-      | remoteDir       | media.remote.dir |
+      | mediaName       | jdk.media         |
+      | mediaType       | JDK               |
+      | archiveFilename | jdk.media.archive |
+      | remoteDir       | media.remote.dir  |
     And I created a media with the following parameters:
-      | mediaName       | apache-tomcat-7.0.55     |
-      | mediaType       | Apache Tomcat            |
-      | archiveFilename | apache-tomcat-7.0.55.zip |
-      | remoteDir       | media.remote.dir         |
+      | mediaName       | apache.tomcat.media         |
+      | mediaType       | Apache Tomcat               |
+      | archiveFilename | apache.tomcat.media.archive |
+      | remoteDir       | media.remote.dir            |
     And I created a jvm with the following parameters:
-      | jvmName    | seleniumJvm          |
-      | tomcat     | apache-tomcat-7.0.55 |
-      | jdk        | jdk1.8.0_92          |
-      | hostName   | host1                |
-      | portNumber | 9000                 |
-      | group      | seleniumGroup        |
+      | jvmName    | seleniumJvm         |
+      | tomcat     | apache.tomcat.media |
+      | jdk        | jdk.media           |
+      | hostName   | host1               |
+      | portNumber | jvm.http.port       |
+      | group      | seleniumGroup       |
     And I created a web app with the following parameters:
       | webappName  | seleniumWebapp |
       | contextPath | /hello         |
@@ -88,9 +88,9 @@ Feature: HotDeploy a resource file
     # for Linux
     And I created a group JVM resource with the following parameters:
       | group        | seleniumGroup                   |
-      | deployName   | setenv.sh                      |
+      | deployName   | setenv.sh                       |
       | deployPath   | jvm.setenv.resource.deploy.path |
-      | templateName | setenv.sh.tpl                  |
+      | templateName | setenv.sh.tpl                   |
     And I created a web app resource with the following parameters:
       | group        | seleniumGroup                       |
       | webApp       | seleniumWebapp                      |

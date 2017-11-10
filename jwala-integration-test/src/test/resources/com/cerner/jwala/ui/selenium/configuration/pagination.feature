@@ -1,6 +1,6 @@
 Feature: Pagination
 
-Scenario: Web Server Pagination
+  Scenario: Web Server Pagination
 
     Given I logged in
     And I am in the Configuration tab
@@ -9,241 +9,241 @@ Scenario: Web Server Pagination
     And I created a group with the name "group2"
     And I am in the media tab
     And I created a media with the following parameters:
-      | mediaName       | apache-httpd-2.4.20     |
-      | mediaType       | Apache HTTPD            |
-      | archiveFilename | apache-httpd-2.4.20.zip |
-      | remoteDir       | media.remote.dir        |
+      | mediaName       | apache.httpd.media         |
+      | mediaType       | Apache HTTPD               |
+      | archiveFilename | apache.httpd.media.archive |
+      | remoteDir       | media.remote.dir           |
     And I am in the web server tab
     And I select the dropdown of "webserver" with option "100"
     And I created a web server with the following parameters:
-      | webserverName      | WebServer1          |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer01         |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer2          |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer02         |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer3          |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer03         |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer4          |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer04         |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer5          |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer05         |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer6          |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group2              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer06         |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group2             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer7          |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group2              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer07         |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group2             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer8          |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer08         |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer9          |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer09         |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer10         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer10        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer11         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group2              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer11        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group2             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer12         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group2              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer12        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group2             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer13         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group2              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer13        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group2             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer14         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group2              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer14        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group2             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer15         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer15        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer16         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer16        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer17         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer17        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer18         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group2              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer18        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group2             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer20         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer20        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer21         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group2              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer21        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group2             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer22         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer22        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer23         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer23        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer24         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer24        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer25         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer25        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer26         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer26        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer27         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer27        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer28         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer28        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     And I created a web server with the following parameters:
-      | webserverName      | WebServer29         |
-      | hostName           | localhost           |
-      | portNumber         | 80                  |
-      | httpsPort          | 443                 |
-      | group              | group1              |
-      | apacheHttpdMediaId | apache-httpd-2.4.20 |
-      | statusPath         | /apache_pb.png      |
+      | webserverName      | WebServer29        |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | group1             |
+      | apacheHttpdMediaId | apache.httpd.media |
+      | statusPath         | ws.status.path     |
     When I click the column header with the label "Name"
     Then I see "WebServer29" in the webserver table
 
 
-Scenario: Group Pagination
+  Scenario: Group Pagination
 
     Given I logged in
     And I am in the Configuration tab

@@ -8,11 +8,18 @@ import cucumber.api.java.en.When;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.util.Properties;
 
 /**
  * Created by Jedd Cuison on 6/27/2017
  */
 public class CreateWebServerRunSteps {
+
+    @Autowired
+    @Qualifier("parameterProperties")
+    private Properties paramProp;
 
     @Autowired
     private JwalaUi jwalaUi;
@@ -39,7 +46,7 @@ public class CreateWebServerRunSteps {
 
     @And("^I fill in the \"Host Name\" field with \"(.*)\"$")
     public void setHostName(final String hostName) {
-        jwalaUi.sendKeys(By.name("hostName"), hostName);
+        jwalaUi.sendKeys(By.name("hostName"), paramProp.getProperty(hostName) == null ? hostName : paramProp.getProperty(hostName));
     }
 
     @And("^I fill in the \"Status Path\" field with \"(.*)\"$")

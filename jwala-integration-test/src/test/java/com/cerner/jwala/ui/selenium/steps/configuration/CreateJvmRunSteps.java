@@ -7,9 +7,11 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import org.openqa.selenium.By;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.junit.Assert.assertTrue;
 
@@ -20,6 +22,10 @@ public class CreateJvmRunSteps {
 
     @Autowired
     private JwalaUi jwalaUi;
+
+    @Autowired
+    @Qualifier("parameterProperties")
+    private Properties paramProp;
 
     @Given("^I am in the jvm tab$")
     public void goToJvmTab() {
@@ -43,7 +49,7 @@ public class CreateJvmRunSteps {
 
     @And("^I fill in the \"JVM Host Name\" field with \"(.*)\"$")
     public void setHostName(final String hostName) {
-        jwalaUi.sendKeys(By.name("hostName"), hostName);
+        jwalaUi.sendKeys(By.name("hostName"), paramProp.getProperty(hostName) == null ? hostName : paramProp.getProperty(hostName));
     }
 
     @And("^I fill in the \"JVM HTTP Port\" field with \"(.*)\"$")
