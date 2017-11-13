@@ -6,14 +6,20 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import org.openqa.selenium.By;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Properties;
 
 /**
  * Created by Jedd Cuison on 6/30/2017
  */
 public class CreateMediaRunSteps {
+
+    @Autowired
+    @Qualifier("parameterProperties")
+    private Properties paramProp;
 
     @Autowired
     private JwalaUi jwalaUi;
@@ -59,6 +65,7 @@ public class CreateMediaRunSteps {
 
     @Then("I see \"(.*)\" in the media table")
     public void checkForMedia(final String mediaName) {
-        jwalaUi.waitUntilElementIsVisible(By.xpath("//button[text()='" + mediaName + "']"), 300);
+        String actualMediaName = paramProp.getProperty(mediaName) == null ? mediaName : paramProp.getProperty(mediaName);
+        jwalaUi.waitUntilElementIsVisible(By.xpath("//button[text()='" + actualMediaName + "']"), 300);
     }
 }

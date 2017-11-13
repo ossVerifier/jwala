@@ -5,22 +5,22 @@ Feature: Testing errors caused by invalid template, meta data or file type
     And I am in the Configuration tab
     And I created a group with the name "seleniumGroup"
     And I created a media with the following parameters:
-      | mediaName       | jdk.media      |
+      | mediaName       | jdk.media        |
       | mediaType       | JDK              |
-      | archiveFilename | jdk.media.archive  |
+      | archiveFilename | jdk.media.archive|
       | remoteDir       | media.remote.dir |
     And I created a media with the following parameters:
-      | mediaName       | apache.tomcat.media     |
-      | mediaType       | Apache Tomcat            |
-      | archiveFilename | apache.tomcat.media.archive |
-      | remoteDir       | media.remote.dir         |
+      | mediaName       | apache.tomcat.media        |
+      | mediaType       | Apache Tomcat              |
+      | archiveFilename | apache.tomcat.media.archive|
+      | remoteDir       | media.remote.dir           |
     And I created a jvm with the following parameters:
-      | jvmName    | seleniumJvm          |
-      | tomcat     | apache.tomcat.media |
+      | jvmName    | seleniumJvm        |
+      | tomcat     | apache.tomcat.media|
       | jdk        | jdk.media          |
-      | hostName   | host1                |
-      | portNumber | jvm.http.port                 |
-      | group      | seleniumGroup        |
+      | hostName   | host1              |
+      | portNumber | jvm.http.port      |
+      | group      | seleniumGroup      |
     And I created a web app with the following parameters:
       | webappName  | seleniumWebapp |
       | contextPath | /hello         |
@@ -120,17 +120,17 @@ Feature: Testing errors caused by invalid template, meta data or file type
     And I am in the Configuration tab
     And I created a group with the name "seleniumGroup"
     And I created a media with the following parameters:
-      | mediaName       | apache.httpd.media     |
-      | mediaType       | Apache HTTPD            |
+      | mediaName       | apache.httpd.media         |
+      | mediaType       | Apache HTTPD               |
       | archiveFilename | apache.httpd.media.archive |
-      | remoteDir       | media.remote.dir        |
+      | remoteDir       | media.remote.dir           |
 
     And I created a web server with the following parameters:
-      | webserverName      | seleniumWebserver   |
-      | hostName           | host1               |
-      | portNumber         | ws.http.port                  |
-      | httpsPort          | ws.https.port                 |
-      | group              | seleniumGroup       |
+      | webserverName      | seleniumWebserver |
+      | hostName           | host1              |
+      | portNumber         | ws.http.port       |
+      | httpsPort          | ws.https.port      |
+      | group              | seleniumGroup      |
       | apacheHttpdMediaId | apache.httpd.media |
       | statusPath         | /apache_pb.png      |
 
@@ -257,24 +257,24 @@ Feature: Testing errors caused by invalid template, meta data or file type
     And I am in the Configuration tab
     And I created a group with the name "seleniumGroup"
     And I created a media with the following parameters:
-      | mediaName       | jdk.media      |
-      | mediaType       | JDK              |
-      | archiveFilename | jdk.media.archive  |
-      | remoteDir       | media.remote.dir |
+      | mediaName       | jdk.media         |
+      | mediaType       | JDK               |
+      | archiveFilename | jdk.media.archive |
+      | remoteDir       | media.remote.dir  |
 
     And I created a media with the following parameters:
-      | mediaName       | apache.tomcat.media     |
-      | mediaType       | Apache Tomcat            |
+      | mediaName       | apache.tomcat.media         |
+      | mediaType       | Apache Tomcat               |
       | archiveFilename | apache.tomcat.media.archive |
-      | remoteDir       | media.remote.dir         |
+      | remoteDir       | media.remote.dir            |
 
     And I created a jvm with the following parameters:
-      | jvmName    | seleniumJvm          |
+      | jvmName    | seleniumJvm         |
       | tomcat     | apache.tomcat.media |
-      | jdk        | jdk.media          |
-      | hostName   | host1                |
-      | portNumber | jvm.http.port                 |
-      | group      | seleniumGroup        |
+      | jdk        | jdk.media           |
+      | hostName   | host1               |
+      | portNumber | jvm.http.port       |
+      | group      | seleniumGroup       |
 
     And I created a group JVM resource with the following parameters:
       | group        | seleniumGroup                       |

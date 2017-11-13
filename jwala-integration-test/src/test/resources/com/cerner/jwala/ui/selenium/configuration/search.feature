@@ -51,7 +51,7 @@ Feature: Search Items
       | archiveFilename | apache.httpd.media.archive |
       | remoteDir       | media.remote.dir           |
     When I fill in the search field with "ap"
-    Then I see "apache-httpd-2.4.20" in the media table
+    Then I see "apache.httpd.media.archive" in the media table
     And I don't see "ZZZApacheMedia" in the table
 
 
