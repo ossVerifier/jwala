@@ -3475,7 +3475,7 @@
 						}
 					],
 					"request": {
-						"url": "{{url}}/v1.0/resources/template/metadata/httpd.conf;group=Web%20Servers;webServer={{WebserverName}}",
+						"url": "{{url}}/v1.0/resources/template/metadata/httpd.conf;group={{GroupName}};webServer={{WebserverName}}",
 						"method": "PUT",
 						"header": [],
 						"body": {
@@ -5496,34 +5496,6 @@
 			"description": "",
 			"item": [
 				{
-					"name": "error: generate group webservers when web server is started exception",
-					"request": {
-						"url": "{{url}}/v1.0/groups/{{GroupId}}/webservers/conf/deploy",
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"description": ""
-					},
-					"response": []
-				},
-				{
-					"name": "error: generate and deploy webserver when started exception",
-					"request": {
-						"url": "{{url}}/v1.0/webservers/{{WebserverName}}/conf/deploy",
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"description": ""
-					},
-					"response": []
-				},
-				{
 					"name": "stop group",
 					"event": [
 						{
@@ -5555,31 +5527,28 @@
 					"response": []
 				},
 				{
-					"name": "stop jvm",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"tests[\"Status code is 200\"] = responseCode.code === 200;"
-								]
-							}
-						}
-					],
+					"name": "error: generate group webservers when web server is started exception",
 					"request": {
-						"url": "{{url}}/v1.0/jvms/{{JvmId}}/commands",
+						"url": "{{url}}/v1.0/groups/{{GroupId}}/webservers/conf/deploy",
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"description": ""
-							}
-						],
+						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"controlOperation\":\"stop\"}"
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "error: generate and deploy webserver when started exception",
+					"request": {
+						"url": "{{url}}/v1.0/webservers/{{WebserverName}}/conf/deploy",
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
 						},
 						"description": ""
 					},
@@ -5600,6 +5569,37 @@
 					],
 					"request": {
 						"url": "{{url}}/v1.0/webservers/{{WebserverId}}/commands",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"controlOperation\":\"stop\"}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "stop jvm",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "{{url}}/v1.0/jvms/{{JvmId}}/commands",
 						"method": "POST",
 						"header": [
 							{
