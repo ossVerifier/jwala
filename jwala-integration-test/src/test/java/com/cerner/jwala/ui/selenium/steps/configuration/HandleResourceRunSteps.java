@@ -213,7 +213,7 @@ public class HandleResourceRunSteps {
     }
 
     public void clickOk() {
-        jwalaUi.click(By.xpath("//button/span[text()='Ok']"));
+        jwalaUi.click(By.xpath("//*[text()='Ok']"));
     }
 
 
