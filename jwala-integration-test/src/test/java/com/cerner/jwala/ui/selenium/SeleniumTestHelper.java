@@ -53,7 +53,7 @@ public class SeleniumTestHelper {
         if (webDriverClass.equalsIgnoreCase(ORG_OPENQA_SELENIUM_IE_INTERNET_EXPLORER_DRIVER)) {
             dc = DesiredCapabilities.internetExplorer();
             dc.setCapability(CapabilityType.UNEXPECTED_ALERT_BEHAVIOUR, UnexpectedAlertBehaviour.IGNORE);
-            dc.setCapability(CapabilityType.TAKES_SCREENSHOT, true);
+            dc.setCapability(CapabilityType.TAKES_SCREENSHOT, false);
             dc.setCapability(CapabilityType.SUPPORTS_JAVASCRIPT, true);
             dc.setCapability(InternetExplorerDriver.INTRODUCE_FLAKINESS_BY_IGNORING_SECURITY_DOMAINS, true);
         } else  {
