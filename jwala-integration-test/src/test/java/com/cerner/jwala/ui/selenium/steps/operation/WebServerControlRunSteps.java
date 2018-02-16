@@ -67,6 +67,7 @@ public class WebServerControlRunSteps {
         while (count < 3) {
             try {
                 jwalaUi.waitUntilElementIsVisible(By.xpath("//pre[contains(text(),'This is the main Apache HTTP server configuration file.')]"), 60);
+                break;
             } catch (NoSuchElementException exception) {
                 jwalaUi.getWebDriver().navigate().refresh();
                 count++;
