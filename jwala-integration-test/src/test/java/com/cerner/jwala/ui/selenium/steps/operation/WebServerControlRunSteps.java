@@ -4,6 +4,7 @@ import com.cerner.jwala.ui.selenium.component.JwalaUi;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -69,7 +70,8 @@ public class WebServerControlRunSteps {
                 jwalaUi.waitUntilElementIsVisible(By.xpath("//pre[contains(text(),'This is the main Apache HTTP server configuration file.')]"), 60);
                 break;
             } catch (NoSuchElementException exception) {
-                jwalaUi.getWebDriver().navigate().refresh();
+                String currentUrl = jwalaUi.getWebDriver().getCurrentUrl();
+                jwalaUi.getWebDriver().navigate().to(currentUrl);
                 count++;
                 if(count == 3){
                     throw exception;
