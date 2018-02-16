@@ -4,6 +4,7 @@ import com.cerner.jwala.ui.selenium.component.JwalaUi;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -13,7 +14,7 @@ import java.util.Properties;
 /**
  * Encapsulates run steps related to the control of a particular web server of a certain group and the expected
  * result of such action
- *
+ * <p>
  * Created by Jedd Cuison on 8/21/2017
  */
 public class WebServerControlRunSteps {
@@ -62,7 +63,19 @@ public class WebServerControlRunSteps {
     @Then("^I see the httpd.conf$")
     public void verifyProperConfFile() {
         jwalaUi.switchToOtherTab(origWindowHandle);
-        jwalaUi.waitUntilElementIsVisible(By.xpath("//pre[contains(text(),'This is the main Apache HTTP server configuration file.')]"), 60);
+        int count = 0;
+        while (count < 3) {
+            try {
+                jwalaUi.waitUntilElementIsVisible(By.xpath("//pre[contains(text(),'This is the main Apache HTTP server configuration file.')]"), 60);
+            } catch (NoSuchElementException exception) {
+                jwalaUi.getWebDriver().navigate().refresh();
+                count++;
+                if(count == 3){
+                    throw exception;
+                }
+
+            }
+        }
         if (origWindowHandle != null) {
             jwalaUi.getWebDriver().close();
             jwalaUi.getWebDriver().switchTo().window(origWindowHandle);
