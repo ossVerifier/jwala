@@ -71,6 +71,7 @@ public class WebServerControlRunSteps {
         catch (NoSuchElementException exception){
             String currentUrl = jwalaUi.getWebDriver().getCurrentUrl();
             jwalaUi.getWebDriver().get(currentUrl);
+            jwalaUi.waitUntilElementIsVisible(By.xpath("//pre[contains(text(),'This is the main Apache HTTP server configuration file.')]"), 60);
         }
         if (origWindowHandle != null) {
             jwalaUi.getWebDriver().close();
