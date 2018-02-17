@@ -74,7 +74,7 @@ public class WebServerControlRunSteps {
                 jwalaUi.getWebDriver().get(currentUrl);
                 count++;
                 if(count == 3){
-                    throw exception;
+                    throw new NoSuchElementException("I am here"+currentUrl+" "+jwalaUi.getWebDriver()+" "+count);
                 }
 
             }
