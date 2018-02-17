@@ -65,13 +65,10 @@ public class WebServerControlRunSteps {
     public void verifyProperConfFile() {
         jwalaUi.switchToOtherTab(origWindowHandle);
         int count = 0;
-        try{
+        for(int i=0;i<3;i++) {
             jwalaUi.waitUntilElementIsVisible(By.xpath("//pre[contains(text(),'This is the main Apache HTTP server configuration file.')]"), 60);
-        }
-        catch (NoSuchElementException exception){
             String currentUrl = jwalaUi.getWebDriver().getCurrentUrl();
             jwalaUi.getWebDriver().get(currentUrl);
-            jwalaUi.waitUntilElementIsVisible(By.xpath("//pre[contains(text(),'This is the main Apache HTTP server configuration file.')]"), 60);
         }
         if (origWindowHandle != null) {
             jwalaUi.getWebDriver().close();
