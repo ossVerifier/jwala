@@ -48,6 +48,26 @@ public class WebServerControlRunSteps {
                 + webServerName + "']/following-sibling::td//button[text()='" + linkLabel + "']"));
     }
 
+    //specifically added to solve intermittent  httpd.conf
+    @When("^I click the httpd.conf link of web server \"(.*)\" under group \"(.*)\" in the operations tab$")
+    public void clickHttpdConf(final String linkLabel, final String webServerName, final String groupName) {
+        origWindowHandle = jwalaUi.getWebDriver().getWindowHandle();
+        int count =0;
+        while(count<3) {
+            try {
+                jwalaUi.click(By.xpath("//tr[td[text()='" + groupName + "']]/following-sibling::tr//td[text()='"
+                        + webServerName + "']/following-sibling::td//button[text()='httpd.conf']"));
+                break;
+            } catch (NoSuchElementException exception) {
+                count++;
+                if(count==3){
+                    throw exception;
+                }
+            }
+        }
+    }
+
+
     @Then("^I see an error dialog box that tells me to stop the web server \"(.*)\"$")
     public void deleteError(final String webServerName) {
         jwalaUi.waitUntilElementIsVisible(By.xpath("//div[text()='Please stop web server " + webServerName
@@ -62,14 +82,9 @@ public class WebServerControlRunSteps {
     }
 
     @Then("^I see the httpd.conf$")
-    public void verifyProperConfFile() {
+    public void verifyProperConfFile() throws NoSuchElementException {
         jwalaUi.switchToOtherTab(origWindowHandle);
-        int count = 0;
-        for(int i=0;i<10;i++) {
             jwalaUi.waitUntilElementIsVisible(By.xpath("//pre[contains(text(),'This is the main Apache HTTP server configuration file.')]"), 60);
-            String currentUrl = jwalaUi.getWebDriver().getCurrentUrl();
-            jwalaUi.getWebDriver().get(currentUrl);
-        }
         if (origWindowHandle != null) {
             jwalaUi.getWebDriver().close();
             jwalaUi.getWebDriver().switchTo().window(origWindowHandle);
