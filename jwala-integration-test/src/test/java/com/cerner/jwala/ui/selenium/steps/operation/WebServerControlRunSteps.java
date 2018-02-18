@@ -50,7 +50,7 @@ public class WebServerControlRunSteps {
 
     //specifically added to solve intermittent  httpd.conf
     @When("^I click the httpd.conf link of web server \"(.*)\" under group \"(.*)\" in the operations tab$")
-    public void clickHttpdConf(final String linkLabel, final String webServerName, final String groupName) {
+    public void clickHttpdConf(final String webServerName, final String groupName) {
         origWindowHandle = jwalaUi.getWebDriver().getWindowHandle();
         int count =0;
         while(count<3) {
