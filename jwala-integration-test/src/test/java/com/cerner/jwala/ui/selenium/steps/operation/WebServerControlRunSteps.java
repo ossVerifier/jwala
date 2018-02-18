@@ -6,10 +6,12 @@ import cucumber.api.java.en.When;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.TimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.io.IOException;
+import java.sql.Time;
 import java.util.Properties;
 
 /**
@@ -58,7 +60,7 @@ public class WebServerControlRunSteps {
                 jwalaUi.click(By.xpath("//tr[td[text()='" + groupName + "']]/following-sibling::tr//td[text()='"
                         + webServerName + "']/following-sibling::td//button[text()='httpd.conf']"));
                 break;
-            } catch (NoSuchElementException exception) {
+            } catch (TimeoutException exception) {
                 count++;
                 if(count==3){
                     throw exception;
@@ -82,7 +84,7 @@ public class WebServerControlRunSteps {
     }
 
     @Then("^I see the httpd.conf$")
-    public void verifyProperConfFile() throws NoSuchElementException {
+    public void verifyProperConfFile() throws TimeoutException {
         jwalaUi.switchToOtherTab(origWindowHandle);
             jwalaUi.waitUntilElementIsVisible(By.xpath("//pre[contains(text(),'This is the main Apache HTTP server configuration file.')]"), 60);
         if (origWindowHandle != null) {
