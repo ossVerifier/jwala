@@ -86,7 +86,7 @@ public class WebServerControlRunSteps {
     @Then("^I see the httpd.conf$")
     public void verifyProperConfFile() throws TimeoutException {
         jwalaUi.switchToOtherTab(origWindowHandle);
-            jwalaUi.waitUntilElementIsVisible(By.xpath("//pre[contains(text(),'This is the main Apache HTTP server configuration file.')]"), 60);
+            jwalaUi.waitUntilElementIsVisible(By.xpath("//pre[contains(text(),'This is the main Apache HTTP server configuration file.')]"), 120);
         if (origWindowHandle != null) {
             jwalaUi.getWebDriver().close();
             jwalaUi.getWebDriver().switchTo().window(origWindowHandle);
